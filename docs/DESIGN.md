@@ -39,7 +39,8 @@ doação recebida). Festivo sem virar bloco.
 | `--brand-hover` | `#C9430F` | `#FF7A42` | hover |
 | `--success` | `#2A9D68` | `#4CC38F` | pago, confirmado |
 | `--accent` | `#8A6D1F` | `#D9B04F` | aviso, pendente |
-| `--danger` | `#B3261E` | `#FF8B7E` | erro |
+| `--danger` | `#C94B3C` | `#FF8B7E` | erro |
+| secundárias | coral `#F28B67` · plum `#70405A` · lavender `#8D7BB8` · sky `#72AFC4` · sand `#E8D4B8` | versões claras | pequenas surpresas: badge, ilustração, número — regra 70% neutros / 20% tangerina / 10% secundárias |
 
 **Regra de contraste:** `bg-brand` (vivo) é só para preenchimento com texto branco;
 texto tangerina sobre fundo claro usa SEMPRE `text-brand-deep`. Nunca `text-brand` puro
@@ -80,7 +81,13 @@ botão vencer a preferência do sistema nos dois sentidos. `themeBootScript` inl
 - Entrada em cascata: `.rise` + `.rise-1..5` (fade + 14px, 550ms).
 - Progresso de campanha preenche da esquerda (`.progress-fill`), tangerina.
 - Hover de card sobe 2px e ganha sombra; foto de produto escala 3%.
-- Uma curva e uma duração: `--ease`, `--dur: 180ms`. `prefers-reduced-motion` zera tudo.
+- Curvas: entrada `cubic-bezier(0.22,1,0.36,1)` (`--ease`), saída `--ease-exit`. Micro
+  120–180ms, componente 300–450ms, seção 500–700ms, contadores 700–1200ms.
+- Scroll-reveal via `<Reveal>` (motion/react), uma vez só, sem scroll-jacking.
+- Botão: hover scale 1.015, active 0.98. `prefers-reduced-motion` zera tudo.
+- Ícones: Lucide é infraestrutura; momentos de marca usam os glifos próprios de
+  `components/ui/glyphs.tsx` (Pix, coração, bandeirinha, bilhete, sacola, estrela, seta
+  direta) — stroke 1.4, geometria arredondada.
 
 ## Proibido
 

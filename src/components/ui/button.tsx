@@ -4,7 +4,7 @@ import type * as React from "react";
 import { cn } from "#/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium rounded-full transition-[background-color,border-color,color,box-shadow,transform] [transition-duration:var(--dur)] [transition-timing-function:var(--ease)] disabled:pointer-events-none disabled:opacity-55 active:translate-y-px",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium rounded-full transition-[background-color,border-color,color,box-shadow,transform] duration-120 [transition-timing-function:var(--ease)] disabled:pointer-events-none disabled:opacity-55 hover:scale-[1.015] active:scale-[0.98]",
   {
     variants: {
       variant: {

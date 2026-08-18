@@ -1,7 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, Check, Copy } from "lucide-react";
+import { ArrowRight, Check, Copy, Plus } from "lucide-react";
 import { useState } from "react";
 import { Button } from "#/components/ui/button";
+import {
+  GlyphBilhete,
+  GlyphCampanha,
+  GlyphCoracao,
+  GlyphPix,
+  GlyphSacola,
+} from "#/components/ui/glyphs";
 import { useGetBillingStatus } from "#/lib/api/gen/hooks/useGetBillingStatus";
 import { useGetConnectStatus } from "#/lib/api/gen/hooks/useGetConnectStatus";
 import { useListProducts } from "#/lib/api/gen/hooks/useListProducts";
@@ -13,8 +20,8 @@ export const Route = createFileRoute("/gestao/$slug/")({
 });
 
 /**
- * Resumo = lista de próximos passos. Quem abre o painel pela primeira vez precisa
- * saber o que falta para vender, não ver gráfico vazio.
+ * A home da gestão é orientada a tarefas (§25 do brief): primeiro o que a pessoa
+ * quer fazer, depois quanto falta para a loja estar pronta.
  */
 function Overview() {
   const { slug } = Route.useParams();
@@ -26,83 +33,118 @@ function Overview() {
   const hasProduct = (products?.items.length ?? 0) > 0;
   const billingOk = billing?.status === "active" || billing?.status === "trialing";
 
+  const steps = [
+    { done: true, label: "Criar conta e loja" },
+    { done: hasProduct, label: "Cadastrar o primeiro produto", to: "/gestao/$slug/produtos" },
+    { done: hasPayment, label: "Configurar recebimento", to: "/gestao/$slug/recebimento" },
+    { done: billingOk, label: "Ativar assinatura", to: "/gestao/$slug/recebimento" },
+    { done: false, label: "Compartilhar a loja" },
+  ];
+  const pct = Math.round((steps.filter((s) => s.done).length / steps.length) * 100);
+
   const storeUrl = `${siteUrl()}/loja/${slug}`;
 
   return (
-    <div className="grid max-w-2xl gap-6">
-      <section className="grid gap-3">
-        <h2 className="font-display text-lg font-semibold tracking-tight">
-          O que falta para vender
+    <div className="grid max-w-2xl gap-8">
+      {/* o que você quer fazer hoje */}
+      <section>
+        <h2 className="font-bold font-display text-xl tracking-tight">
+          O que você quer fazer hoje?
         </h2>
-
-        <StepCard
-          done={hasPayment}
-          title="Ligar o recebimento"
-          body="Conecte a conta de cartão ou a chave Pix. Sem isso, ninguém consegue pagar."
-          to="/gestao/$slug/recebimento"
-          slug={slug}
-          cta="Configurar"
-        />
-        <StepCard
-          done={hasProduct}
-          title="Cadastrar o primeiro produto"
-          body="Foto, preço e uma boa descrição. Dá para começar com um só."
-          to="/gestao/$slug/produtos"
-          slug={slug}
-          cta="Cadastrar"
-        />
-        <StepCard
-          done={billingOk}
-          title="Ativar a assinatura da plataforma"
-          body="É ela que mantém sua loja no ar depois do período de testes."
-          to="/gestao/$slug/recebimento"
-          slug={slug}
-          cta="Ver assinatura"
-        />
+        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+          <ActionCard to="/gestao/$slug/produtos" slug={slug} label="Adicionar produto">
+            <Plus className="h-5 w-5" aria-hidden />
+          </ActionCard>
+          <ActionCard to="/gestao/$slug/pedidos" slug={slug} label="Ver pedidos">
+            <GlyphSacola className="h-5 w-5" />
+          </ActionCard>
+          <ActionCard to="/gestao/$slug/campanhas" slug={slug} label="Criar campanha">
+            <GlyphCampanha className="h-5 w-5" />
+          </ActionCard>
+          <ActionCard to="/gestao/$slug/doacoes" slug={slug} label="Ver doações">
+            <GlyphCoracao className="h-5 w-5" />
+          </ActionCard>
+          <ActionCard to="/gestao/$slug/recebimento" slug={slug} label="Recebimento">
+            <GlyphPix className="h-5 w-5" />
+          </ActionCard>
+          <ActionCard to="/gestao/$slug/campanhas" slug={slug} label="Sorteios">
+            <GlyphBilhete className="h-5 w-5" />
+          </ActionCard>
+        </div>
       </section>
+
+      {/* quanto falta */}
+      {pct < 100 && (
+        <section className="card p-5 md:p-6">
+          <div className="flex items-baseline justify-between gap-3">
+            <h2 className="font-bold font-display text-lg tracking-tight">
+              Sua loja está {pct}% pronta
+            </h2>
+            <p className="text-muted text-sm tabular-nums">{pct}%</p>
+          </div>
+          <div className="mt-3 h-2.5 w-full overflow-hidden rounded-full bg-surface">
+            <div
+              className="progress-fill h-full rounded-full bg-brand"
+              style={{ width: `${pct}%` }}
+            />
+          </div>
+          <ul className="mt-5 grid gap-2.5">
+            {steps.map((step) => (
+              <li key={step.label} className="flex items-center gap-3 text-[0.95rem]">
+                <span
+                  className={`inline-grid h-6 w-6 shrink-0 place-items-center rounded-full ${
+                    step.done
+                      ? "bg-success text-white"
+                      : "border border-line-strong text-transparent"
+                  }`}
+                >
+                  <Check className="h-3.5 w-3.5" aria-hidden />
+                </span>
+                {step.to && !step.done ? (
+                  <Link
+                    to={step.to}
+                    params={{ slug }}
+                    className="inline-flex items-center gap-1.5 font-medium text-ink hover:text-brand-deep"
+                  >
+                    {step.label}
+                    <ArrowRight className="h-3.5 w-3.5" aria-hidden />
+                  </Link>
+                ) : (
+                  <span className={step.done ? "text-muted line-through" : ""}>{step.label}</span>
+                )}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <ShareCard storeUrl={storeUrl} />
     </div>
   );
 }
 
-function StepCard({
-  done,
-  title,
-  body,
+function ActionCard({
   to,
   slug,
-  cta,
+  label,
+  children,
 }: {
-  done: boolean;
-  title: string;
-  body: string;
   to: string;
   slug: string;
-  cta: string;
+  label: string;
+  children: React.ReactNode;
 }) {
   return (
-    <div className="card flex items-start gap-4 p-5">
-      <span
-        className={`mt-0.5 inline-grid h-7 w-7 shrink-0 place-items-center rounded-full ${
-          done ? "bg-brand text-brand-ink" : "border border-line-strong text-transparent"
-        }`}
-      >
-        <Check className="h-4 w-4" aria-hidden />
+    <Link
+      to={to}
+      params={{ slug }}
+      className="card card-hover flex min-h-24 flex-col justify-between gap-3 p-4"
+    >
+      <span className="inline-grid h-10 w-10 place-items-center rounded-[0.8rem] bg-brand-soft text-brand-deep">
+        {children}
       </span>
-      <div className="min-w-0 flex-1">
-        <h3 className={`font-medium ${done ? "text-muted line-through" : ""}`}>{title}</h3>
-        {!done && <p className="mt-1 text-sm text-muted">{body}</p>}
-      </div>
-      {!done && (
-        <Button asChild size="sm" variant="secondary" className="shrink-0">
-          <Link to={to} params={{ slug }}>
-            {cta}
-            <ArrowRight className="h-3.5 w-3.5" aria-hidden />
-          </Link>
-        </Button>
-      )}
-    </div>
+      <span className="font-semibold text-sm leading-tight">{label}</span>
+    </Link>
   );
 }
 
@@ -120,13 +162,13 @@ function ShareCard({ storeUrl }: { storeUrl: string }) {
   }
 
   return (
-    <section className="card p-5">
-      <h2 className="font-display text-lg font-semibold tracking-tight">Divulgue sua loja</h2>
-      <p className="mt-1 text-sm text-muted">
+    <section className="card p-5 md:p-6">
+      <h2 className="font-bold font-display text-lg tracking-tight">Divulgue sua loja</h2>
+      <p className="mt-1 text-muted text-sm">
         Este é o endereço da sua loja. Mande no grupo, cole na bio, imprima no cartaz.
       </p>
       <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-        <p className="min-w-0 flex-1 truncate rounded-md border border-line bg-surface px-3.5 py-2.5 text-sm text-ink">
+        <p className="min-w-0 flex-1 truncate rounded-full border border-line bg-surface px-4 py-3 text-ink text-sm">
           {storeUrl}
         </p>
         <Button variant={copied ? "secondary" : "primary"} onClick={copy} className="shrink-0">

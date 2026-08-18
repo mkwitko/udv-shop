@@ -24,7 +24,7 @@ const SearchSchema = z.object({
   campanha: z.string().optional(),
 });
 
-const PRESETS_CENTS = [1000, 2500, 5000, 10000];
+const PRESETS_CENTS = [2000, 5000, 10000];
 const MIN_CENTS = 500;
 const MAX_CENTS = 5_000_000;
 
@@ -59,7 +59,7 @@ function DonatePage() {
   });
 
   const [phase, setPhase] = useState<Phase>("form");
-  const [amountCents, setAmountCents] = useState<number>(2500);
+  const [amountCents, setAmountCents] = useState<number>(5000);
   const [customValue, setCustomValue] = useState("");
   const [type, setType] = useState<DonationType>("one_time");
   const [provider, setProvider] = useState<Provider>("woovi");
@@ -265,7 +265,7 @@ function DonatePage() {
       <form onSubmit={submit} className="mt-6 grid gap-5">
         <fieldset>
           <legend className="mb-2 text-sm font-medium text-ink">Quanto você quer doar?</legend>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-3 gap-2">
             {PRESETS_CENTS.map((cents) => {
               const active = !customValue && amountCents === cents;
               return (

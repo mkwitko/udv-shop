@@ -25,42 +25,64 @@
   --brand-ink: #ffffff;
   --brand-soft: #fdeee6;
 
+  --brand-pale: #fff8f4;
+
+  /* secundárias: pequenas surpresas (badge, ilustração, número) — nunca competem
+     com a tangerina. Regra: 70% neutros / 20% tangerina / 10% secundárias. */
+  --coral: #f28b67;
+  --plum: #70405a;
+  --lavender: #8d7bb8;
+  --sky: #72afc4;
+  --sand: #e8d4b8;
+
   --success: #2a9d68;
-  --success-soft: #e6f5ed;
-  --accent: #8a6d1f;
-  --danger: #b3261e;
-  --danger-soft: #fdf1f0;
+  --success-soft: #eaf7f0;
+  --warning: #d88a19;
+  --warning-soft: #fff5df;
+  --accent: #d88a19;
+  --danger: #c94b3c;
+  --danger-soft: #fcedea;
 
   --glow: color-mix(in oklab, var(--brand) 12%, transparent);
   --edge: transparent; /* fio de luz no topo do card — só existe no escuro */
 
-  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1);
   --dur: 180ms;
-  --radius: 1rem;
+  --radius: 1.25rem;
   --shadow-card: 0 1px 2px rgb(28 26 23 / 0.05), 0 12px 32px -16px rgb(28 26 23 / 0.16);
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #17130f;
-    --surface: #201b15;
-    --elevated: #27211a;
-    --ink: #f4efe7;
-    --ink-muted: #a89f92;
-    --line: #342d24;
-    --line-strong: #463d30;
+    --bg: #1c1715;
+    --surface: #27201d;
+    --elevated: #322925;
+    --ink: #fff8f3;
+    --ink-muted: #b5a89f;
+    --line: #3a322d;
+    --line-strong: #4c423b;
 
-    --brand: #f0602a;
+    --brand: #ef5f29;
     --brand-hover: #ff7a42;
     --brand-deep: #ffa471;
     --brand-ink: #ffffff;
-    --brand-soft: #3a2214;
+    --brand-soft: #3f2617;
+    --brand-pale: #2e211a;
+
+    --coral: #f2926f;
+    --plum: #a76c8b;
+    --lavender: #a795cc;
+    --sky: #8cc0d3;
+    --sand: #cdbb9d;
 
     --success: #4cc38f;
-    --success-soft: #14301f;
-    --accent: #d9b04f;
+    --success-soft: #173525;
+    --warning: #e0a545;
+    --warning-soft: #33270f;
+    --accent: #e0a545;
     --danger: #ff8b7e;
-    --danger-soft: #2a1310;
+    --danger-soft: #38201b;
 
     --glow: color-mix(in oklab, var(--brand) 16%, transparent);
     --edge: rgb(255 255 255 / 0.05);
@@ -69,25 +91,34 @@
 }
 
 :root[data-theme="dark"] {
-  --bg: #17130f;
-  --surface: #201b15;
-  --elevated: #27211a;
-  --ink: #f4efe7;
-  --ink-muted: #a89f92;
-  --line: #342d24;
-  --line-strong: #463d30;
+  --bg: #1c1715;
+  --surface: #27201d;
+  --elevated: #322925;
+  --ink: #fff8f3;
+  --ink-muted: #b5a89f;
+  --line: #3a322d;
+  --line-strong: #4c423b;
 
-  --brand: #f0602a;
+  --brand: #ef5f29;
   --brand-hover: #ff7a42;
   --brand-deep: #ffa471;
   --brand-ink: #ffffff;
-  --brand-soft: #3a2214;
+  --brand-soft: #3f2617;
+  --brand-pale: #2e211a;
+
+  --coral: #f2926f;
+  --plum: #a76c8b;
+  --lavender: #a795cc;
+  --sky: #8cc0d3;
+  --sand: #cdbb9d;
 
   --success: #4cc38f;
-  --success-soft: #14301f;
-  --accent: #d9b04f;
+  --success-soft: #173525;
+  --warning: #e0a545;
+  --warning-soft: #33270f;
+  --accent: #e0a545;
   --danger: #ff8b7e;
-  --danger-soft: #2a1310;
+  --danger-soft: #38201b;
 
   --glow: color-mix(in oklab, var(--brand) 16%, transparent);
   --edge: rgb(255 255 255 / 0.05);
@@ -107,8 +138,16 @@
   --color-brand-deep: var(--brand-deep);
   --color-brand-ink: var(--brand-ink);
   --color-brand-soft: var(--brand-soft);
+  --color-brand-pale: var(--brand-pale);
+  --color-coral: var(--coral);
+  --color-plum: var(--plum);
+  --color-lavender: var(--lavender);
+  --color-sky: var(--sky);
+  --color-sand: var(--sand);
   --color-success: var(--success);
   --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
   --color-accent: var(--accent);
   --color-danger: var(--danger);
   --color-danger-soft: var(--danger-soft);
@@ -133,13 +172,13 @@
   --font-sans: "Figtree Variable", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Gabarito Variable", ui-sans-serif, system-ui, sans-serif;
 
-  --text-display: clamp(2.6rem, 1.3rem + 4.8vw, 4.6rem);
-  --text-display--line-height: 1;
-  --text-display--letter-spacing: -0.025em;
+  --text-display: clamp(2.875rem, 1.4rem + 5vw, 5.25rem);
+  --text-display--line-height: 0.98;
+  --text-display--letter-spacing: -0.045em;
   --text-display--font-weight: 800;
-  --text-title: clamp(1.9rem, 1.3rem + 2.2vw, 2.8rem);
-  --text-title--line-height: 1.08;
-  --text-title--letter-spacing: -0.02em;
+  --text-title: clamp(2.25rem, 1.5rem + 2.8vw, 3.6rem);
+  --text-title--line-height: 1;
+  --text-title--letter-spacing: -0.03em;
   --text-title--font-weight: 800;
   --text-lede: clamp(1.05rem, 0.98rem + 0.4vw, 1.25rem);
   --text-lede--line-height: 1.6;
