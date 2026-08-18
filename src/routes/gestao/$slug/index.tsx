@@ -1,8 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, Check, Copy, Plus } from "lucide-react";
+import { ArrowRight, Check, Copy, HandCoins, Plus } from "lucide-react";
 import { useState } from "react";
 import { Button } from "#/components/ui/button";
-import { ShareButton } from "#/components/ui/share-button";
 import {
   GlyphBilhete,
   GlyphCampanha,
@@ -10,10 +9,14 @@ import {
   GlyphPix,
   GlyphSacola,
 } from "#/components/ui/glyphs";
+import { ShareButton } from "#/components/ui/share-button";
 import { useGetBillingStatus } from "#/lib/api/gen/hooks/useGetBillingStatus";
 import { useGetConnectStatus } from "#/lib/api/gen/hooks/useGetConnectStatus";
+import { useListMyStores } from "#/lib/api/gen/hooks/useListMyStores";
+import { useListPayouts } from "#/lib/api/gen/hooks/useListPayouts";
 import { useListProducts } from "#/lib/api/gen/hooks/useListProducts";
 import { publicRequest } from "#/lib/api/public";
+import { money } from "#/lib/format";
 import { siteUrl } from "#/lib/seo";
 
 export const Route = createFileRoute("/gestao/$slug/")({
@@ -29,6 +32,15 @@ function Overview() {
   const { data: connect } = useGetConnectStatus(slug);
   const { data: billing } = useGetBillingStatus(slug);
   const { data: products } = useListProducts(slug, { limit: 1 }, { client: publicRequest });
+  const { data: stores } = useListMyStores();
+  const role = stores?.items.find((candidate) => candidate.slug === slug)?.role;
+  const canSeePayouts = role === "owner" || role === "admin";
+  const { data: payouts } = useListPayouts(slug, { query: { enabled: canSeePayouts } });
+  // só o que está em aberto: crédito com um parceiro não abate a dívida com outro
+  const owedCents = (payouts?.items ?? []).reduce(
+    (sum, row) => sum + Math.max(0, row.balanceCents),
+    0,
+  );
 
   const hasPayment = Boolean(connect?.stripe.connected || connect?.woovi.connected);
   const hasProduct = (products?.items.length ?? 0) > 0;
@@ -163,10 +175,39 @@ function Overview() {
           >
             <GlyphBilhete className="h-5 w-5" />
           </ActionCard>
+          {canSeePayouts && (
+            <ActionCard
+              to="/gestao/$slug/repasses"
+              slug={slug}
+              label="Repasses"
+              hint="Quanto devolver a quem faz"
+              tone="sand"
+            >
+              <HandCoins className="h-5 w-5" aria-hidden />
+            </ActionCard>
+          )}
         </div>
       </section>
 
       <div className="grid items-start gap-6 lg:grid-cols-2">
+        {/* dinheiro que já é de outra pessoa aparece antes do resto */}
+        {canSeePayouts && owedCents > 0 && (
+          <section className="card p-5 md:p-6">
+            <p className="kicker">A repassar</p>
+            <p className="mt-2 font-bold font-display text-2xl tabular-nums">{money(owedCents)}</p>
+            <p className="mt-2 max-w-[46ch] text-muted">
+              Parte do que suas vendas geraram é de quem faz os produtos. Registre aqui quando
+              pagar.
+            </p>
+            <Button variant="secondary" className="mt-4" asChild>
+              <Link to="/gestao/$slug/repasses" params={{ slug }}>
+                Ver repasses
+                <ArrowRight className="h-4 w-4" aria-hidden />
+              </Link>
+            </Button>
+          </section>
+        )}
+
         {/* quanto falta */}
         {pct < 100 && (
           <section className="card p-5 md:p-6">

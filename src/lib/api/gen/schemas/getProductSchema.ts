@@ -26,7 +26,14 @@ export const getProduct200Schema = z.object({
 "stock": z.int().min(-9007199254740991).max(9007199254740991),
 "availability": z.enum(["in_stock", "on_demand"]),
 "active": z.boolean(),
-"createdAt": z.string()
+"createdAt": z.string(),
+"payout": z.nullable(z.object({
+    "supplierId": z.string(),
+"supplierName": z.string(),
+"kind": z.enum(["fixed_cents", "percent_bps"]),
+"value": z.int().min(-9007199254740991).max(9007199254740991),
+"unitCents": z.int().min(-9007199254740991).max(9007199254740991)
+    }))
     }) as unknown as z.ZodType<GetProduct200>
 
 export const getProductQueryResponseSchema = z.lazy(() => getProduct200Schema) as unknown as z.ZodType<GetProductQueryResponse>

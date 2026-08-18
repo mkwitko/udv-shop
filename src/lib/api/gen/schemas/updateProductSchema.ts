@@ -26,7 +26,14 @@ export const updateProduct200Schema = z.object({
 "stock": z.int().min(-9007199254740991).max(9007199254740991),
 "availability": z.enum(["in_stock", "on_demand"]),
 "active": z.boolean(),
-"createdAt": z.string()
+"createdAt": z.string(),
+"payout": z.nullable(z.object({
+    "supplierId": z.string(),
+"supplierName": z.string(),
+"kind": z.enum(["fixed_cents", "percent_bps"]),
+"value": z.int().min(-9007199254740991).max(9007199254740991),
+"unitCents": z.int().min(-9007199254740991).max(9007199254740991)
+    }))
     }) as unknown as z.ZodType<UpdateProduct200>
 
 export const updateProductMutationRequestSchema = z.object({
@@ -35,7 +42,10 @@ export const updateProductMutationRequestSchema = z.object({
 "priceCents": z.optional(z.int().max(9007199254740991).gt(0)),
 "images": z.optional(z.array(z.string().regex(/^stores\/.*/)).max(10)),
 "stock": z.optional(z.int().min(0).max(9007199254740991)),
-"availability": z.optional(z.enum(["in_stock", "on_demand"]))
+"availability": z.optional(z.enum(["in_stock", "on_demand"])),
+"supplierId": z.uuid().nullish(),
+"payoutKind": z.enum(["fixed_cents", "percent_bps"]).nullish(),
+"payoutValue": z.int().min(0).max(9007199254740991).nullish()
     }) as unknown as z.ZodType<UpdateProductMutationRequest>
 
 export const updateProductMutationResponseSchema = z.lazy(() => updateProduct200Schema) as unknown as z.ZodType<UpdateProductMutationResponse>

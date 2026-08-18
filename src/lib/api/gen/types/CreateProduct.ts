@@ -18,6 +18,13 @@ export const createProduct201AvailabilityEnum = {
 
 export type CreateProduct201AvailabilityEnumKey = (typeof createProduct201AvailabilityEnum)[keyof typeof createProduct201AvailabilityEnum];
 
+export const payoutKindEnum = {
+    fixed_cents: "fixed_cents",
+    percent_bps: "percent_bps"
+} as const;
+
+export type PayoutKindEnumKey = (typeof payoutKindEnum)[keyof typeof payoutKindEnum];
+
 /**
  * @description Default Response
 */
@@ -74,6 +81,35 @@ export type CreateProduct201 = {
      * @type string
     */
     createdAt: string;
+    /**
+     * @type object
+    */
+    payout: {
+        /**
+         * @type string
+        */
+        supplierId: string;
+        /**
+         * @type string
+        */
+        supplierName: string;
+        /**
+         * @type string
+        */
+        kind: PayoutKindEnumKey;
+        /**
+         * @minLength -9007199254740991
+         * @maxLength 9007199254740991
+         * @type integer
+        */
+        value: number;
+        /**
+         * @minLength -9007199254740991
+         * @maxLength 9007199254740991
+         * @type integer
+        */
+        unitCents: number;
+    } | null;
 };
 
 export const createProductMutationRequestAvailabilityEnum = {
@@ -82,6 +118,13 @@ export const createProductMutationRequestAvailabilityEnum = {
 } as const;
 
 export type CreateProductMutationRequestAvailabilityEnumKey = (typeof createProductMutationRequestAvailabilityEnum)[keyof typeof createProductMutationRequestAvailabilityEnum];
+
+export const createProductMutationRequestPayoutKindEnum = {
+    fixed_cents: "fixed_cents",
+    percent_bps: "percent_bps"
+} as const;
+
+export type CreateProductMutationRequestPayoutKindEnumKey = (typeof createProductMutationRequestPayoutKindEnum)[keyof typeof createProductMutationRequestPayoutKindEnum];
 
 export type CreateProductMutationRequest = {
     /**
@@ -123,6 +166,20 @@ export type CreateProductMutationRequest = {
      * @type string | undefined
     */
     availability?: CreateProductMutationRequestAvailabilityEnumKey;
+    /**
+     * @type string, uuid
+    */
+    supplierId?: string | null;
+    /**
+     * @type string
+    */
+    payoutKind?: CreateProductMutationRequestPayoutKindEnumKey | null;
+    /**
+     * @minLength 0
+     * @maxLength 9007199254740991
+     * @type integer
+    */
+    payoutValue?: number | null;
 };
 
 export type CreateProductMutationResponse = CreateProduct201;

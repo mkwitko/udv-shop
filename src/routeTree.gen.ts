@@ -28,6 +28,7 @@ import { Route as GestaoSlugEncomendasRouteImport } from './routes/gestao/$slug/
 import { Route as GestaoSlugPedidosRouteImport } from './routes/gestao/$slug/pedidos'
 import { Route as GestaoSlugProdutosRouteImport } from './routes/gestao/$slug/produtos'
 import { Route as GestaoSlugRecebimentoRouteImport } from './routes/gestao/$slug/recebimento'
+import { Route as GestaoSlugRepassesRouteImport } from './routes/gestao/$slug/repasses'
 import { Route as LojaSlugIndexRouteImport } from './routes/loja/$slug/index'
 import { Route as LojaSlugComprarRouteImport } from './routes/loja/$slug/comprar'
 import { Route as LojaSlugDoarRouteImport } from './routes/loja/$slug/doar'
@@ -130,6 +131,11 @@ const GestaoSlugRecebimentoRoute = GestaoSlugRecebimentoRouteImport.update({
   path: '/recebimento',
   getParentRoute: () => GestaoSlugRoute,
 } as any)
+const GestaoSlugRepassesRoute = GestaoSlugRepassesRouteImport.update({
+  id: '/repasses',
+  path: '/repasses',
+  getParentRoute: () => GestaoSlugRoute,
+} as any)
 const LojaSlugIndexRoute = LojaSlugIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -181,6 +187,7 @@ export interface FileRoutesByFullPath {
   '/gestao/$slug/pedidos': typeof GestaoSlugPedidosRoute
   '/gestao/$slug/produtos': typeof GestaoSlugProdutosRoute
   '/gestao/$slug/recebimento': typeof GestaoSlugRecebimentoRoute
+  '/gestao/$slug/repasses': typeof GestaoSlugRepassesRoute
   '/loja/$slug/comprar': typeof LojaSlugComprarRoute
   '/loja/$slug/doar': typeof LojaSlugDoarRoute
   '/gestao/$slug/': typeof GestaoSlugIndexRoute
@@ -206,6 +213,7 @@ export interface FileRoutesByTo {
   '/gestao/$slug/pedidos': typeof GestaoSlugPedidosRoute
   '/gestao/$slug/produtos': typeof GestaoSlugProdutosRoute
   '/gestao/$slug/recebimento': typeof GestaoSlugRecebimentoRoute
+  '/gestao/$slug/repasses': typeof GestaoSlugRepassesRoute
   '/loja/$slug/comprar': typeof LojaSlugComprarRoute
   '/loja/$slug/doar': typeof LojaSlugDoarRoute
   '/gestao/$slug': typeof GestaoSlugIndexRoute
@@ -234,6 +242,7 @@ export interface FileRoutesById {
   '/gestao/$slug/pedidos': typeof GestaoSlugPedidosRoute
   '/gestao/$slug/produtos': typeof GestaoSlugProdutosRoute
   '/gestao/$slug/recebimento': typeof GestaoSlugRecebimentoRoute
+  '/gestao/$slug/repasses': typeof GestaoSlugRepassesRoute
   '/loja/$slug/comprar': typeof LojaSlugComprarRoute
   '/loja/$slug/doar': typeof LojaSlugDoarRoute
   '/gestao/$slug/': typeof GestaoSlugIndexRoute
@@ -263,6 +272,7 @@ export interface FileRouteTypes {
     | '/gestao/$slug/pedidos'
     | '/gestao/$slug/produtos'
     | '/gestao/$slug/recebimento'
+    | '/gestao/$slug/repasses'
     | '/loja/$slug/comprar'
     | '/loja/$slug/doar'
     | '/gestao/$slug/'
@@ -288,6 +298,7 @@ export interface FileRouteTypes {
     | '/gestao/$slug/pedidos'
     | '/gestao/$slug/produtos'
     | '/gestao/$slug/recebimento'
+    | '/gestao/$slug/repasses'
     | '/loja/$slug/comprar'
     | '/loja/$slug/doar'
     | '/gestao/$slug'
@@ -315,6 +326,7 @@ export interface FileRouteTypes {
     | '/gestao/$slug/pedidos'
     | '/gestao/$slug/produtos'
     | '/gestao/$slug/recebimento'
+    | '/gestao/$slug/repasses'
     | '/loja/$slug/comprar'
     | '/loja/$slug/doar'
     | '/gestao/$slug/'
@@ -474,6 +486,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GestaoSlugRecebimentoRouteImport
       parentRoute: typeof GestaoSlugRoute
     }
+    '/gestao/$slug/repasses': {
+      id: '/gestao/$slug/repasses'
+      path: '/repasses'
+      fullPath: '/gestao/$slug/repasses'
+      preLoaderRoute: typeof GestaoSlugRepassesRouteImport
+      parentRoute: typeof GestaoSlugRoute
+    }
     '/loja/$slug/': {
       id: '/loja/$slug/'
       path: '/'
@@ -526,6 +545,7 @@ interface GestaoSlugRouteChildren {
   GestaoSlugPedidosRoute: typeof GestaoSlugPedidosRoute
   GestaoSlugProdutosRoute: typeof GestaoSlugProdutosRoute
   GestaoSlugRecebimentoRoute: typeof GestaoSlugRecebimentoRoute
+  GestaoSlugRepassesRoute: typeof GestaoSlugRepassesRoute
   GestaoSlugIndexRoute: typeof GestaoSlugIndexRoute
 }
 
@@ -536,6 +556,7 @@ const GestaoSlugRouteChildren: GestaoSlugRouteChildren = {
   GestaoSlugPedidosRoute: GestaoSlugPedidosRoute,
   GestaoSlugProdutosRoute: GestaoSlugProdutosRoute,
   GestaoSlugRecebimentoRoute: GestaoSlugRecebimentoRoute,
+  GestaoSlugRepassesRoute: GestaoSlugRepassesRoute,
   GestaoSlugIndexRoute: GestaoSlugIndexRoute,
 }
 

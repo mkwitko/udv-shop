@@ -7,7 +7,7 @@ import { z } from "zod";
 import { Button } from "#/components/ui/button";
 import { ConfirmDialog } from "#/components/ui/confirm";
 import { EmptyState } from "#/components/ui/empty-state";
-import { Field, FormError, Input, Textarea } from "#/components/ui/field";
+import { Field, FormError, Input, Select, Textarea } from "#/components/ui/field";
 import { Skeleton, SkeletonRows } from "#/components/ui/skeleton";
 import { Tag } from "#/components/ui/tag";
 import { useToast } from "#/components/ui/toast";
@@ -440,15 +440,11 @@ function CampaignCreate({
             </Field>
 
             <Field label="Tipos de doação aceitos" htmlFor="acceptedTypes" error={undefined}>
-              <select
-                id="acceptedTypes"
-                className="h-11 w-full rounded-md border border-line bg-surface px-3.5 text-[0.95rem] text-ink"
-                {...register("acceptedTypes")}
-              >
+              <Select id="acceptedTypes" {...register("acceptedTypes")}>
                 <option value="both">Única e mensal</option>
                 <option value="one_time">Só doação única</option>
                 <option value="monthly">Só doação mensal</option>
-              </select>
+              </Select>
             </Field>
           </div>
         </section>

@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { ImagePlus, Pencil, Plus, RotateCcw, X } from "lucide-react";
 import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -7,7 +7,7 @@ import { z } from "zod";
 import { Button } from "#/components/ui/button";
 import { ConfirmDialog } from "#/components/ui/confirm";
 import { EmptyState } from "#/components/ui/empty-state";
-import { Field, FormError, Input, Textarea } from "#/components/ui/field";
+import { Field, FormError, Input, Select, Textarea } from "#/components/ui/field";
 import { SkeletonRows } from "#/components/ui/skeleton";
 import { Tag } from "#/components/ui/tag";
 import { useToast } from "#/components/ui/toast";
@@ -17,10 +17,19 @@ import { createProduct } from "#/lib/api/gen/clients/createProduct";
 import { presignUpload } from "#/lib/api/gen/clients/presignUpload";
 import { restoreProduct } from "#/lib/api/gen/clients/restoreProduct";
 import { updateProduct } from "#/lib/api/gen/clients/updateProduct";
+import { useGetConnectStatus } from "#/lib/api/gen/hooks/useGetConnectStatus";
+import { useListMyStores } from "#/lib/api/gen/hooks/useListMyStores";
 import { listProductsQueryKey, useListProducts } from "#/lib/api/gen/hooks/useListProducts";
+import { useListSuppliers } from "#/lib/api/gen/hooks/useListSuppliers";
 import type { ListProducts200 } from "#/lib/api/gen/types/ListProducts";
 import { money } from "#/lib/format";
 import { parseAmount } from "#/lib/pay/amount";
+import {
+  formatPercentFromBps,
+  payoutBreakdown,
+  payoutUnitCents,
+  payoutValueForApi,
+} from "#/lib/payout";
 import { slugify } from "#/lib/slug";
 
 export const Route = createFileRoute("/gestao/$slug/produtos")({
@@ -35,6 +44,10 @@ const ProductSchema = z.object({
   description: z.string().max(2000).optional(),
   stock: z.string().optional(),
   onDemand: z.boolean(),
+  // repasse: parceiro vazio significa "a loja fica com tudo"
+  supplierId: z.string(),
+  payoutMode: z.enum(["fixed", "percent"]),
+  payoutValue: z.string(),
 });
 type ProductForm = z.infer<typeof ProductSchema>;
 
@@ -188,6 +201,14 @@ function ProductsAdmin() {
   );
 }
 
+/** Volta do formato da API para o que a pessoa digitou: centavos ou porcentagem. */
+function payoutValueToInput(payout: Product["payout"]): string {
+  if (!payout) return "";
+  return payout.kind === "percent_bps"
+    ? String(payout.value / 100).replace(".", ",")
+    : (payout.value / 100).toFixed(2).replace(".", ",");
+}
+
 function ProductThumb({ product }: { product: Product }) {
   if (!product.imageUrls[0]) {
     return (
@@ -229,6 +250,17 @@ function ProductForm({
   const [dragOver, setDragOver] = useState(false);
   const dragDepth = useRef(0);
 
+  // repasse é acordo comercial da loja: quem é equipe não vê nem edita
+  const { data: stores } = useListMyStores();
+  const role = stores?.items.find((candidate) => candidate.slug === slug)?.role;
+  const canPayout = role === "owner" || role === "admin";
+  const { data: suppliers } = useListSuppliers(
+    slug,
+    { limit: 50 },
+    { query: { enabled: canPayout } },
+  );
+  const { data: connect } = useGetConnectStatus(slug, { query: { enabled: canPayout } });
+
   const {
     register,
     handleSubmit,
@@ -243,10 +275,39 @@ function ProductForm({
           description: product.description ?? undefined,
           stock: String(product.stock),
           onDemand: product.availability === "on_demand",
+          supplierId: product.payout?.supplierId ?? "",
+          payoutMode: product.payout?.kind === "percent_bps" ? "percent" : "fixed",
+          payoutValue: payoutValueToInput(product.payout),
         }
-      : { onDemand: false, stock: "0" },
+      : {
+          onDemand: false,
+          stock: "0",
+          supplierId: "",
+          payoutMode: "fixed",
+          payoutValue: "",
+        },
   });
   const onDemand = watch("onDemand");
+  const supplierId = watch("supplierId");
+  const payoutMode = watch("payoutMode");
+  const payoutValue = watch("payoutValue");
+  const priceCents = parseAmount(watch("price") ?? "") ?? 0;
+  const feeBps = connect?.applicationFeeBps ?? 500;
+  const payoutCents = supplierId ? payoutUnitCents(payoutMode, payoutValue, priceCents) : 0;
+  // um parceiro desativado que ainda está no produto continua na lista: sair dela sem
+  // querer apagaria o acordo no primeiro salvamento
+  const supplierOptions: Array<{ id: string; name: string }> = (() => {
+    const list = (suppliers?.items ?? []).map((item) => ({ id: item.id, name: item.name }));
+    const current = product?.payout;
+    if (current && !list.some((item) => item.id === current.supplierId)) {
+      return [...list, { id: current.supplierId, name: `${current.supplierName} (desativado)` }];
+    }
+    return list;
+  })();
+  const breakdown =
+    supplierId && priceCents > 0 && payoutCents !== null
+      ? payoutBreakdown(priceCents, payoutCents, feeBps)
+      : null;
 
   async function pickImage(file: File) {
     if (!ACCEPTED_TYPES.includes(file.type as AcceptedType)) {
@@ -295,6 +356,35 @@ function ProductForm({
       setFormError("Preço inválido. Escreva como no dia a dia: 45 ou 45,90.");
       return;
     }
+    // o acordo de repasse vai inteiro ou não vai: limpar é mandar null nos três campos
+    let payoutPatch = {};
+    if (canPayout) {
+      if (!values.supplierId) {
+        payoutPatch = { supplierId: null, payoutKind: null, payoutValue: null };
+      } else {
+        const value = payoutValueForApi(values.payoutMode, values.payoutValue);
+        const unit = payoutUnitCents(values.payoutMode, values.payoutValue, priceCents);
+        if (value === null || unit === null) {
+          setFormError(
+            values.payoutMode === "fixed"
+              ? "Diga quanto vai para o parceiro em cada unidade: 20 ou 20,50."
+              : "A porcentagem do parceiro tem que ficar entre 0 e 100.",
+          );
+          return;
+        }
+        if (priceCents - Math.floor((priceCents * feeBps) / 10000) - unit < 0) {
+          setFormError(
+            "Esse repasse é maior do que o valor que chega na conta da loja. Diminua o repasse ou aumente o preço.",
+          );
+          return;
+        }
+        payoutPatch = {
+          supplierId: values.supplierId,
+          payoutKind: values.payoutMode === "fixed" ? "fixed_cents" : "percent_bps",
+          payoutValue: value,
+        };
+      }
+    }
     const payload = {
       name: values.name,
       description: values.description || undefined,
@@ -302,6 +392,7 @@ function ProductForm({
       images: images.map((image) => image.key),
       stock: values.onDemand ? 0 : Math.max(0, Number.parseInt(values.stock || "0", 10) || 0),
       availability: values.onDemand ? ("on_demand" as const) : ("in_stock" as const),
+      ...payoutPatch,
     };
     try {
       if (product) {
@@ -399,6 +490,106 @@ function ProductForm({
             </Field>
           )}
         </section>
+
+        {canPayout && (
+          <section className="grid gap-5">
+            <div>
+              <h3 className="kicker">Repasse</h3>
+              <p className="mt-2 text-muted text-sm">
+                Se este produto é feito por outra pessoa, diga quanto do preço é dela. O dinheiro da
+                venda cai na conta da loja e o valor combinado fica registrado como repasse a pagar.
+              </p>
+            </div>
+
+            {supplierOptions.length === 0 ? (
+              <p className="text-muted text-sm">
+                Você ainda não cadastrou ninguém.{" "}
+                <Link
+                  to="/gestao/$slug/repasses"
+                  params={{ slug }}
+                  className="text-brand-deep underline underline-offset-4"
+                >
+                  Cadastrar um parceiro
+                </Link>{" "}
+                leva menos de um minuto — depois volte aqui para combinar o valor.
+              </p>
+            ) : (
+              <>
+                <Field label="Quem recebe parte deste produto" htmlFor="supplierId">
+                  <Select id="supplierId" {...register("supplierId")}>
+                    <option value="">Ninguém — a loja fica com tudo</option>
+                    {supplierOptions.map((option) => (
+                      <option key={option.id} value={option.id}>
+                        {option.name}
+                      </option>
+                    ))}
+                  </Select>
+                </Field>
+
+                {supplierId && (
+                  <div className="grid gap-5 md:grid-cols-2">
+                    <Field label="Como combinar" htmlFor="payoutMode">
+                      <Select id="payoutMode" {...register("payoutMode")}>
+                        <option value="fixed">Valor fixo por unidade</option>
+                        <option value="percent">Porcentagem do preço</option>
+                      </Select>
+                    </Field>
+                    <Field
+                      label={payoutMode === "fixed" ? "Valor por unidade" : "Porcentagem"}
+                      htmlFor="payoutValue"
+                      hint={
+                        payoutMode === "fixed"
+                          ? "Quanto a pessoa recebe por peça vendida"
+                          : "Quanto do preço é da pessoa, de 0 a 100"
+                      }
+                    >
+                      <Input
+                        id="payoutValue"
+                        inputMode="decimal"
+                        placeholder={payoutMode === "fixed" ? "R$ 0,00" : "50"}
+                        {...register("payoutValue")}
+                      />
+                    </Field>
+                  </div>
+                )}
+
+                {supplierId && breakdown && (
+                  <dl className="card grid gap-2 p-4 text-sm tabular-nums">
+                    <div className="flex items-baseline justify-between gap-4">
+                      <dt className="text-muted">Preço para quem compra</dt>
+                      <dd className="font-medium">{money(breakdown.priceCents)}</dd>
+                    </div>
+                    <div className="flex items-baseline justify-between gap-4">
+                      <dt className="text-muted">Repasse do parceiro</dt>
+                      <dd className="font-medium">{money(breakdown.payoutCents)}</dd>
+                    </div>
+                    <div className="flex items-baseline justify-between gap-4">
+                      <dt className="text-muted">
+                        Taxa da plataforma ({formatPercentFromBps(feeBps)})
+                      </dt>
+                      <dd className="font-medium">{money(breakdown.feeCents)}</dd>
+                    </div>
+                    <div className="flex items-baseline justify-between gap-4 border-line border-t pt-2">
+                      <dt className="font-medium text-ink">Fica com a loja</dt>
+                      <dd
+                        className={`font-semibold ${
+                          breakdown.storeCents < 0 ? "text-danger" : "text-ink"
+                        }`}
+                      >
+                        {money(breakdown.storeCents)}
+                      </dd>
+                    </div>
+                    {breakdown.storeCents < 0 && (
+                      <p className="text-danger">
+                        Assim a loja paga para vender. Diminua o repasse ou aumente o preço.
+                      </p>
+                    )}
+                  </dl>
+                )}
+              </>
+            )}
+          </section>
+        )}
 
         <section className="grid gap-3">
           <h3 className="kicker">Fotos</h3>

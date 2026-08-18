@@ -22,6 +22,13 @@ export const getProduct200AvailabilityEnum = {
 
 export type GetProduct200AvailabilityEnumKey = (typeof getProduct200AvailabilityEnum)[keyof typeof getProduct200AvailabilityEnum];
 
+export const payoutKindEnum3 = {
+    fixed_cents: "fixed_cents",
+    percent_bps: "percent_bps"
+} as const;
+
+export type PayoutKindEnum3Key = (typeof payoutKindEnum3)[keyof typeof payoutKindEnum3];
+
 /**
  * @description Default Response
 */
@@ -78,6 +85,35 @@ export type GetProduct200 = {
      * @type string
     */
     createdAt: string;
+    /**
+     * @type object
+    */
+    payout: {
+        /**
+         * @type string
+        */
+        supplierId: string;
+        /**
+         * @type string
+        */
+        supplierName: string;
+        /**
+         * @type string
+        */
+        kind: PayoutKindEnum3Key;
+        /**
+         * @minLength -9007199254740991
+         * @maxLength 9007199254740991
+         * @type integer
+        */
+        value: number;
+        /**
+         * @minLength -9007199254740991
+         * @maxLength 9007199254740991
+         * @type integer
+        */
+        unitCents: number;
+    } | null;
 };
 
 export type GetProductQueryResponse = GetProduct200;

@@ -43,6 +43,13 @@ export const itemsAvailabilityEnum = {
 
 export type ItemsAvailabilityEnumKey = (typeof itemsAvailabilityEnum)[keyof typeof itemsAvailabilityEnum];
 
+export const payoutKindEnum2 = {
+    fixed_cents: "fixed_cents",
+    percent_bps: "percent_bps"
+} as const;
+
+export type PayoutKindEnum2Key = (typeof payoutKindEnum2)[keyof typeof payoutKindEnum2];
+
 /**
  * @description Default Response
 */
@@ -103,6 +110,35 @@ export type ListProducts200 = {
          * @type string
         */
         createdAt: string;
+        /**
+         * @type object
+        */
+        payout: {
+            /**
+             * @type string
+            */
+            supplierId: string;
+            /**
+             * @type string
+            */
+            supplierName: string;
+            /**
+             * @type string
+            */
+            kind: PayoutKindEnum2Key;
+            /**
+             * @minLength -9007199254740991
+             * @maxLength 9007199254740991
+             * @type integer
+            */
+            value: number;
+            /**
+             * @minLength -9007199254740991
+             * @maxLength 9007199254740991
+             * @type integer
+            */
+            unitCents: number;
+        } | null;
     }[];
     /**
      * @type string

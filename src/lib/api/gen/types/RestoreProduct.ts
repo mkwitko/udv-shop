@@ -22,6 +22,13 @@ export const restoreProduct200AvailabilityEnum = {
 
 export type RestoreProduct200AvailabilityEnumKey = (typeof restoreProduct200AvailabilityEnum)[keyof typeof restoreProduct200AvailabilityEnum];
 
+export const payoutKindEnum5 = {
+    fixed_cents: "fixed_cents",
+    percent_bps: "percent_bps"
+} as const;
+
+export type PayoutKindEnum5Key = (typeof payoutKindEnum5)[keyof typeof payoutKindEnum5];
+
 /**
  * @description Default Response
 */
@@ -78,6 +85,35 @@ export type RestoreProduct200 = {
      * @type string
     */
     createdAt: string;
+    /**
+     * @type object
+    */
+    payout: {
+        /**
+         * @type string
+        */
+        supplierId: string;
+        /**
+         * @type string
+        */
+        supplierName: string;
+        /**
+         * @type string
+        */
+        kind: PayoutKindEnum5Key;
+        /**
+         * @minLength -9007199254740991
+         * @maxLength 9007199254740991
+         * @type integer
+        */
+        value: number;
+        /**
+         * @minLength -9007199254740991
+         * @maxLength 9007199254740991
+         * @type integer
+        */
+        unitCents: number;
+    } | null;
 };
 
 export type RestoreProductMutationResponse = RestoreProduct200;

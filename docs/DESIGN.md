@@ -107,7 +107,8 @@ botão vencer a preferência do sistema nos dois sentidos. `themeBootScript` inl
 Antes de criar, procurar: `Button` (variantes semânticas, nunca `OrangeButton`),
 `IconButton` via `size="icon"`, `Card` (classe `.card`), `Tag`, `Input`/`Textarea`/`Field`,
 `ConfirmDialog`, `Toast` (`useToast`), `Skeleton`/`SkeletonRows`/`SkeletonCards`,
-`EmptyState`, `ErrorState`, `ShareButton`, `Reveal`, `StoreOffline`, `RouteError`.
+`EmptyState`, `ErrorState`, `ShareButton`, `Reveal`, `StoreOffline`, `RouteError`,
+`Select` (mesma altura e foco do `Input`).
 
 - **Tap target**: `size="sm"` e `size="icon"` medem 44px no celular e encolhem em `sm:`.
 - **Vazio** sempre responde: o que aconteceu, por quê, o que fazer agora (com o botão).
@@ -124,6 +125,7 @@ Antes de criar, procurar: `Button` (variantes semânticas, nunca `OrangeButton`)
 | Produto | ativo → arquivado → restaurado | Arquivado sai da vitrine, não recebe compras, mantém histórico e volta por "Restaurar produto". Não existe exclusão permanente. |
 | Encomenda | esperando → avisado → comprou/desistiu | A lista mostra nome, data e **telefone mascarado** (`(48) ****-5678`); o contato completo não fica exposto. |
 | Campanha | rascunho → no ar → pausada → encerrada | Verbos concretos: "Pausar campanha", "Retomar", "Encerrar" — com confirmação que explica a consequência. |
+| Repasse | a pagar → pago → crédito | Saldo positivo diz "R$ 282,50 a pagar"; zero diz "em dia"; negativo diz "crédito de R$ X com esta pessoa" (aconteceu um reembolso depois do repasse). |
 
 ## Dinheiro e transparência
 
@@ -132,6 +134,21 @@ tela de recebimento diz a taxa real da loja (`applicationFeeBps` vindo da API), 
 "100% grátis": *"O pagamento vai direto para a conta da sua loja. Taxa da plataforma: 5%
 por venda."* "Sem intermediário" significa que o dinheiro não fica parado na plataforma —
 não que não existam processadores.
+
+Quando um produto tem repasse combinado, o formulário mostra as quatro linhas juntas, com
+o número na frente antes de salvar:
+
+```
+Preço para quem compra      R$ 89,00
+Repasse do parceiro         R$ 44,50
+Taxa da plataforma (5%)     R$  4,45
+Fica com a loja             R$ 40,05
+```
+
+Se a sobra fica negativa, a linha vira vermelha e a tela diz o motivo em português:
+*"Assim a loja paga para vender. Diminua o repasse ou aumente o preço."* — e o salvamento
+é barrado antes de chegar na API. A palavra é sempre **parceiro**, nunca "fornecedor",
+"supplier" ou "split".
 
 ## Proibido
 

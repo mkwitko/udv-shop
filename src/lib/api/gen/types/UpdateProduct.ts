@@ -22,6 +22,13 @@ export const updateProduct200AvailabilityEnum = {
 
 export type UpdateProduct200AvailabilityEnumKey = (typeof updateProduct200AvailabilityEnum)[keyof typeof updateProduct200AvailabilityEnum];
 
+export const payoutKindEnum4 = {
+    fixed_cents: "fixed_cents",
+    percent_bps: "percent_bps"
+} as const;
+
+export type PayoutKindEnum4Key = (typeof payoutKindEnum4)[keyof typeof payoutKindEnum4];
+
 /**
  * @description Default Response
 */
@@ -78,6 +85,35 @@ export type UpdateProduct200 = {
      * @type string
     */
     createdAt: string;
+    /**
+     * @type object
+    */
+    payout: {
+        /**
+         * @type string
+        */
+        supplierId: string;
+        /**
+         * @type string
+        */
+        supplierName: string;
+        /**
+         * @type string
+        */
+        kind: PayoutKindEnum4Key;
+        /**
+         * @minLength -9007199254740991
+         * @maxLength 9007199254740991
+         * @type integer
+        */
+        value: number;
+        /**
+         * @minLength -9007199254740991
+         * @maxLength 9007199254740991
+         * @type integer
+        */
+        unitCents: number;
+    } | null;
 };
 
 export const updateProductMutationRequestAvailabilityEnum = {
@@ -86,6 +122,13 @@ export const updateProductMutationRequestAvailabilityEnum = {
 } as const;
 
 export type UpdateProductMutationRequestAvailabilityEnumKey = (typeof updateProductMutationRequestAvailabilityEnum)[keyof typeof updateProductMutationRequestAvailabilityEnum];
+
+export const updateProductMutationRequestPayoutKindEnum = {
+    fixed_cents: "fixed_cents",
+    percent_bps: "percent_bps"
+} as const;
+
+export type UpdateProductMutationRequestPayoutKindEnumKey = (typeof updateProductMutationRequestPayoutKindEnum)[keyof typeof updateProductMutationRequestPayoutKindEnum];
 
 export type UpdateProductMutationRequest = {
     /**
@@ -118,6 +161,20 @@ export type UpdateProductMutationRequest = {
      * @type string | undefined
     */
     availability?: UpdateProductMutationRequestAvailabilityEnumKey;
+    /**
+     * @type string, uuid
+    */
+    supplierId?: string | null;
+    /**
+     * @type string
+    */
+    payoutKind?: UpdateProductMutationRequestPayoutKindEnumKey | null;
+    /**
+     * @minLength 0
+     * @maxLength 9007199254740991
+     * @type integer
+    */
+    payoutValue?: number | null;
 };
 
 export type UpdateProductMutationResponse = UpdateProduct200;

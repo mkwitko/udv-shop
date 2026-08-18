@@ -28,6 +28,8 @@ const TABS = [
   { to: "/gestao/$slug/produtos", label: "Produtos" },
   { to: "/gestao/$slug/pedidos", label: "Pedidos" },
   { to: "/gestao/$slug/encomendas", label: "Encomendas" },
+  // repasse é acordo comercial: a API recusa staff, então a aba nem aparece
+  { to: "/gestao/$slug/repasses", label: "Repasses", adminOnly: true },
   { to: "/gestao/$slug/campanhas", label: "Campanhas" },
   { to: "/gestao/$slug/doacoes", label: "Doações" },
   { to: "/gestao/$slug/recebimento", label: "Recebimento" },
@@ -40,6 +42,9 @@ function ManageLayout() {
   const reducedMotion = useReducedMotion();
   const { data, isPending } = useListMyStores();
   const store = data?.items.find((candidate) => candidate.slug === slug);
+  const visibleTabs = TABS.filter(
+    (tab) => !("adminOnly" in tab && tab.adminOnly) || store?.role !== "staff",
+  );
 
   // quem não tem papel nesta loja não vê o painel — a API recusaria de todo jeito,
   // mas aqui a pessoa é levada de volta em vez de ver telas de erro
@@ -81,7 +86,7 @@ function ManageLayout() {
             </div>
 
             <nav className="scroll-row mt-5 -mb-px" aria-label="Seções da gestão">
-              {TABS.map((tab) => {
+              {visibleTabs.map((tab) => {
                 const exact = "exact" in tab && tab.exact;
                 const active = Boolean(matchRoute({ to: tab.to, params: { slug }, fuzzy: !exact }));
                 return (

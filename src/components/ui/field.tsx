@@ -16,6 +16,23 @@ export function Input({ className, ...props }: React.ComponentProps<"input">) {
   );
 }
 
+export function Select({ className, children, ...props }: React.ComponentProps<"select">) {
+  return (
+    <select
+      className={cn(
+        "h-12 w-full rounded-md border border-line bg-surface px-3 text-[0.95rem] text-ink",
+        "transition-colors [transition-duration:var(--dur)]",
+        "hover:border-line-strong focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/25",
+        "disabled:opacity-55",
+        className,
+      )}
+      {...props}
+    >
+      {children}
+    </select>
+  );
+}
+
 export function Textarea({ className, ...props }: React.ComponentProps<"textarea">) {
   return (
     <textarea
