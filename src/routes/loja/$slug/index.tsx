@@ -1,5 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { Heart } from "lucide-react";
 import { ProductCard } from "#/components/store/product-card";
+import { Button } from "#/components/ui/button";
 import { getStoreQueryOptions, useGetStore } from "#/lib/api/gen/hooks/useGetStore";
 import { listProductsQueryOptions, useListProducts } from "#/lib/api/gen/hooks/useListProducts";
 import { publicRequest } from "#/lib/api/public";
@@ -48,6 +50,14 @@ function StoreCatalog() {
               {store.description}
             </p>
           )}
+          <div className="rise rise-4 mt-7">
+            <Button asChild variant="secondary">
+              <Link to="/loja/$slug/doar" params={{ slug }}>
+                <Heart className="h-4 w-4 text-brand" aria-hidden />
+                Apoiar esta loja
+              </Link>
+            </Button>
+          </div>
         </div>
       </section>
 

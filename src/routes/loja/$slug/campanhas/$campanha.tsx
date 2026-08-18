@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { Button } from "#/components/ui/button";
 import { Tag } from "#/components/ui/tag";
 import { getCampaignQueryOptions, useGetCampaign } from "#/lib/api/gen/hooks/useGetCampaign";
@@ -62,9 +62,10 @@ function CampaignPage() {
               <Tag tone="brand">Doação única</Tag>
               {monthly && <Tag tone="accent">Mensal</Tag>}
             </div>
-            {/* fluxo de doação entra no plano 8 */}
-            <Button className="mt-6 w-full" size="lg" disabled>
-              Doar
+            <Button asChild className="mt-6 w-full" size="lg">
+              <Link to="/loja/$slug/doar" params={{ slug }} search={{ campanha }}>
+                Doar para esta campanha
+              </Link>
             </Button>
             <p className="mt-3 text-sm text-muted">
               O valor vai direto para a conta de {campaign.store.name}.

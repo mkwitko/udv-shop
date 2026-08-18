@@ -1,8 +1,14 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { Check } from "lucide-react";
+import { useState } from "react";
 import { Button } from "#/components/ui/button";
+import { FormError } from "#/components/ui/field";
 import { Tag } from "#/components/ui/tag";
+import { errorMessage } from "#/lib/api/error-message";
+import { createInterest } from "#/lib/api/gen/clients/createInterest";
 import { getProductQueryOptions, useGetProduct } from "#/lib/api/gen/hooks/useGetProduct";
 import { publicRequest } from "#/lib/api/public";
+import { useSession } from "#/lib/auth/session";
 import { money } from "#/lib/format";
 import { productLd, seo, siteUrl } from "#/lib/seo";
 
@@ -91,13 +97,86 @@ function ProductPage() {
         )}
 
         <div className="mt-9">
-          {/* checkout e lista de encomenda entram no plano 8 */}
-          <Button size="lg" disabled>
-            {onDemand ? "Avise quando chegar" : "Comprar"}
-          </Button>
-          <p className="mt-3 text-sm text-muted">Pagamento no cartão ou Pix, em breve.</p>
+          {onDemand ? (
+            <InterestCta slug={slug} produto={produto} />
+          ) : (
+            <>
+              {soldOut ? (
+                <Button size="lg" className="w-full sm:w-auto" disabled>
+                  Esgotado no momento
+                </Button>
+              ) : (
+                <Button asChild size="lg" className="w-full sm:w-auto">
+                  <Link to="/loja/$slug/comprar" params={{ slug }} search={{ produto, qtd: 1 }}>
+                    Comprar — {money(product.priceCents)}
+                  </Link>
+                </Button>
+              )}
+              <p className="mt-3 text-sm text-muted">
+                Pague com Pix ou cartão. A entrega é combinada direto com a loja.
+              </p>
+            </>
+          )}
         </div>
       </div>
     </article>
+  );
+}
+
+/**
+ * Produto sob encomenda: um toque avisa a loja do interesse. Quem não está logado é
+ * levado a entrar e volta direto para cá.
+ */
+function InterestCta({ slug, produto }: { slug: string; produto: string }) {
+  const { status } = useSession();
+  const navigate = useNavigate();
+  const [state, setState] = useState<"idle" | "saving" | "done">("idle");
+  const [error, setError] = useState<string | null>(null);
+
+  async function interest() {
+    if (status !== "authenticated") {
+      void navigate({ to: "/entrar", search: { redirect: `/loja/${slug}/p/${produto}` } });
+      return;
+    }
+    setState("saving");
+    setError(null);
+    try {
+      await createInterest({ storeSlug: slug, productSlug: produto, qty: 1 });
+      setState("done");
+    } catch (cause) {
+      setError(errorMessage(cause));
+      setState("idle");
+    }
+  }
+
+  if (state === "done") {
+    return (
+      <div className="rounded-lg border border-brand/30 bg-brand-soft p-4">
+        <p className="flex items-center gap-2 font-medium text-brand">
+          <Check className="h-5 w-5" aria-hidden />
+          Pronto, você está na lista!
+        </p>
+        <p className="mt-1.5 text-sm text-muted">
+          Quando o produto chegar, a loja avisa você por e-mail.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <Button
+        size="lg"
+        className="w-full sm:w-auto"
+        onClick={interest}
+        disabled={state === "saving"}
+      >
+        {state === "saving" ? "Anotando…" : "Me avise quando chegar"}
+      </Button>
+      <div className="mt-3">
+        <FormError>{error}</FormError>
+      </div>
+      <p className="mt-3 text-sm text-muted">Sem pagamento agora — é só um aviso de interesse.</p>
+    </>
   );
 }

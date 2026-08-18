@@ -8,6 +8,21 @@ const MESSAGES: Record<string, string> = {
   invalid_token: "Esse link expirou. Peça outro.",
   rate_limited: "Muitas tentativas seguidas. Espere um minuto e tente de novo.",
   validation_error: "Confira os campos destacados.",
+
+  // compra e doação
+  payments_not_configured:
+    "Esta loja ainda não terminou de configurar o recebimento. Avise quem organiza e tente mais tarde.",
+  insufficient_stock: "Não tem essa quantidade em estoque. Diminua e tente de novo.",
+  product_not_orderable: "Este produto não está à venda no momento.",
+  product_not_on_demand: "Este produto não aceita lista de espera.",
+  product_not_found: "Este produto não existe mais.",
+  store_not_found: "Esta loja não existe mais.",
+  campaign_not_found: "Esta campanha não existe mais.",
+  campaign_not_open: "Esta campanha já foi encerrada.",
+  donation_type_not_accepted: "Esta campanha não aceita esse tipo de doação.",
+  monthly_not_supported_for_provider:
+    "Doação mensal não está disponível nessa forma de pagamento. Tente a outra opção.",
+  subscription_already_cancelled: "Essa contribuição mensal já estava cancelada.",
 };
 
 export function errorMessage(error: unknown, fallback = "Não deu para concluir agora."): string {

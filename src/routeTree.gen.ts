@@ -20,6 +20,8 @@ import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as LojaSlugRouteImport } from './routes/loja/$slug'
 import { Route as LojaSlugIndexRouteImport } from './routes/loja/$slug/index'
+import { Route as LojaSlugComprarRouteImport } from './routes/loja/$slug/comprar'
+import { Route as LojaSlugDoarRouteImport } from './routes/loja/$slug/doar'
 import { Route as LojaSlugCampanhasIndexRouteImport } from './routes/loja/$slug/campanhas/index'
 import { Route as LojaSlugCampanhasCampanhaRouteImport } from './routes/loja/$slug/campanhas/$campanha'
 import { Route as LojaSlugPProdutoRouteImport } from './routes/loja/$slug/p/$produto'
@@ -79,6 +81,16 @@ const LojaSlugIndexRoute = LojaSlugIndexRouteImport.update({
   path: '/',
   getParentRoute: () => LojaSlugRoute,
 } as any)
+const LojaSlugComprarRoute = LojaSlugComprarRouteImport.update({
+  id: '/comprar',
+  path: '/comprar',
+  getParentRoute: () => LojaSlugRoute,
+} as any)
+const LojaSlugDoarRoute = LojaSlugDoarRouteImport.update({
+  id: '/doar',
+  path: '/doar',
+  getParentRoute: () => LojaSlugRoute,
+} as any)
 const LojaSlugCampanhasIndexRoute = LojaSlugCampanhasIndexRouteImport.update({
   id: '/campanhas/',
   path: '/campanhas/',
@@ -107,6 +119,8 @@ export interface FileRoutesByFullPath {
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/loja/$slug': typeof LojaSlugRouteWithChildren
+  '/loja/$slug/comprar': typeof LojaSlugComprarRoute
+  '/loja/$slug/doar': typeof LojaSlugDoarRoute
   '/loja/$slug/': typeof LojaSlugIndexRoute
   '/loja/$slug/campanhas/$campanha': typeof LojaSlugCampanhasCampanhaRoute
   '/loja/$slug/p/$produto': typeof LojaSlugPProdutoRoute
@@ -122,6 +136,8 @@ export interface FileRoutesByTo {
   '/recuperar-senha': typeof RecuperarSenhaRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/loja/$slug/comprar': typeof LojaSlugComprarRoute
+  '/loja/$slug/doar': typeof LojaSlugDoarRoute
   '/loja/$slug': typeof LojaSlugIndexRoute
   '/loja/$slug/campanhas/$campanha': typeof LojaSlugCampanhasCampanhaRoute
   '/loja/$slug/p/$produto': typeof LojaSlugPProdutoRoute
@@ -139,6 +155,8 @@ export interface FileRoutesById {
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/loja/$slug': typeof LojaSlugRouteWithChildren
+  '/loja/$slug/comprar': typeof LojaSlugComprarRoute
+  '/loja/$slug/doar': typeof LojaSlugDoarRoute
   '/loja/$slug/': typeof LojaSlugIndexRoute
   '/loja/$slug/campanhas/$campanha': typeof LojaSlugCampanhasCampanhaRoute
   '/loja/$slug/p/$produto': typeof LojaSlugPProdutoRoute
@@ -157,6 +175,8 @@ export interface FileRouteTypes {
     | '/robots.txt'
     | '/sitemap.xml'
     | '/loja/$slug'
+    | '/loja/$slug/comprar'
+    | '/loja/$slug/doar'
     | '/loja/$slug/'
     | '/loja/$slug/campanhas/$campanha'
     | '/loja/$slug/p/$produto'
@@ -172,6 +192,8 @@ export interface FileRouteTypes {
     | '/recuperar-senha'
     | '/robots.txt'
     | '/sitemap.xml'
+    | '/loja/$slug/comprar'
+    | '/loja/$slug/doar'
     | '/loja/$slug'
     | '/loja/$slug/campanhas/$campanha'
     | '/loja/$slug/p/$produto'
@@ -188,6 +210,8 @@ export interface FileRouteTypes {
     | '/robots.txt'
     | '/sitemap.xml'
     | '/loja/$slug'
+    | '/loja/$slug/comprar'
+    | '/loja/$slug/doar'
     | '/loja/$slug/'
     | '/loja/$slug/campanhas/$campanha'
     | '/loja/$slug/p/$produto'
@@ -286,6 +310,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LojaSlugIndexRouteImport
       parentRoute: typeof LojaSlugRoute
     }
+    '/loja/$slug/comprar': {
+      id: '/loja/$slug/comprar'
+      path: '/comprar'
+      fullPath: '/loja/$slug/comprar'
+      preLoaderRoute: typeof LojaSlugComprarRouteImport
+      parentRoute: typeof LojaSlugRoute
+    }
+    '/loja/$slug/doar': {
+      id: '/loja/$slug/doar'
+      path: '/doar'
+      fullPath: '/loja/$slug/doar'
+      preLoaderRoute: typeof LojaSlugDoarRouteImport
+      parentRoute: typeof LojaSlugRoute
+    }
     '/loja/$slug/campanhas/': {
       id: '/loja/$slug/campanhas/'
       path: '/campanhas'
@@ -311,6 +349,8 @@ declare module '@tanstack/react-router' {
 }
 
 interface LojaSlugRouteChildren {
+  LojaSlugComprarRoute: typeof LojaSlugComprarRoute
+  LojaSlugDoarRoute: typeof LojaSlugDoarRoute
   LojaSlugIndexRoute: typeof LojaSlugIndexRoute
   LojaSlugCampanhasCampanhaRoute: typeof LojaSlugCampanhasCampanhaRoute
   LojaSlugPProdutoRoute: typeof LojaSlugPProdutoRoute
@@ -318,6 +358,8 @@ interface LojaSlugRouteChildren {
 }
 
 const LojaSlugRouteChildren: LojaSlugRouteChildren = {
+  LojaSlugComprarRoute: LojaSlugComprarRoute,
+  LojaSlugDoarRoute: LojaSlugDoarRoute,
   LojaSlugIndexRoute: LojaSlugIndexRoute,
   LojaSlugCampanhasCampanhaRoute: LojaSlugCampanhasCampanhaRoute,
   LojaSlugPProdutoRoute: LojaSlugPProdutoRoute,

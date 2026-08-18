@@ -1,0 +1,397 @@
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { Check, CreditCard, QrCode } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { z } from "zod";
+import { RequireSession } from "#/components/auth/require-session";
+import { PayChoice } from "#/components/pay/pay-choice";
+import { PixPanel } from "#/components/pay/pix-panel";
+import { StepHeading } from "#/components/pay/steps";
+import { StripePanel } from "#/components/pay/stripe-panel";
+import { Button } from "#/components/ui/button";
+import { Field, FormError, Input, Textarea } from "#/components/ui/field";
+import { errorMessage } from "#/lib/api/error-message";
+import { createDonation } from "#/lib/api/gen/clients/createDonation";
+import { useGetCampaign } from "#/lib/api/gen/hooks/useGetCampaign";
+import { useGetMyDonation } from "#/lib/api/gen/hooks/useGetMyDonation";
+import type { CreateDonation201 } from "#/lib/api/gen/types/CreateDonation";
+import { publicRequest } from "#/lib/api/public";
+import { money } from "#/lib/format";
+import { parseAmount } from "#/lib/pay/amount";
+import { stripePublishableKey } from "#/lib/pay/stripe";
+import { seo } from "#/lib/seo";
+
+const SearchSchema = z.object({
+  campanha: z.string().optional(),
+});
+
+const PRESETS_CENTS = [1000, 2500, 5000, 10000];
+const MIN_CENTS = 500;
+const MAX_CENTS = 5_000_000;
+
+type Provider = "woovi" | "stripe";
+type DonationType = "one_time" | "monthly";
+type Phase = "form" | "pay" | "done" | "expired";
+
+export const Route = createFileRoute("/loja/$slug/doar")({
+  validateSearch: SearchSchema,
+  head: () => seo({ title: "Fazer uma doação", description: "", path: "", noIndex: true }),
+  component: DonateRoute,
+});
+
+function DonateRoute() {
+  const { slug } = Route.useParams();
+  const search = Route.useSearch();
+  const redirect = `/loja/${slug}/doar${search.campanha ? `?campanha=${search.campanha}` : ""}`;
+  return (
+    <RequireSession redirectTo={redirect}>
+      <DonatePage />
+    </RequireSession>
+  );
+}
+
+function DonatePage() {
+  const { slug } = Route.useParams();
+  const search = Route.useSearch();
+  const { data: campaign } = useGetCampaign(slug, search.campanha ?? "", {
+    client: publicRequest,
+    // sem campanha na URL é doação avulsa à loja — não busca nada
+    query: { enabled: Boolean(search.campanha) },
+  });
+
+  const [phase, setPhase] = useState<Phase>("form");
+  const [amountCents, setAmountCents] = useState<number>(2500);
+  const [customValue, setCustomValue] = useState("");
+  const [type, setType] = useState<DonationType>("one_time");
+  const [provider, setProvider] = useState<Provider>("woovi");
+  const [anonymous, setAnonymous] = useState(false);
+  const [message, setMessage] = useState("");
+  const [result, setResult] = useState<CreateDonation201 | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  const donationId = result?.donation.id;
+  // os números do sorteio nascem num worker logo DEPOIS do "paid" — vale a pena
+  // continuar perguntando algumas vezes para mostrá-los na tela de obrigado
+  const paidPollsRef = useRef(0);
+  const { data: liveDonation } = useGetMyDonation(donationId, {
+    query: {
+      enabled: (phase === "pay" || phase === "done") && Boolean(donationId),
+      refetchInterval: (query) => {
+        const donation = query.state.data;
+        if (!donation || donation.status === "pending_payment") return 4000;
+        if (donation.status === "paid" && donation.raffleNumbers.length === 0) {
+          paidPollsRef.current += 1;
+          return paidPollsRef.current <= 5 ? 3000 : false;
+        }
+        return false;
+      },
+    },
+  });
+
+  useEffect(() => {
+    if (phase !== "pay" || !liveDonation) return;
+    if (liveDonation.status === "paid") setPhase("done");
+    if (liveDonation.status === "failed" || liveDonation.status === "cancelled")
+      setPhase("expired");
+  }, [phase, liveDonation]);
+
+  const cardAvailable = Boolean(stripePublishableKey());
+  const acceptedTypes = campaign?.acceptedTypes ?? "one_time";
+  const allowMonthly = acceptedTypes !== "one_time";
+  const allowOneTime = acceptedTypes !== "monthly";
+  const effectiveCents = customValue ? parseAmount(customValue) : amountCents;
+
+  // campanha só-mensal: o formulário nasce já no tipo certo
+  useEffect(() => {
+    if (!allowOneTime) setType("monthly");
+  }, [allowOneTime]);
+
+  async function submit(event: React.FormEvent) {
+    event.preventDefault();
+    setFormError(null);
+    if (effectiveCents === null || effectiveCents < MIN_CENTS) {
+      setFormError(`A doação mínima é ${money(MIN_CENTS)}.`);
+      return;
+    }
+    if (effectiveCents > MAX_CENTS) {
+      setFormError(`A doação máxima é ${money(MAX_CENTS)}.`);
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const response = await createDonation({
+        storeSlug: slug,
+        campaignSlug: search.campanha,
+        provider,
+        type,
+        amountCents: effectiveCents,
+        anonymous,
+        message: message || undefined,
+      });
+      setResult(response);
+      setPhase("pay");
+    } catch (error) {
+      setFormError(errorMessage(error));
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  if (phase === "done") {
+    const numbers = liveDonation?.raffleNumbers ?? result?.donation.raffleNumbers ?? [];
+    return (
+      <section className="horizon">
+        <div className="shell mx-auto max-w-md py-16 text-center md:py-24">
+          <span className="rise rise-1 mx-auto inline-grid h-14 w-14 place-items-center rounded-full bg-brand-soft text-brand">
+            <Check className="h-7 w-7" aria-hidden />
+          </span>
+          <h1 className="rise rise-2 mt-6 font-display text-3xl font-semibold tracking-tight">
+            Doação recebida. Obrigado!
+          </h1>
+          <p className="rise rise-3 mt-4 text-lede text-muted">
+            {type === "monthly"
+              ? "Sua contribuição mensal está ativa. Você pode acompanhá-la (e cancelar quando quiser) na sua conta."
+              : `O valor de ${money(result?.donation.amountCents ?? effectiveCents ?? 0)} já está a caminho de quem organiza.`}
+          </p>
+
+          {numbers.length > 0 && (
+            <div className="rise rise-4 card mt-8 p-5 text-left">
+              <p className="kicker">Seus números da sorte</p>
+              <p className="mt-1.5 text-sm text-muted">
+                Esta campanha tem sorteio entre quem doa. Guarde seus números — o resultado também
+                chega por e-mail.
+              </p>
+              <ul className="mt-4 flex flex-wrap gap-2">
+                {numbers.map((n) => (
+                  <li
+                    key={n}
+                    className="inline-grid h-11 min-w-11 place-items-center rounded-md bg-[linear-gradient(160deg,var(--sun),var(--brand)_72%)] px-2 font-display font-semibold text-white tabular-nums"
+                  >
+                    {n}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          <div className="rise rise-5 mt-8 grid gap-3">
+            <Button asChild size="lg">
+              <Link to="/conta">Ver minhas doações</Link>
+            </Button>
+            <Button asChild size="lg" variant="secondary">
+              <Link to="/loja/$slug" params={{ slug }}>
+                Voltar para a loja
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (phase === "expired") {
+    return (
+      <section className="shell mx-auto max-w-md py-16 md:py-24">
+        <h1 className="font-display text-2xl font-semibold tracking-tight">
+          O pagamento não foi concluído
+        </h1>
+        <p className="mt-3 text-muted">Nada foi cobrado. Quando quiser, é só tentar de novo.</p>
+        <Button size="lg" className="mt-6 w-full" onClick={() => setPhase("form")}>
+          Tentar de novo
+        </Button>
+      </section>
+    );
+  }
+
+  if (phase === "pay" && result) {
+    return (
+      <section className="shell mx-auto max-w-md py-10 md:py-16">
+        <StepHeading
+          step={2}
+          total={2}
+          title={result.payment.provider === "woovi" ? "Pague com Pix" : "Pague com cartão"}
+        />
+        <div className="card mt-6 flex items-center justify-between gap-4 p-4">
+          <p className="min-w-0 truncate text-sm text-muted">
+            {type === "monthly" ? "Doação mensal" : "Doação"}
+            {campaign ? (
+              <>
+                {" "}
+                — <span className="text-ink">{campaign.title}</span>
+              </>
+            ) : null}
+          </p>
+          <p className="shrink-0 font-display font-semibold tabular-nums">
+            {money(result.donation.amountCents)}
+            {type === "monthly" && <span className="text-sm text-muted">/mês</span>}
+          </p>
+        </div>
+
+        <div className="mt-6">
+          {result.payment.provider === "woovi" ? (
+            <PixPanel
+              brCode={result.payment.brCode}
+              qrCodeImageUrl={result.payment.qrCodeImageUrl}
+              expiresAt={result.payment.expiresAt}
+              onExpired={() => setPhase("expired")}
+            />
+          ) : (
+            <StripePanel
+              clientSecret={result.payment.clientSecret}
+              submitLabel={`Doar ${money(result.donation.amountCents)}${type === "monthly" ? " por mês" : ""}`}
+              onConfirmed={() => undefined /* o poll acima detecta o "paid" do webhook */}
+            />
+          )}
+        </div>
+
+        <p
+          className="mt-6 flex items-center justify-center gap-2 text-sm text-muted"
+          aria-live="polite"
+        >
+          <span className="h-2 w-2 animate-pulse rounded-full bg-accent" aria-hidden />
+          Esperando o banco confirmar…
+        </p>
+      </section>
+    );
+  }
+
+  return (
+    <section className="shell mx-auto max-w-md py-10 md:py-16">
+      <StepHeading step={1} total={2} title={campaign ? campaign.title : "Fazer uma doação"} />
+      <p className="mt-3 text-sm text-muted">
+        O valor vai direto para a conta de quem organiza — sem intermediário.
+      </p>
+
+      <form onSubmit={submit} className="mt-6 grid gap-5">
+        <fieldset>
+          <legend className="mb-2 text-sm font-medium text-ink">Quanto você quer doar?</legend>
+          <div className="grid grid-cols-2 gap-2">
+            {PRESETS_CENTS.map((cents) => {
+              const active = !customValue && amountCents === cents;
+              return (
+                <button
+                  key={cents}
+                  type="button"
+                  onClick={() => {
+                    setAmountCents(cents);
+                    setCustomValue("");
+                  }}
+                  className={`h-12 rounded-lg border font-display font-semibold tabular-nums transition-colors [transition-duration:var(--dur)] ${
+                    active
+                      ? "border-brand bg-brand-soft text-brand"
+                      : "border-line bg-elevated hover:border-line-strong"
+                  }`}
+                >
+                  {money(cents)}
+                </button>
+              );
+            })}
+          </div>
+          <Field label="Outro valor" htmlFor="custom" error={undefined}>
+            <Input
+              id="custom"
+              inputMode="decimal"
+              placeholder="R$ 0,00"
+              value={customValue}
+              onChange={(event) => setCustomValue(event.target.value)}
+            />
+          </Field>
+        </fieldset>
+
+        {allowMonthly && allowOneTime && (
+          <fieldset className="grid grid-cols-2 gap-2">
+            <legend className="mb-2 text-sm font-medium text-ink">Com que frequência?</legend>
+            <TypeChoice
+              checked={type === "one_time"}
+              onSelect={() => setType("one_time")}
+              title="Uma vez"
+              detail="Doação única, agora"
+            />
+            <TypeChoice
+              checked={type === "monthly"}
+              onSelect={() => setType("monthly")}
+              title="Todo mês"
+              detail="Cancele quando quiser"
+            />
+          </fieldset>
+        )}
+
+        <fieldset className="grid gap-2">
+          <legend className="mb-1.5 text-sm font-medium text-ink">Como você quer pagar?</legend>
+          <PayChoice
+            checked={provider === "woovi"}
+            onSelect={() => setProvider("woovi")}
+            icon={<QrCode className="h-5 w-5" aria-hidden />}
+            title="Pix"
+            detail="Aprovado na hora, direto do app do seu banco"
+          />
+          <PayChoice
+            checked={provider === "stripe"}
+            onSelect={() => setProvider("stripe")}
+            disabled={!cardAvailable}
+            icon={<CreditCard className="h-5 w-5" aria-hidden />}
+            title="Cartão"
+            detail={cardAvailable ? "Crédito ou débito" : "Indisponível no momento"}
+          />
+        </fieldset>
+
+        <label className="flex items-start gap-3 text-sm">
+          <input
+            type="checkbox"
+            className="mt-0.5 h-5 w-5 accent-(--brand)"
+            checked={anonymous}
+            onChange={(event) => setAnonymous(event.target.checked)}
+          />
+          <span>
+            <span className="font-medium text-ink">Quero doar sem aparecer</span>
+            <span className="block text-muted">Seu nome não aparece nem para a gestão.</span>
+          </span>
+        </label>
+
+        <Field label="Deixar um recado (opcional)" htmlFor="message" error={undefined}>
+          <Textarea
+            id="message"
+            rows={2}
+            maxLength={500}
+            placeholder="Uma palavra de incentivo para quem organiza"
+            value={message}
+            onChange={(event) => setMessage(event.target.value)}
+          />
+        </Field>
+
+        <FormError>{formError}</FormError>
+
+        <Button size="lg" type="submit" disabled={submitting || effectiveCents === null}>
+          {submitting
+            ? "Preparando…"
+            : `Continuar — ${effectiveCents !== null ? money(effectiveCents) : "escolha o valor"}${type === "monthly" ? "/mês" : ""}`}
+        </Button>
+        <p className="text-center text-sm text-muted">Você ainda não paga nada nesta etapa.</p>
+      </form>
+    </section>
+  );
+}
+
+function TypeChoice({
+  checked,
+  onSelect,
+  title,
+  detail,
+}: {
+  checked: boolean;
+  onSelect: () => void;
+  title: string;
+  detail: string;
+}) {
+  return (
+    <label
+      className={`cursor-pointer rounded-lg border p-3.5 transition-colors [transition-duration:var(--dur)] ${
+        checked ? "border-brand bg-brand-soft" : "border-line bg-elevated hover:border-line-strong"
+      }`}
+    >
+      <input type="radio" name="type" className="sr-only" checked={checked} onChange={onSelect} />
+      <span className="block font-medium">{title}</span>
+      <span className="block text-sm text-muted">{detail}</span>
+    </label>
+  );
+}
