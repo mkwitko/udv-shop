@@ -248,7 +248,7 @@ function ProductForm({
   }
 
   return (
-    <div className="max-w-xl">
+    <div>
       <div className="flex items-center justify-between gap-3">
         <h2 className="font-display text-lg font-semibold tracking-tight">
           {product ? `Editar ${product.name}` : "Novo produto"}
@@ -262,18 +262,20 @@ function ProductForm({
         <section className="grid gap-5">
           <h3 className="kicker">Sobre o produto</h3>
 
-          <Field label="Nome do produto" htmlFor="name" error={errors.name?.message}>
-            <Input id="name" placeholder="Camiseta bordada" {...register("name")} />
-          </Field>
+          <div className="grid gap-5 md:grid-cols-2">
+            <Field label="Nome do produto" htmlFor="name" error={errors.name?.message}>
+              <Input id="name" placeholder="Camiseta bordada" {...register("name")} />
+            </Field>
 
-          <Field
-            label="Preço"
-            htmlFor="price"
-            hint="Escreva como no dia a dia: 45 ou 45,90"
-            error={errors.price?.message}
-          >
-            <Input id="price" inputMode="decimal" placeholder="R$ 0,00" {...register("price")} />
-          </Field>
+            <Field
+              label="Preço"
+              htmlFor="price"
+              hint="Escreva como no dia a dia: 45 ou 45,90"
+              error={errors.price?.message}
+            >
+              <Input id="price" inputMode="decimal" placeholder="R$ 0,00" {...register("price")} />
+            </Field>
+          </div>
 
           <Field
             label="Descrição (opcional)"
@@ -317,7 +319,7 @@ function ProductForm({
           <h3 className="kicker">Fotos</h3>
 
           {images.length > 0 && (
-            <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+            <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6">
               {images.map((image) => (
                 <span key={image.key} className="relative">
                   <img

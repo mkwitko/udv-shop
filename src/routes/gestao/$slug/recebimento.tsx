@@ -1,5 +1,5 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
-import { Check, CreditCard, ExternalLink, QrCode } from "lucide-react";
+import { Check, CreditCard, ExternalLink, QrCode, ReceiptText } from "lucide-react";
 import { useState } from "react";
 import { Button } from "#/components/ui/button";
 import { Field, FormError, Input } from "#/components/ui/field";
@@ -27,15 +27,17 @@ export const Route = createFileRoute("/gestao/$slug/recebimento")({
 function PaymentsAdmin() {
   const { slug } = Route.useParams();
   return (
-    <div className="grid max-w-2xl gap-6">
+    <div className="grid gap-6">
       <div>
         <h2 className="font-bold font-display text-lg tracking-tight">
           Recebimento das suas vendas
         </h2>
         <p className="mt-0.5 text-muted text-sm">Para onde vai o dinheiro de quem compra ou doa.</p>
       </div>
-      <PixBlock slug={slug} />
-      <CardBlock slug={slug} />
+      <div className="grid items-start gap-6 lg:grid-cols-2">
+        <PixBlock slug={slug} />
+        <CardBlock slug={slug} />
+      </div>
 
       <div className="rule pt-6">
         <h2 className="font-bold font-display text-lg tracking-tight">
@@ -81,7 +83,7 @@ function PixBlock({ slug }: { slug: string }) {
   return (
     <section className="card p-5">
       <header className="flex items-center gap-3">
-        <span className="inline-grid h-10 w-10 place-items-center rounded-md bg-brand-soft text-brand-deep">
+        <span className="inline-grid h-11 w-11 shrink-0 place-items-center rounded-[0.9rem] bg-brand-soft text-brand-deep">
           <QrCode className="h-5 w-5" aria-hidden />
         </span>
         <div>
@@ -149,7 +151,7 @@ function CardBlock({ slug }: { slug: string }) {
   return (
     <section className="card p-5">
       <header className="flex items-center gap-3">
-        <span className="inline-grid h-10 w-10 place-items-center rounded-md bg-brand-soft text-brand-deep">
+        <span className="inline-grid h-11 w-11 shrink-0 place-items-center rounded-[0.9rem] bg-sky/18 text-sky">
           <CreditCard className="h-5 w-5" aria-hidden />
         </span>
         <div>
@@ -216,6 +218,9 @@ function BillingBlock({ slug }: { slug: string }) {
   return (
     <section className="card p-5">
       <header className="flex flex-wrap items-center gap-3">
+        <span className="inline-grid h-11 w-11 shrink-0 place-items-center rounded-[0.9rem] bg-sand/35 text-brand-deep">
+          <ReceiptText className="h-5 w-5" aria-hidden />
+        </span>
         <div className="min-w-0 flex-1">
           <h2 className="font-display font-semibold">Assinatura da plataforma</h2>
           <p className="text-sm text-muted">

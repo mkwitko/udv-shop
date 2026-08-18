@@ -16,7 +16,7 @@ function DonationsAdmin() {
     .reduce((sum, donation) => sum + donation.amountCents, 0);
 
   return (
-    <div className="max-w-2xl">
+    <div>
       <div className="flex flex-wrap items-end justify-between gap-3">
         <h2 className="font-display text-lg font-semibold tracking-tight">Doações</h2>
         {donations.length > 0 && (

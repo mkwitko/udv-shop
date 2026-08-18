@@ -40,7 +40,7 @@ interface FieldProps {
 
 export function Field({ label, htmlFor, hint, error, children }: FieldProps) {
   return (
-    <div className="grid gap-1.5">
+    <div className="grid content-start gap-1.5">
       <label htmlFor={htmlFor} className="text-sm font-medium text-ink">
         {label}
       </label>

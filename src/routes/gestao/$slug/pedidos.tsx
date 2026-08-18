@@ -1,4 +1,5 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { MessageCircle } from "lucide-react";
 import { useState } from "react";
 import { Button } from "#/components/ui/button";
 import { ConfirmDialog } from "#/components/ui/confirm";
@@ -35,6 +36,42 @@ const STATUS_META: Record<
   refunded: { label: "Reembolsado", tone: "neutral" },
 };
 
+// pedidos que ainda pedem alguma ação de quem gerencia
+const OPEN_STATUSES = new Set(["pending_payment", "paid", "delivery_arranged", "refund_requested"]);
+
+type OrderFilter = "all" | "open" | "done";
+
+function whatsappUrl(rawPhone: string) {
+  const digits = rawPhone.replace(/\D/g, "");
+  const full = digits.startsWith("55") && digits.length >= 12 ? digits : `55${digits}`;
+  return `https://wa.me/${full}`;
+}
+
+function FilterPill({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={`rounded-full border px-3.5 py-1.5 text-sm transition-colors [transition-duration:var(--dur)] tabular-nums ${
+        active
+          ? "border-transparent bg-brand font-medium text-white"
+          : "border-line text-muted hover:border-line-strong hover:text-ink"
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
 function OrdersAdmin() {
   const { slug } = Route.useParams();
   const { queryClient } = useRouter().options.context;
@@ -42,8 +79,12 @@ function OrdersAdmin() {
   const [error, setError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [refunding, setRefunding] = useState<Order | null>(null);
+  const [filter, setFilter] = useState<OrderFilter>("all");
   const toast = useToast();
   const orders = data?.items ?? [];
+  const openOrders = orders.filter((order) => OPEN_STATUSES.has(order.status));
+  const doneOrders = orders.filter((order) => !OPEN_STATUSES.has(order.status));
+  const visible = filter === "all" ? orders : filter === "open" ? openOrders : doneOrders;
 
   async function act(order: Order, action: () => Promise<unknown>) {
     setBusyId(order.id);
@@ -78,90 +119,121 @@ function OrdersAdmin() {
           Nenhum pedido ainda. Quando alguém comprar, ele aparece aqui na hora.
         </p>
       ) : (
-        <ul className="mt-6 grid gap-3">
-          {orders.map((order) => {
-            const meta = STATUS_META[order.status] ?? {
-              label: order.status,
-              tone: "neutral" as const,
-            };
-            const busy = busyId === order.id;
-            return (
-              <li key={order.id} className="card p-4">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Tag tone={meta.tone}>{meta.label}</Tag>
-                    <span className="text-sm text-muted">{longDate(order.createdAt)}</span>
-                  </div>
-                  <p className="font-display font-semibold tabular-nums">
-                    {money(order.totalCents)}
-                  </p>
-                </div>
+        <>
+          <fieldset className="mt-5 flex flex-wrap gap-2" aria-label="Filtrar pedidos">
+            <FilterPill active={filter === "all"} onClick={() => setFilter("all")}>
+              Todos ({orders.length})
+            </FilterPill>
+            <FilterPill active={filter === "open"} onClick={() => setFilter("open")}>
+              Para cuidar ({openOrders.length})
+            </FilterPill>
+            <FilterPill active={filter === "done"} onClick={() => setFilter("done")}>
+              Concluídos ({doneOrders.length})
+            </FilterPill>
+          </fieldset>
 
-                <p className="mt-2 text-sm">
-                  {order.items.map((item) => `${item.qty}× ${item.name}`).join(" · ")}
-                </p>
-                <p className="mt-1 text-sm text-muted">
-                  Contato:{" "}
-                  <span className="text-ink tabular-nums">{formatPhone(order.contactPhone)}</span>
-                  {order.note && <> · “{order.note}”</>}
-                </p>
+          {visible.length === 0 ? (
+            <p className="card mt-4 px-6 py-10 text-center text-muted">
+              {filter === "open"
+                ? "Nada para cuidar agora — tudo em dia."
+                : "Nenhum pedido concluído ainda."}
+            </p>
+          ) : (
+            <ul className="mt-4 grid gap-3">
+              {visible.map((order) => {
+                const meta = STATUS_META[order.status] ?? {
+                  label: order.status,
+                  tone: "neutral" as const,
+                };
+                const busy = busyId === order.id;
+                return (
+                  <li key={order.id} className="card p-4">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Tag tone={meta.tone}>{meta.label}</Tag>
+                        <span className="text-sm text-muted">{longDate(order.createdAt)}</span>
+                      </div>
+                      <p className="font-display font-semibold tabular-nums">
+                        {money(order.totalCents)}
+                      </p>
+                    </div>
 
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {order.status === "paid" && (
-                    <>
-                      <Button
-                        size="sm"
-                        disabled={busy}
-                        onClick={() =>
-                          act(order, () =>
-                            updateOrderStatus(slug, order.id, { status: "delivery_arranged" }),
-                          )
-                        }
+                    <p className="mt-2 text-sm">
+                      {order.items.map((item) => `${item.qty}× ${item.name}`).join(" · ")}
+                    </p>
+                    <p className="mt-1 flex flex-wrap items-center gap-x-2 text-sm text-muted">
+                      <span>
+                        Contato:{" "}
+                        <span className="text-ink tabular-nums">
+                          {formatPhone(order.contactPhone)}
+                        </span>
+                      </span>
+                      <a
+                        href={whatsappUrl(order.contactPhone)}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1 font-medium text-brand-deep underline underline-offset-4"
                       >
-                        Entrega combinada
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="danger"
-                        disabled={busy}
-                        onClick={() => {
-                          if (
-                            window.confirm("Devolver o dinheiro deste pedido? Isso não tem volta.")
-                          ) {
-                            void act(order, () => refundOrder(slug, order.id));
+                        <MessageCircle className="h-3.5 w-3.5" aria-hidden />
+                        Chamar no WhatsApp
+                      </a>
+                      {order.note && <span>· “{order.note}”</span>}
+                    </p>
+
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {order.status === "paid" && (
+                        <>
+                          <Button
+                            size="sm"
+                            disabled={busy}
+                            onClick={() =>
+                              act(order, () =>
+                                updateOrderStatus(slug, order.id, { status: "delivery_arranged" }),
+                              )
+                            }
+                          >
+                            Entrega combinada
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="danger"
+                            disabled={busy}
+                            onClick={() => setRefunding(order)}
+                          >
+                            Reembolsar
+                          </Button>
+                        </>
+                      )}
+                      {order.status === "delivery_arranged" && (
+                        <Button
+                          size="sm"
+                          disabled={busy}
+                          onClick={() =>
+                            act(order, () =>
+                              updateOrderStatus(slug, order.id, { status: "delivered" }),
+                            )
                           }
-                        }}
-                      >
-                        Reembolsar
-                      </Button>
-                    </>
-                  )}
-                  {order.status === "delivery_arranged" && (
-                    <Button
-                      size="sm"
-                      disabled={busy}
-                      onClick={() =>
-                        act(order, () => updateOrderStatus(slug, order.id, { status: "delivered" }))
-                      }
-                    >
-                      Marcar como entregue
-                    </Button>
-                  )}
-                  {order.status === "pending_payment" && (
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      disabled={busy}
-                      onClick={() => act(order, () => cancelOrder(slug, order.id))}
-                    >
-                      Cancelar pedido
-                    </Button>
-                  )}
-                </div>
-              </li>
-            );
-          })}
-        </ul>
+                        >
+                          Marcar como entregue
+                        </Button>
+                      )}
+                      {order.status === "pending_payment" && (
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          disabled={busy}
+                          onClick={() => act(order, () => cancelOrder(slug, order.id))}
+                        >
+                          Cancelar pedido
+                        </Button>
+                      )}
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </>
       )}
 
       <ConfirmDialog

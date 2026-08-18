@@ -67,7 +67,7 @@ function CampaignsAdmin() {
   }
 
   return (
-    <div className="max-w-2xl">
+    <div>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="font-display text-lg font-semibold tracking-tight">Campanhas</h2>
         <Button size="sm" onClick={() => setCreating(true)}>
@@ -144,18 +144,23 @@ function CampaignRow({
           <h3 className="font-display font-semibold">{campaign.title}</h3>
           <Tag tone={meta.tone}>{meta.label}</Tag>
         </div>
-        <p className="text-sm text-muted tabular-nums">
-          {money(campaign.raisedCents)}
-          {campaign.goalCents ? ` de ${money(campaign.goalCents)}` : " arrecadados"}
+        <p className="text-sm tabular-nums">
+          <span className="font-display font-semibold">{money(campaign.raisedCents)}</span>
+          <span className="text-muted">
+            {campaign.goalCents ? ` de ${money(campaign.goalCents)}` : " arrecadados"}
+          </span>
         </p>
       </div>
 
       {pct !== null && (
-        <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-surface">
-          <div
-            className="progress-fill h-full rounded-full bg-brand"
-            style={{ width: `${pct}%` }}
-          />
+        <div className="mt-3 flex items-center gap-3">
+          <div className="h-2 flex-1 overflow-hidden rounded-full bg-surface">
+            <div
+              className="progress-fill h-full rounded-full bg-brand"
+              style={{ width: `${pct}%` }}
+            />
+          </div>
+          <span className="shrink-0 text-muted text-xs tabular-nums">{pct}%</span>
         </div>
       )}
 
@@ -395,7 +400,7 @@ function CampaignCreate({
   }
 
   return (
-    <div className="max-w-lg">
+    <div>
       <div className="flex items-center justify-between gap-3">
         <h2 className="font-display text-lg font-semibold tracking-tight">Nova campanha</h2>
         <Button variant="ghost" size="sm" onClick={onCancel}>
@@ -403,35 +408,50 @@ function CampaignCreate({
         </Button>
       </div>
 
-      <form onSubmit={handleSubmit(submit)} className="mt-6 grid gap-5">
-        <Field label="Título" htmlFor="title" error={errors.title?.message}>
-          <Input id="title" placeholder="Reforma da cozinha" {...register("title")} />
-        </Field>
+      <form onSubmit={handleSubmit(submit)} className="mt-6 grid gap-8">
+        <section className="grid gap-5">
+          <h3 className="kicker">Sobre a campanha</h3>
 
-        <Field
-          label="História (opcional)"
-          htmlFor="story"
-          hint="Conte para onde vai o dinheiro — quem entende a causa doa mais."
-          error={errors.story?.message}
-        >
-          <Textarea id="story" rows={4} {...register("story")} />
-        </Field>
+          <Field label="Título" htmlFor="title" error={errors.title?.message}>
+            <Input id="title" placeholder="Reforma da cozinha" {...register("title")} />
+          </Field>
 
-        <Field label="Meta (opcional)" htmlFor="goal" error={errors.goal?.message}>
-          <Input id="goal" inputMode="decimal" placeholder="R$ 20.000,00" {...register("goal")} />
-        </Field>
-
-        <Field label="Tipos de doação aceitos" htmlFor="acceptedTypes" error={undefined}>
-          <select
-            id="acceptedTypes"
-            className="h-11 w-full rounded-md border border-line bg-surface px-3.5 text-[0.95rem] text-ink"
-            {...register("acceptedTypes")}
+          <Field
+            label="História (opcional)"
+            htmlFor="story"
+            hint="Conte para onde vai o dinheiro — quem entende a causa doa mais."
+            error={errors.story?.message}
           >
-            <option value="both">Única e mensal</option>
-            <option value="one_time">Só doação única</option>
-            <option value="monthly">Só doação mensal</option>
-          </select>
-        </Field>
+            <Textarea id="story" rows={4} {...register("story")} />
+          </Field>
+        </section>
+
+        <section className="grid gap-5">
+          <h3 className="kicker">Meta e doações</h3>
+
+          <div className="grid gap-5 md:grid-cols-2">
+            <Field label="Meta (opcional)" htmlFor="goal" error={errors.goal?.message}>
+              <Input
+                id="goal"
+                inputMode="decimal"
+                placeholder="R$ 20.000,00"
+                {...register("goal")}
+              />
+            </Field>
+
+            <Field label="Tipos de doação aceitos" htmlFor="acceptedTypes" error={undefined}>
+              <select
+                id="acceptedTypes"
+                className="h-11 w-full rounded-md border border-line bg-surface px-3.5 text-[0.95rem] text-ink"
+                {...register("acceptedTypes")}
+              >
+                <option value="both">Única e mensal</option>
+                <option value="one_time">Só doação única</option>
+                <option value="monthly">Só doação mensal</option>
+              </select>
+            </Field>
+          </div>
+        </section>
 
         <FormError>{formError}</FormError>
 

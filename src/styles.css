@@ -207,12 +207,20 @@
   }
 
   body {
+    display: flex;
+    min-height: 100dvh;
+    flex-direction: column;
     background-color: var(--bg);
     color: var(--ink);
     font-family: var(--font-sans);
     font-synthesis-weight: none;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
+  }
+
+  /* páginas curtas: o conteúdo estica e o rodapé fica sempre no fim da tela */
+  body > main {
+    flex: 1 0 auto;
   }
 
   h1,
