@@ -1,6 +1,6 @@
-# Identidade visual — Prospera · Tangerina
+# Identidade visual — Colheita · Tangerina
 
-Marca: **Prospera**. Conceito: **Tangerina** — clara, colorida e humana (referências do
+Marca: **Colheita**. Conceito: **Tangerina** — clara, colorida e humana (referências do
 usuário: Nubank e Airbnb). A regra que define tudo: **a cor é usada com coragem, em
 bloco grande — cor em detalhe é "corzinha", cor em massa é marca.** A tela precisa
 parecer alegre, confiável e fácil, para gente que resolve a vida pelo WhatsApp.
@@ -8,12 +8,25 @@ parecer alegre, confiável e fácil, para gente que resolve a vida pelo WhatsApp
 Escolhida pelo Mauricio em 2026-08-18 na página de propostas
 (https://claude.ai/code/artifact/d5feb2fd-bbc9-4aa5-b4b9-9317b59a9366), colorway T.
 
+## Posicionamento
+
+A Colheita é infraestrutura para uma comunidade transformar necessidade em recursos:
+**vender**, **apoiar**, **participar**. A loja é a porta de entrada; a arrecadação é o
+propósito. Linha da marca: *"Tudo o que sua comunidade cultiva, cresce junto."*
+
+A metáfora da colheita vive na marca e nos momentos emocionais (hero, fecho, confirmação).
+**A interface segue literal**: "Adicionar produto", "Criar campanha", "Doar",
+"Compartilhar" — nunca "plante sua venda" nem "regue sua campanha".
+
 ## Regras de ouro
 
 - **Mobile-first**: layout nasce em ~390px; `sm:`/`md:` só adicionam. Tap targets ≥ 44px.
 - **Público leigo**: uma decisão por tela, botão grande com verbo claro, passo indicado,
   status em linguagem de gente. Nada de jargão técnico.
-- **Copy sem "núcleo"**: fala-se de "sua loja", "sua conta", "quem organiza".
+- **Copy sem "núcleo"**: fala-se de "sua loja", "sua conta", "quem organiza" — inclusive
+  nos e-mails do outbox.
+- **Dois tons**: cliente pode receber comemoração ("Pedido confirmado! 🎉"); gestão e
+  admin são calmos e operacionais ("Produto arquivado.", "Campanha pausada.").
 
 ## Assinatura: o bloco tangerina
 
@@ -88,6 +101,37 @@ botão vencer a preferência do sistema nos dois sentidos. `themeBootScript` inl
 - Ícones: Lucide é infraestrutura; momentos de marca usam os glifos próprios de
   `components/ui/glyphs.tsx` (Pix, coração, bandeirinha, bilhete, sacola, estrela, seta
   direta) — stroke 1.4, geometria arredondada.
+
+## Componentes compartilhados
+
+Antes de criar, procurar: `Button` (variantes semânticas, nunca `OrangeButton`),
+`IconButton` via `size="icon"`, `Card` (classe `.card`), `Tag`, `Input`/`Textarea`/`Field`,
+`ConfirmDialog`, `Toast` (`useToast`), `Skeleton`/`SkeletonRows`/`SkeletonCards`,
+`EmptyState`, `ErrorState`, `ShareButton`, `Reveal`, `StoreOffline`, `RouteError`.
+
+- **Tap target**: `size="sm"` e `size="icon"` medem 44px no celular e encolhem em `sm:`.
+- **Vazio** sempre responde: o que aconteceu, por quê, o que fazer agora (com o botão).
+- **Erro** fala humano e oferece "Tentar de novo"; nunca stack trace nem "algo deu errado".
+- **Skeleton** reproduz a geometria do conteúdo — nunca spinner grande.
+- **Compartilhar** usa Web Share API no celular e cai para copiar link + toast
+  "Link copiado." (loja, produto e campanha).
+
+## Estados que a interface precisa dizer
+
+| Objeto | Estados | Como a tela trata |
+|---|---|---|
+| Loja | rascunho → aguardando liberação → no ar → suspensa → reativada | `pending` é 404 público; `suspended` continua legível e a página diz "está fora do ar", garantindo que nada foi apagado. Quem cuida da loja continua vendo a vitrine com aviso. |
+| Produto | ativo → arquivado → restaurado | Arquivado sai da vitrine, não recebe compras, mantém histórico e volta por "Restaurar produto". Não existe exclusão permanente. |
+| Encomenda | esperando → avisado → comprou/desistiu | A lista mostra nome, data e **telefone mascarado** (`(48) ****-5678`); o contato completo não fica exposto. |
+| Campanha | rascunho → no ar → pausada → encerrada | Verbos concretos: "Pausar campanha", "Retomar", "Encerrar" — com confirmação que explica a consequência. |
+
+## Dinheiro e transparência
+
+Centavos inteiros da API → `money()` (`Intl.NumberFormat` pt-BR) → `tabular-nums`. A
+tela de recebimento diz a taxa real da loja (`applicationFeeBps` vindo da API), nunca
+"100% grátis": *"O pagamento vai direto para a conta da sua loja. Taxa da plataforma: 5%
+por venda."* "Sem intermediário" significa que o dinheiro não fica parado na plataforma —
+não que não existam processadores.
 
 ## Proibido
 

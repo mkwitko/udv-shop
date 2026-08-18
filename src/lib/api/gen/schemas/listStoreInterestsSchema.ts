@@ -37,7 +37,11 @@ export const listStoreInterests200Schema = z.object({
 "status": z.string(),
 "note": z.nullable(z.string()),
 "notifiedAt": z.nullable(z.string()),
-"createdAt": z.string()
+"createdAt": z.string(),
+"customer": z.object({
+    "name": z.string(),
+"phoneMasked": z.nullable(z.string())
+    })
     })),
 "nextCursor": z.nullable(z.string())
     }) as unknown as z.ZodType<ListStoreInterests200>

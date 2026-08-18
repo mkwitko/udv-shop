@@ -3,6 +3,7 @@ import { Check } from "lucide-react";
 import { useState } from "react";
 import { Button } from "#/components/ui/button";
 import { FormError } from "#/components/ui/field";
+import { ShareButton } from "#/components/ui/share-button";
 import { Tag } from "#/components/ui/tag";
 import { errorMessage } from "#/lib/api/error-message";
 import { createInterest } from "#/lib/api/gen/clients/createInterest";
@@ -101,32 +102,37 @@ function ProductPage() {
         )}
 
         <div className="mt-9">
-          {onDemand ? (
-            <InterestCta slug={slug} produto={produto} />
-          ) : (
+          {onDemand || soldOut ? (
             <>
-              {soldOut ? (
-                <div className="rounded-[1rem] border border-line bg-surface p-4">
-                  <p className="font-bold font-display">Esgotado</p>
-                  <p className="mt-1 text-muted text-sm">
-                    Este produto não está disponível agora. Vale voltar depois — a loja repõe a
-                    vitrine por aqui.
-                  </p>
-                </div>
-              ) : (
-                <Button asChild size="lg" className="w-full sm:w-auto">
-                  <Link to="/loja/$slug/comprar" params={{ slug }} search={{ produto, qtd: 1 }}>
-                    Comprar — {money(product.priceCents)}
-                  </Link>
-                </Button>
-              )}
-              {!soldOut && (
-                <p className="mt-3 text-muted text-sm">
-                  Pague com Pix ou cartão. A entrega é combinada direto com a loja.
+              {soldOut && (
+                <p className="mb-4 rounded-[1rem] border border-line bg-surface px-4 py-3 text-[0.95rem]">
+                  Este produto está esgotado. Entre na lista e a loja avisa quando ele voltar.
                 </p>
               )}
+              <InterestCta slug={slug} produto={produto} />
+            </>
+          ) : (
+            <>
+              <Button asChild size="lg" className="w-full sm:w-auto">
+                <Link to="/loja/$slug/comprar" params={{ slug }} search={{ produto, qtd: 1 }}>
+                  Comprar — {money(product.priceCents)}
+                </Link>
+              </Button>
+              <p className="mt-3 text-muted text-sm">
+                Pague com Pix ou cartão. A entrega é combinada direto com a loja.
+              </p>
             </>
           )}
+
+          {/* compartilhar é aquisição: um produto bonito viaja no grupo de WhatsApp */}
+          <div className="mt-6">
+            <ShareButton
+              title={product.name}
+              path={`/loja/${slug}/p/${produto}`}
+              label="Compartilhar produto"
+              text={`${product.name} — ${money(product.priceCents)}`}
+            />
+          </div>
         </div>
       </div>
     </article>
@@ -181,7 +187,7 @@ function InterestCta({ slug, produto }: { slug: string; produto: string }) {
         onClick={interest}
         disabled={state === "saving"}
       >
-        {state === "saving" ? "Anotando…" : "Me avise quando chegar"}
+        {state === "saving" ? "Anotando…" : "Quero ser avisado"}
       </Button>
       <div className="mt-3">
         <FormError>{error}</FormError>

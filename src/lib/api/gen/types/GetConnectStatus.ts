@@ -45,6 +45,12 @@ export type GetConnectStatus200 = {
         */
         connected: boolean;
     };
+    /**
+     * @minLength -9007199254740991
+     * @maxLength 9007199254740991
+     * @type integer
+    */
+    applicationFeeBps: number;
 };
 
 export type GetConnectStatusQueryResponse = GetConnectStatus200;

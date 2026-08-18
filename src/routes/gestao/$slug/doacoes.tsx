@@ -1,5 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { Button } from "#/components/ui/button";
+import { EmptyState } from "#/components/ui/empty-state";
 import { GlyphCoracao } from "#/components/ui/glyphs";
+import { SkeletonRows } from "#/components/ui/skeleton";
 import { Tag } from "#/components/ui/tag";
 import { useListStoreDonations } from "#/lib/api/gen/hooks/useListStoreDonations";
 import { longDate, money } from "#/lib/format";
@@ -26,14 +29,22 @@ function DonationsAdmin() {
       </p>
 
       {isPending ? (
-        <div className="mt-6 h-32 animate-pulse rounded-lg bg-surface" />
+        <SkeletonRows rows={3} className="mt-6" />
       ) : donations.length === 0 ? (
-        <div className="card mt-6 px-6 py-14 text-center">
-          <h3 className="font-display text-lg font-semibold">Nenhuma doação ainda</h3>
-          <p className="mx-auto mt-2 max-w-sm text-muted">
-            Crie uma campanha e compartilhe — o botão de doar já está na página da loja.
-          </p>
-        </div>
+        <EmptyState
+          className="mt-6"
+          title="Ainda não há doações."
+          action={
+            <Button asChild variant="secondary">
+              <Link to="/gestao/$slug/campanhas" params={{ slug }}>
+                Criar campanha
+              </Link>
+            </Button>
+          }
+        >
+          Quando alguém apoiar sua loja, o apoio aparece aqui. Uma campanha com meta ajuda a
+          comunidade a entender para onde vai o dinheiro.
+        </EmptyState>
       ) : (
         <>
           <div className="mt-5 grid gap-3 sm:grid-cols-3">
@@ -53,8 +64,8 @@ function DonationsAdmin() {
           <ul className="mt-4 grid gap-2.5">
             {donations.map((donation) => {
               const name = donation.anonymous
-                ? "Doação anônima"
-                : (donation.donor?.name ?? "Doação");
+                ? "Pessoa anônima"
+                : (donation.donor?.name ?? "Pessoa apoiadora");
               return (
                 <li key={donation.id} className="card flex flex-wrap items-center gap-4 p-4">
                   <span className="inline-grid h-11 w-11 shrink-0 place-items-center rounded-full bg-plum/15 font-bold font-display text-plum">

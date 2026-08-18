@@ -12,7 +12,7 @@ describe("slugify", () => {
   });
 
   it("respeita o limite de 60 do schema da API sem terminar em hífen", () => {
-    const long = slugify("a".repeat(58) + " bc");
+    const long = slugify(`${"a".repeat(58)} bc`);
     expect(long.length).toBeLessThanOrEqual(60);
     expect(long.endsWith("-")).toBe(false);
   });

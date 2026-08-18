@@ -1,22 +1,24 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
-import { ImagePlus, Pencil, Plus, X } from "lucide-react";
+import { ImagePlus, Pencil, Plus, RotateCcw, X } from "lucide-react";
 import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "#/components/ui/button";
 import { ConfirmDialog } from "#/components/ui/confirm";
+import { EmptyState } from "#/components/ui/empty-state";
 import { Field, FormError, Input, Textarea } from "#/components/ui/field";
+import { SkeletonRows } from "#/components/ui/skeleton";
 import { Tag } from "#/components/ui/tag";
 import { useToast } from "#/components/ui/toast";
 import { errorMessage } from "#/lib/api/error-message";
 import { archiveProduct } from "#/lib/api/gen/clients/archiveProduct";
 import { createProduct } from "#/lib/api/gen/clients/createProduct";
 import { presignUpload } from "#/lib/api/gen/clients/presignUpload";
+import { restoreProduct } from "#/lib/api/gen/clients/restoreProduct";
 import { updateProduct } from "#/lib/api/gen/clients/updateProduct";
 import { listProductsQueryKey, useListProducts } from "#/lib/api/gen/hooks/useListProducts";
 import type { ListProducts200 } from "#/lib/api/gen/types/ListProducts";
-import { publicRequest } from "#/lib/api/public";
 import { money } from "#/lib/format";
 import { parseAmount } from "#/lib/pay/amount";
 import { slugify } from "#/lib/slug";
@@ -36,15 +38,38 @@ const ProductSchema = z.object({
 });
 type ProductForm = z.infer<typeof ProductSchema>;
 
+// `all: "true"` traz também os arquivados — a gestão precisa ver o que tirou do ar
+// para poder trazer de volta. A vitrine pública continua chamando sem esse parâmetro.
+const LIST_QUERY = { limit: 50, all: "true" } as const;
+
 function ProductsAdmin() {
   const { slug } = Route.useParams();
   const { queryClient } = useRouter().options.context;
-  const { data, isPending } = useListProducts(slug, { limit: 50 }, { client: publicRequest });
+  const { data, isPending } = useListProducts(slug, LIST_QUERY);
   const [editing, setEditing] = useState<Product | "new" | null>(null);
-  const products = data?.items ?? [];
+  const [restoring, setRestoring] = useState<string | null>(null);
+  const [listError, setListError] = useState<string | null>(null);
+  const toast = useToast();
+  const all = data?.items ?? [];
+  const products = all.filter((product) => product.active);
+  const archived = all.filter((product) => !product.active);
 
   async function refresh() {
-    await queryClient.invalidateQueries({ queryKey: listProductsQueryKey(slug, { limit: 50 }) });
+    await queryClient.invalidateQueries({ queryKey: listProductsQueryKey(slug, LIST_QUERY) });
+  }
+
+  async function restore(product: Product) {
+    setRestoring(product.slug);
+    setListError(null);
+    try {
+      await restoreProduct(slug, product.slug);
+      toast(`${product.name} voltou para a vitrine.`);
+      await refresh();
+    } catch (error) {
+      setListError(errorMessage(error));
+    } finally {
+      setRestoring(null);
+    }
   }
 
   if (editing) {
@@ -71,53 +96,113 @@ function ProductsAdmin() {
         </Button>
       </div>
 
+      <FormError>{listError}</FormError>
+
       {isPending ? (
-        <div className="mt-6 h-32 animate-pulse rounded-lg bg-surface" />
-      ) : products.length === 0 ? (
-        <div className="card mt-6 px-6 py-14 text-center">
-          <h3 className="font-display text-lg font-semibold">Sua vitrine está vazia</h3>
-          <p className="mx-auto mt-2 max-w-sm text-muted">
-            Cadastre o primeiro produto com foto e preço — leva menos de um minuto.
-          </p>
-          <Button className="mt-6" onClick={() => setEditing("new")}>
-            Cadastrar produto
-          </Button>
-        </div>
+        <SkeletonRows rows={3} className="mt-6" />
+      ) : products.length === 0 && archived.length === 0 ? (
+        <EmptyState
+          className="mt-6"
+          title="Ainda não há produtos."
+          action={<Button onClick={() => setEditing("new")}>Adicionar produto</Button>}
+        >
+          Adicione o primeiro produto da sua loja para começar a vender. Leva menos de um minuto:
+          nome, preço e foto.
+        </EmptyState>
       ) : (
-        <ul className="mt-6 grid gap-3">
-          {products.map((product) => (
-            <li key={product.id} className="card flex items-center gap-4 p-4">
-              {product.imageUrls[0] ? (
-                <img
-                  src={product.imageUrls[0]}
-                  alt=""
-                  className="h-14 w-14 rounded-md border border-line bg-surface object-cover"
-                />
-              ) : (
-                <div className="h-14 w-14 rounded-md bg-[radial-gradient(circle_at_30%_25%,var(--glow),transparent_65%)]" />
-              )}
-              <div className="min-w-0 flex-1">
-                <p className="truncate font-medium">{product.name}</p>
-                <p className="mt-0.5 flex flex-wrap items-center gap-2 text-sm text-muted tabular-nums">
-                  {money(product.priceCents)}
-                  {product.availability === "on_demand" ? (
-                    <Tag tone="brand">sob encomenda</Tag>
-                  ) : product.stock <= 0 ? (
-                    <Tag tone="accent">esgotado</Tag>
-                  ) : (
-                    <span>{product.stock} em estoque</span>
-                  )}
-                </p>
-              </div>
-              <Button variant="secondary" size="sm" onClick={() => setEditing(product)}>
-                <Pencil className="h-4 w-4" aria-hidden />
-                Editar
-              </Button>
-            </li>
-          ))}
-        </ul>
+        <>
+          {products.length === 0 ? (
+            <EmptyState
+              className="mt-6"
+              title="Nenhum produto na vitrine agora."
+              action={<Button onClick={() => setEditing("new")}>Adicionar produto</Button>}
+            >
+              Os produtos abaixo estão arquivados. Você pode restaurar um deles ou cadastrar um
+              novo.
+            </EmptyState>
+          ) : (
+            <ul className="mt-6 grid gap-3">
+              {products.map((product) => (
+                <li key={product.id} className="card flex flex-wrap items-center gap-4 p-4">
+                  <ProductThumb product={product} />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-medium">{product.name}</p>
+                    <p className="mt-0.5 flex flex-wrap items-center gap-2 text-sm text-muted tabular-nums">
+                      {money(product.priceCents)}
+                      {product.availability === "on_demand" ? (
+                        <Tag tone="brand">sob encomenda</Tag>
+                      ) : product.stock <= 0 ? (
+                        <Tag tone="accent">esgotado</Tag>
+                      ) : (
+                        <span>{product.stock} em estoque</span>
+                      )}
+                    </p>
+                  </div>
+                  <Button variant="secondary" size="sm" onClick={() => setEditing(product)}>
+                    <Pencil className="h-4 w-4" aria-hidden />
+                    Editar
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {archived.length > 0 && (
+            <section className="mt-10">
+              <h3 className="kicker">Arquivados</h3>
+              <p className="mt-2 text-muted text-sm">
+                Fora da vitrine e sem receber compras. O histórico continua salvo — restaure quando
+                quiser vender de novo.
+              </p>
+              <ul className="mt-4 grid gap-3">
+                {archived.map((product) => (
+                  <li
+                    key={product.id}
+                    className="card flex flex-wrap items-center gap-4 p-4 opacity-80"
+                  >
+                    <ProductThumb product={product} />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-medium">{product.name}</p>
+                      <p className="mt-0.5 flex flex-wrap items-center gap-2 text-sm text-muted tabular-nums">
+                        {money(product.priceCents)}
+                        <Tag>arquivado</Tag>
+                      </p>
+                    </div>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      disabled={restoring === product.slug}
+                      onClick={() => restore(product)}
+                    >
+                      <RotateCcw className="h-4 w-4" aria-hidden />
+                      {restoring === product.slug ? "Restaurando…" : "Restaurar produto"}
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+        </>
       )}
     </div>
+  );
+}
+
+function ProductThumb({ product }: { product: Product }) {
+  if (!product.imageUrls[0]) {
+    return (
+      <div
+        className="h-14 w-14 shrink-0 rounded-md bg-[radial-gradient(circle_at_30%_25%,var(--glow),transparent_65%)]"
+        aria-hidden
+      />
+    );
+  }
+  return (
+    <img
+      src={product.imageUrls[0]}
+      alt=""
+      className="h-14 w-14 shrink-0 rounded-md border border-line bg-surface object-cover"
+    />
   );
 }
 
@@ -239,7 +324,7 @@ function ProductForm({
     setArchiving(true);
     try {
       await archiveProduct(slug, product.slug);
-      toast("Produto tirado do ar.");
+      toast("Produto arquivado.");
       await onDone();
     } catch (error) {
       setFormError(errorMessage(error));
@@ -412,7 +497,8 @@ function ProductForm({
           onCancel={() => setConfirmArchive(false)}
           onConfirm={archive}
         >
-          Ele some da vitrine. Pedidos já feitos não mudam.
+          Ele sai da vitrine na hora e não recebe novas compras. Nada é apagado: pedidos, fotos e
+          histórico ficam salvos, e você pode restaurar quando quiser.
         </ConfirmDialog>
       </form>
     </div>

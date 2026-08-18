@@ -6,7 +6,9 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "#/components/ui/button";
 import { ConfirmDialog } from "#/components/ui/confirm";
+import { EmptyState } from "#/components/ui/empty-state";
 import { Field, FormError, Input, Textarea } from "#/components/ui/field";
+import { Skeleton, SkeletonRows } from "#/components/ui/skeleton";
 import { Tag } from "#/components/ui/tag";
 import { useToast } from "#/components/ui/toast";
 import { errorMessage } from "#/lib/api/error-message";
@@ -77,18 +79,16 @@ function CampaignsAdmin() {
       </div>
 
       {isPending ? (
-        <div className="mt-6 h-32 animate-pulse rounded-lg bg-surface" />
+        <SkeletonRows rows={2} className="mt-6" />
       ) : campaigns.length === 0 ? (
-        <div className="card mt-6 px-6 py-14 text-center">
-          <h3 className="font-display text-lg font-semibold">Nenhuma campanha ainda</h3>
-          <p className="mx-auto mt-2 max-w-sm text-muted">
-            Conte para onde vai o dinheiro e acompanhe a meta subir. Dá para ligar um sorteio entre
-            quem doa.
-          </p>
-          <Button className="mt-6" onClick={() => setCreating(true)}>
-            Criar campanha
-          </Button>
-        </div>
+        <EmptyState
+          className="mt-6"
+          title="Sua primeira campanha começa aqui."
+          action={<Button onClick={() => setCreating(true)}>Criar campanha</Button>}
+        >
+          Crie uma meta e convide sua comunidade para participar. Dá para ligar um sorteio entre
+          quem doa.
+        </EmptyState>
       ) : (
         <ul className="mt-6 grid gap-3">
           {campaigns.map((campaign) => (
@@ -265,7 +265,7 @@ function RafflePanel({ slug, campaignSlug }: { slug: string; campaignSlug: strin
     }
   }
 
-  if (isPending) return <div className="mt-4 h-16 animate-pulse rounded-md bg-surface" />;
+  if (isPending) return <Skeleton className="mt-4 h-16" />;
 
   if (!raffle) {
     return (

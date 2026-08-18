@@ -8,11 +8,11 @@ export function SiteFooter() {
         <div className="lg:col-span-2">
           <p className="flex items-center gap-2.5 font-display font-semibold tracking-tight">
             <LogoMark />
-            Prospera
+            Colheita
           </p>
           <p className="mt-3 max-w-xs text-sm text-muted">
-            Sua loja, campanhas e doações num lugar só, com o dinheiro caindo direto na conta de
-            quem organiza.
+            Tudo o que sua comunidade cultiva, cresce junto: loja, campanhas e doações num lugar só,
+            com o dinheiro indo direto para quem faz acontecer.
           </p>
         </div>
 
@@ -42,7 +42,7 @@ export function SiteFooter() {
 
       <div className="shell flex flex-col gap-2 border-t border-line py-6 text-sm text-muted sm:flex-row sm:justify-between">
         <p>Cada loja é cuidada por quem a criou.</p>
-        <p>© {new Date().getFullYear()} Prospera</p>
+        <p>© {new Date().getFullYear()} Colheita</p>
       </div>
     </footer>
   );

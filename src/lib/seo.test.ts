@@ -37,7 +37,7 @@ describe("seo", () => {
       type: "product",
     });
 
-    expect(title(head.meta)).toBe("Camiseta União · Prospera");
+    expect(title(head.meta)).toBe("Camiseta União · Colheita");
     expect(content(head.meta, "og:type")).toBe("product");
     expect(head.links[0]?.href).toContain("/loja/nucleo-demo/p/camiseta-uniao");
     // sem imagem o card do Twitter é o pequeno — o grande com placeholder fica feio

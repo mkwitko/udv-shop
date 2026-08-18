@@ -1,4 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { Button } from "#/components/ui/button";
+import { EmptyState } from "#/components/ui/empty-state";
 import { Tag } from "#/components/ui/tag";
 import { listCampaignsQueryOptions, useListCampaigns } from "#/lib/api/gen/hooks/useListCampaigns";
 import { publicRequest } from "#/lib/api/public";
@@ -30,7 +32,20 @@ function CampaignList() {
       <h1 className="mt-4 text-title">Veja onde sua ajuda faz diferença.</h1>
 
       {campaigns.length === 0 ? (
-        <p className="mt-8 text-muted">Nenhuma campanha aberta agora.</p>
+        <EmptyState
+          className="mt-10"
+          title="Nenhuma campanha aberta agora."
+          action={
+            <Button asChild variant="secondary">
+              <Link to="/loja/$slug/doar" params={{ slug }}>
+                Apoiar a loja
+              </Link>
+            </Button>
+          }
+        >
+          Quando esta loja criar uma campanha com meta, ela aparece aqui. Dá para apoiar a loja
+          agora mesmo, sem esperar.
+        </EmptyState>
       ) : (
         <ul className="mt-10 grid gap-4 md:grid-cols-2">
           {campaigns.map((campaign) => (

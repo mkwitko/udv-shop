@@ -15,6 +15,7 @@ const MESSAGES: Record<string, string> = {
   insufficient_stock: "Não tem essa quantidade em estoque. Diminua e tente de novo.",
   product_not_orderable: "Este produto não está à venda no momento.",
   product_not_on_demand: "Este produto não aceita lista de espera.",
+  product_available: "Este produto está disponível — dá para comprar agora.",
   product_not_found: "Este produto não existe mais.",
   store_not_found: "Esta loja não existe mais.",
   campaign_not_found: "Esta campanha não existe mais.",

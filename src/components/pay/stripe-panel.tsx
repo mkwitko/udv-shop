@@ -12,7 +12,7 @@ interface StripePanelProps {
   onConfirmed: () => void;
 }
 
-/** Formulário de cartão do Stripe vestido com os tokens da Prospera. */
+/** Formulário de cartão do Stripe vestido com os tokens da Colheita. */
 export function StripePanel({ clientSecret, submitLabel, onConfirmed }: StripePanelProps) {
   if (!stripePublishableKey()) {
     return (

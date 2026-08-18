@@ -3,7 +3,9 @@ import { MessageCircle } from "lucide-react";
 import { useState } from "react";
 import { Button } from "#/components/ui/button";
 import { ConfirmDialog } from "#/components/ui/confirm";
+import { EmptyState } from "#/components/ui/empty-state";
 import { FormError } from "#/components/ui/field";
+import { SkeletonRows } from "#/components/ui/skeleton";
 import { Tag } from "#/components/ui/tag";
 import { useToast } from "#/components/ui/toast";
 import { errorMessage } from "#/lib/api/error-message";
@@ -113,11 +115,12 @@ function OrdersAdmin() {
       <FormError>{error}</FormError>
 
       {isPending ? (
-        <div className="mt-6 h-32 animate-pulse rounded-lg bg-surface" />
+        <SkeletonRows rows={3} className="mt-6" />
       ) : orders.length === 0 ? (
-        <p className="card mt-6 px-6 py-12 text-center text-muted">
-          Nenhum pedido ainda. Quando alguém comprar, ele aparece aqui na hora.
-        </p>
+        <EmptyState className="mt-6" title="Ainda não há pedidos.">
+          Quando alguém comprar, o pedido aparece aqui na hora — com o contato para combinar a
+          entrega.
+        </EmptyState>
       ) : (
         <>
           <fieldset className="mt-5 flex flex-wrap gap-2" aria-label="Filtrar pedidos">

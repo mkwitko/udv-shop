@@ -6,6 +6,7 @@ import { SiteFooter } from "#/components/site/site-footer";
 import { SiteHeader } from "#/components/site/site-header";
 import { Button } from "#/components/ui/button";
 import { ConfirmDialog } from "#/components/ui/confirm";
+import { SkeletonRows } from "#/components/ui/skeleton";
 import { Tag } from "#/components/ui/tag";
 import { useToast } from "#/components/ui/toast";
 import { errorMessage } from "#/lib/api/error-message";
@@ -117,10 +118,7 @@ function AccountPage() {
           </div>
 
           {isPending ? (
-            <div className="mt-6 grid gap-3">
-              <div className="h-24 animate-pulse rounded-lg bg-surface" />
-              <div className="h-24 animate-pulse rounded-lg bg-surface" />
-            </div>
+            <SkeletonRows rows={2} className="mt-6" />
           ) : stores.length === 0 ? (
             <EmptyStores />
           ) : (
@@ -241,7 +239,7 @@ function MyOrders() {
   return (
     <SectionShell title="Meus pedidos" count={isPending ? undefined : orders.length}>
       {isPending ? (
-        <div className="mt-6 h-24 animate-pulse rounded-lg bg-surface" />
+        <SkeletonRows rows={2} className="mt-6" />
       ) : (
         <ul className="mt-6 grid gap-2.5">
           {orders.map((order) => {
@@ -303,7 +301,7 @@ function MyDonations() {
     <SectionShell title="Minhas doações" count={isPending ? undefined : donations.length}>
       {error && <p className="mt-4 text-sm text-danger">{error}</p>}
       {isPending ? (
-        <div className="mt-6 h-24 animate-pulse rounded-lg bg-surface" />
+        <SkeletonRows rows={2} className="mt-6" />
       ) : (
         <ul className="mt-6 grid gap-2.5">
           {donations.map((donation) => (
@@ -388,7 +386,7 @@ function MyInterests() {
   return (
     <SectionShell title="Minhas encomendas" count={isPending ? undefined : interests.length}>
       {isPending ? (
-        <div className="mt-6 h-24 animate-pulse rounded-lg bg-surface" />
+        <SkeletonRows rows={2} className="mt-6" />
       ) : (
         <ul className="mt-6 grid gap-2.5">
           {interests.map((interest) => (

@@ -22,7 +22,8 @@ export const getConnectStatus200Schema = z.object({
     }),
 "woovi": z.object({
     "connected": z.boolean()
-    })
+    }),
+"applicationFeeBps": z.int().min(-9007199254740991).max(9007199254740991)
     }) as unknown as z.ZodType<GetConnectStatus200>
 
 export const getConnectStatusQueryResponseSchema = z.lazy(() => getConnectStatus200Schema) as unknown as z.ZodType<GetConnectStatusQueryResponse>

@@ -46,6 +46,7 @@ export type { Refresh200, RefreshMutation, RefreshMutationResponse } from "./Ref
 export type { RefundOrder202, RefundOrder202StatusEnumKey, RefundOrderMutation, RefundOrderMutationResponse, RefundOrderPathParams } from "./RefundOrder.ts";
 export type { Register201, RegisterMutation, RegisterMutationRequest, RegisterMutationResponse } from "./Register.ts";
 export type { ResetPassword204, ResetPassword204EnumKey, ResetPasswordMutation, ResetPasswordMutationRequest, ResetPasswordMutationResponse } from "./ResetPassword.ts";
+export type { RestoreProduct200, RestoreProduct200AvailabilityEnumKey, RestoreProductMutation, RestoreProductMutationResponse, RestoreProductPathParams } from "./RestoreProduct.ts";
 export type { StripeWebhook200, StripeWebhookMutation, StripeWebhookMutationResponse } from "./StripeWebhook.ts";
 export type { UpdateCampaign200, UpdateCampaign200AcceptedTypesEnumKey, UpdateCampaign200StatusEnumKey, UpdateCampaignMutation, UpdateCampaignMutationRequest, UpdateCampaignMutationRequestAcceptedTypesEnumKey, UpdateCampaignMutationResponse, UpdateCampaignPathParams } from "./UpdateCampaign.ts";
 export type { UpdateCampaignStatus200, UpdateCampaignStatus200AcceptedTypesEnumKey, UpdateCampaignStatus200StatusEnumKey, UpdateCampaignStatusMutation, UpdateCampaignStatusMutationRequest, UpdateCampaignStatusMutationRequestStatusEnumKey, UpdateCampaignStatusMutationResponse, UpdateCampaignStatusPathParams } from "./UpdateCampaignStatus.ts";
@@ -99,6 +100,7 @@ export { itemsStatusEnum } from "./ListStores.ts";
 export { presignUploadMutationRequestContentTypeEnum } from "./PresignUpload.ts";
 export { putRaffle200StatusEnum } from "./PutRaffle.ts";
 export { refundOrder202StatusEnum } from "./RefundOrder.ts";
+export { restoreProduct200AvailabilityEnum } from "./RestoreProduct.ts";
 export { updateCampaign200AcceptedTypesEnum } from "./UpdateCampaign.ts";
 export { updateCampaign200StatusEnum } from "./UpdateCampaign.ts";
 export { updateCampaignMutationRequestAcceptedTypesEnum } from "./UpdateCampaign.ts";

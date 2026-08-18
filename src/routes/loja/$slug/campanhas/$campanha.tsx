@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Button } from "#/components/ui/button";
+import { ShareButton } from "#/components/ui/share-button";
 import { Tag } from "#/components/ui/tag";
 import { getCampaignQueryOptions, useGetCampaign } from "#/lib/api/gen/hooks/useGetCampaign";
 import { publicRequest } from "#/lib/api/public";
@@ -40,7 +41,7 @@ function CampaignPage() {
             <img
               src={campaign.coverImageUrl}
               alt=""
-              className="aspect-16/9 w-full bg-surface object-cover"
+              className="aspect-16/9 w-full rounded-[1.25rem] bg-surface object-cover"
             />
           )}
           <h1 className="mt-8 text-title text-balance">{campaign.title}</h1>
@@ -52,7 +53,7 @@ function CampaignPage() {
         </div>
 
         <aside className="md:col-span-5 md:pt-4">
-          <div className="border border-line p-6">
+          <div className="card p-6">
             <CampaignProgress
               raisedCents={campaign.raisedCents}
               goalCents={campaign.goalCents}
@@ -80,6 +81,15 @@ function CampaignPage() {
                   : "Campanha encerrada. Obrigado a todo mundo que ajudou."}
               </p>
             )}
+            <div className="mt-4">
+              <ShareButton
+                title={campaign.title}
+                path={`/loja/${slug}/campanhas/${campanha}`}
+                label="Compartilhar campanha"
+                variant="ghost"
+                className="w-full"
+              />
+            </div>
           </div>
         </aside>
       </div>

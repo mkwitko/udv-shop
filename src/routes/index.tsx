@@ -22,9 +22,9 @@ export const Route = createFileRoute("/")({
     context.queryClient.ensureQueryData(listStoresQueryOptions({ limit: 12 }, publicRequest)),
   head: () =>
     seo({
-      title: "Sua loja, do seu jeito",
+      title: "O que sua comunidade cultiva, cresce junto",
       description:
-        "Venda, receba doações e organize tudo em um só lugar. Pix e cartão, com o dinheiro indo direto para quem organiza.",
+        "Venda produtos, receba doações, crie campanhas com meta e sorteios auditáveis. Pix e cartão, com o dinheiro indo direto para quem faz acontecer.",
       path: "/",
     }),
   component: Landing,
@@ -33,11 +33,20 @@ export const Route = createFileRoute("/")({
 const TICKER = [
   "Pix aprovado na hora",
   "o dinheiro vai direto para você",
+  "loja, campanhas e doações num lugar só",
   "sorteio auditável",
   "catálogo com página própria",
   "doação mensal sem burocracia",
   "taxa declarada antes da venda",
   "sua loja aparece no Google",
+];
+
+type Glyph = (props: { className?: string }) => React.ReactElement;
+
+const CAMPAIGN_POINTS: Array<{ label: string; Icon: Glyph }> = [
+  { label: "Doação única ou todo mês", Icon: GlyphCoracao },
+  { label: "Progresso público, doadores privados", Icon: GlyphCampanhaInline },
+  { label: "Quem doa pode escolher ficar anônimo", Icon: GlyphPix },
 ];
 
 function Landing() {
@@ -55,13 +64,13 @@ function Landing() {
             <div className="relative grid gap-12 px-6 pt-12 pb-10 md:grid-cols-[1.05fr_0.95fr] md:items-center md:gap-10 md:px-12 md:pt-16 md:pb-12">
               <div>
                 <h1 className="rise rise-1 text-display">
-                  Sua loja.
+                  Venda. Apoie.
                   <br />
-                  Do seu jeito.
+                  Faça acontecer.
                 </h1>
-                <p className="rise rise-2 mt-5 max-w-[34ch] text-lede text-white/90">
-                  Venda, receba doações e organize tudo em um só lugar. O dinheiro vai direto para
-                  você.
+                <p className="rise rise-2 mt-5 max-w-[36ch] text-lede text-white/90">
+                  Sua comunidade tem muito para realizar. A Colheita reúne loja, campanhas e doações
+                  num lugar só — e o dinheiro vai direto para quem faz acontecer.
                 </p>
                 <div className="rise rise-3 mt-8 flex flex-col gap-3 sm:flex-row">
                   <Button asChild size="lg" variant="inverse" className="w-full sm:w-auto">
@@ -103,6 +112,38 @@ function Landing() {
                 ))}
               </div>
             </div>
+          </div>
+        </section>
+
+        {/* ═══ TRÊS FORMAS DE REUNIR RECURSOS ═════════════════════════════════ */}
+        <section className="shell py-16 md:py-20">
+          <p className="kicker">Formas de reunir recursos</p>
+          <h2 className="mt-3 max-w-2xl text-title">
+            Uma necessidade, três caminhos para a comunidade.
+          </h2>
+
+          <div className="mt-10 grid gap-4 md:grid-cols-3">
+            <WayCard
+              icon={<GlyphSacola className="h-5 w-5" />}
+              tone="bg-brand-soft text-brand-deep"
+              title="Vender"
+              body="Produtos com página própria, estoque e lista de espera para o que é sob encomenda."
+              items={["Pix e cartão", "Sob encomenda", "Página no Google"]}
+            />
+            <WayCard
+              icon={<GlyphCoracao className="h-5 w-5" />}
+              tone="bg-plum/15 text-plum"
+              title="Apoiar"
+              body="Doação avulsa ou todo mês, com ou sem campanha, e sempre com recibo por e-mail."
+              items={["Doação única", "Apoio mensal", "Anônimo se quiser"]}
+            />
+            <WayCard
+              icon={<GlyphBilhete className="h-5 w-5" />}
+              tone="bg-lavender/18 text-lavender"
+              title="Participar"
+              body="Campanha com meta à vista e sorteio auditável entre quem ajudou a chegar lá."
+              items={["Meta pública", "Números da sorte", "Resultado verificável"]}
+            />
           </div>
         </section>
 
@@ -173,20 +214,12 @@ function Landing() {
                   ou mensais. A lista de quem doou fica só com você.
                 </p>
                 <ul className="mt-6 grid gap-3">
-                  {[
-                    ["Doação única ou todo mês", GlyphCoracao],
-                    ["Progresso público, doadores privados", GlyphCampanhaInline],
-                    ["Quem doa pode escolher ficar anônimo", GlyphPix],
-                  ].map(([label, Icon]) => (
-                    <li key={label as string} className="flex items-center gap-3 text-[0.98rem]">
+                  {CAMPAIGN_POINTS.map(({ label, Icon }) => (
+                    <li key={label} className="flex items-center gap-3 text-[0.98rem]">
                       <span className="inline-grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand-soft text-brand-deep">
-                        {/* biome-ignore lint/suspicious/noExplicitAny: união de glifos */}
-                        {(() => {
-                          const C = Icon as any;
-                          return <C className="h-4.5 w-4.5" />;
-                        })()}
+                        <Icon className="h-4.5 w-4.5" />
                       </span>
-                      {label as string}
+                      {label}
                     </li>
                   ))}
                 </ul>
@@ -320,7 +353,9 @@ function Landing() {
         <section className="shell pb-4 md:pb-8">
           <div className="bloco px-6 py-14 text-center md:py-20">
             <div className="relative">
-              <h2 className="mx-auto max-w-xl text-title">Pronto para criar sua loja?</h2>
+              <h2 className="mx-auto max-w-xl text-title">
+                Tudo o que sua comunidade cultiva, cresce junto.
+              </h2>
               <div className="mt-8 flex justify-center">
                 <Button asChild size="lg" variant="inverse" className="w-full sm:w-auto">
                   <Link to="/criar-conta">
@@ -628,5 +663,42 @@ function BigFact({
       </p>
       <p className="mt-2 max-w-[24ch] text-muted text-sm">{label}</p>
     </div>
+  );
+}
+
+/** Uma das três formas de reunir recursos: o que é, e o que já dá para fazer hoje. */
+function WayCard({
+  icon,
+  tone,
+  title,
+  body,
+  items,
+}: {
+  icon: React.ReactNode;
+  tone: string;
+  title: string;
+  body: string;
+  items: string[];
+}) {
+  return (
+    <Reveal className="h-full">
+      <div className="card flex h-full flex-col p-6">
+        <span
+          className={`inline-grid h-11 w-11 shrink-0 place-items-center rounded-[0.9rem] ${tone}`}
+        >
+          {icon}
+        </span>
+        <h3 className="mt-4 font-bold font-display text-xl">{title}</h3>
+        <p className="mt-2 text-[0.95rem] text-muted">{body}</p>
+        <ul className="mt-4 grid gap-1.5 text-sm">
+          {items.map((item) => (
+            <li key={item} className="flex items-center gap-2 text-muted">
+              <Check className="h-3.5 w-3.5 shrink-0 text-success" aria-hidden />
+              {item}
+            </li>
+          ))}
+        </ul>
+      </div>
+    </Reveal>
   );
 }

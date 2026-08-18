@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, Check, Copy, Plus } from "lucide-react";
 import { useState } from "react";
 import { Button } from "#/components/ui/button";
+import { ShareButton } from "#/components/ui/share-button";
 import {
   GlyphBilhete,
   GlyphCampanha,
@@ -33,19 +34,75 @@ function Overview() {
   const hasProduct = (products?.items.length ?? 0) > 0;
   const billingOk = billing?.status === "active" || billing?.status === "trialing";
 
-  const steps = [
-    { done: true, label: "Criar conta e loja" },
-    { done: hasProduct, label: "Cadastrar o primeiro produto", to: "/gestao/$slug/produtos" },
-    { done: hasPayment, label: "Configurar recebimento", to: "/gestao/$slug/recebimento" },
-    { done: billingOk, label: "Ativar assinatura", to: "/gestao/$slug/recebimento" },
-    { done: false, label: "Compartilhar a loja" },
+  type Step = {
+    done: boolean;
+    label: string;
+    to: "/gestao/$slug/produtos" | "/gestao/$slug/recebimento" | null;
+    why?: string;
+    cta?: string;
+  };
+  const steps: Step[] = [
+    { done: true, label: "Criar conta e loja", to: null },
+    {
+      done: hasProduct,
+      label: "Adicionar um produto",
+      to: "/gestao/$slug/produtos",
+      why: "Sem produto na vitrine, quem abre o link não tem o que comprar.",
+      cta: "Adicionar produto",
+    },
+    {
+      done: hasPayment,
+      label: "Configurar recebimento",
+      to: "/gestao/$slug/recebimento",
+      why: "É onde o dinheiro cai: sua chave Pix ou sua conta de pagamentos.",
+      cta: "Configurar recebimento",
+    },
+    {
+      done: billingOk,
+      label: "Ativar assinatura",
+      to: "/gestao/$slug/recebimento",
+      why: "A assinatura mantém a loja no ar e libera as vendas.",
+      cta: "Ver assinatura",
+    },
   ];
-  const pct = Math.round((steps.filter((s) => s.done).length / steps.length) * 100);
+  const pct = Math.round((steps.filter((s) => s.done).length / (steps.length + 1)) * 100);
+  // uma coisa por vez (§13): a home diz o próximo passo, não a lista de pendências
+  const next = steps.find((step) => !step.done);
 
   const storeUrl = `${siteUrl()}/loja/${slug}`;
 
   return (
     <div className="grid gap-8">
+      {/* próximo passo: onboarding contextual, não tutorial */}
+      <section className="card p-5 md:p-6">
+        <p className="kicker">{next ? "Próximo passo" : "Tudo certo por aqui"}</p>
+        <h2 className="mt-2 font-bold font-display text-xl tracking-tight md:text-2xl">
+          {next ? next.label : "Compartilhe sua loja"}
+        </h2>
+        <p className="mt-2 max-w-[52ch] text-muted">
+          {next
+            ? next.why
+            : "Mais pessoas podem conhecer seus produtos e campanhas. Mande o link no grupo."}
+        </p>
+        <div className="mt-5 flex flex-wrap gap-3">
+          {next?.to ? (
+            <Button asChild>
+              <Link to={next.to} params={{ slug }}>
+                {next.cta}
+                <ArrowRight className="h-4 w-4" aria-hidden />
+              </Link>
+            </Button>
+          ) : (
+            <ShareButton
+              title="Minha loja"
+              path={`/loja/${slug}`}
+              label="Compartilhar loja"
+              variant="primary"
+            />
+          )}
+        </div>
+      </section>
+
       {/* o que você quer fazer hoje */}
       <section>
         <h2 className="font-bold font-display text-xl tracking-tight">
@@ -231,10 +288,10 @@ function ShareCard({ storeUrl }: { storeUrl: string }) {
         <p className="min-w-0 flex-1 truncate rounded-full border border-line bg-surface px-4 py-3 text-ink text-sm">
           {storeUrl}
         </p>
-        <Button variant={copied ? "secondary" : "primary"} onClick={copy} className="shrink-0">
+        <Button variant="secondary" onClick={copy} className="shrink-0">
           {copied ? (
             <>
-              <Check className="h-4 w-4" aria-hidden /> Copiado!
+              <Check className="h-4 w-4" aria-hidden /> Link copiado
             </>
           ) : (
             <>
@@ -242,6 +299,13 @@ function ShareCard({ storeUrl }: { storeUrl: string }) {
             </>
           )}
         </Button>
+        <ShareButton
+          title="Minha loja"
+          path={new URL(storeUrl).pathname}
+          label="Compartilhar"
+          variant="primary"
+          className="shrink-0"
+        />
       </div>
     </section>
   );

@@ -1,11 +1,18 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Check, Heart, Share2 } from "lucide-react";
-import { useState } from "react";
+import { ArrowRight, Heart, ShoppingBag } from "lucide-react";
 import { ProductCard } from "#/components/store/product-card";
 import { Button } from "#/components/ui/button";
+import { EmptyState } from "#/components/ui/empty-state";
+import { GlyphCampanha } from "#/components/ui/glyphs";
+import { ShareButton } from "#/components/ui/share-button";
+import { SkeletonCards } from "#/components/ui/skeleton";
+import { Tag } from "#/components/ui/tag";
+import { listCampaignsQueryOptions, useListCampaigns } from "#/lib/api/gen/hooks/useListCampaigns";
 import { getStoreQueryOptions, useGetStore } from "#/lib/api/gen/hooks/useGetStore";
 import { listProductsQueryOptions, useListProducts } from "#/lib/api/gen/hooks/useListProducts";
+import type { ListCampaigns200 } from "#/lib/api/gen/types/ListCampaigns";
 import { publicRequest } from "#/lib/api/public";
+import { money, percent } from "#/lib/format";
 import { organizationLd, seo } from "#/lib/seo";
 
 export const Route = createFileRoute("/loja/$slug/")({
@@ -14,6 +21,9 @@ export const Route = createFileRoute("/loja/$slug/")({
       context.queryClient.ensureQueryData(getStoreQueryOptions(params.slug, publicRequest)),
       context.queryClient.ensureQueryData(
         listProductsQueryOptions(params.slug, { limit: 24 }, publicRequest),
+      ),
+      context.queryClient.ensureQueryData(
+        listCampaignsQueryOptions(params.slug, { limit: 6 }, publicRequest),
       ),
     ]);
     return { store };
@@ -34,11 +44,19 @@ export const Route = createFileRoute("/loja/$slug/")({
   component: StoreCatalog,
 });
 
+/**
+ * A loja é o hub da comunidade (§15 do brief): quem chega decide entre comprar e
+ * apoiar, vê a campanha que está de pé e depois a vitrine. Nada de seção vazia.
+ */
 function StoreCatalog() {
   const { slug } = Route.useParams();
   const { data: store } = useGetStore(slug, { client: publicRequest });
-  const { data } = useListProducts(slug, { limit: 24 }, { client: publicRequest });
+  const { data, isPending } = useListProducts(slug, { limit: 24 }, { client: publicRequest });
+  const { data: campaignPage } = useListCampaigns(slug, { limit: 6 }, { client: publicRequest });
   const products = data?.items ?? [];
+  const campaigns = campaignPage?.items ?? [];
+  const featured = campaigns.find((campaign) => campaign.status === "active");
+  const hasProducts = products.length > 0;
 
   return (
     <>
@@ -60,16 +78,37 @@ function StoreCatalog() {
               </p>
             )}
             <div className="rise rise-3 mt-7 flex flex-wrap gap-3">
-              <Button asChild variant="inverse">
+              {hasProducts && (
+                <Button asChild variant="inverse">
+                  <Link to="/loja/$slug" params={{ slug }} hash="produtos">
+                    <ShoppingBag className="h-4 w-4" aria-hidden />
+                    Comprar
+                  </Link>
+                </Button>
+              )}
+              <Button asChild variant={hasProducts ? "inverse-outline" : "inverse"}>
                 <Link to="/loja/$slug/doar" params={{ slug }}>
                   <Heart className="h-4 w-4" aria-hidden />
-                  Apoiar esta loja
+                  Apoiar
                 </Link>
               </Button>
-              <ShareButton name={store?.name ?? "Loja"} slug={slug} />
+              <ShareButton
+                title={store?.name ?? "Loja"}
+                path={`/loja/${slug}`}
+                variant="inverse-outline"
+                label="Compartilhar"
+              />
             </div>
           </div>
         </div>
+
+        {store && store.status !== "active" && (
+          <p className="mt-4 rounded-[1rem] border border-accent/35 bg-warning-soft px-4 py-3 text-[0.95rem] text-ink">
+            <strong className="font-semibold">Só você está vendo esta página.</strong> A loja está{" "}
+            {store.status === "pending" ? "aguardando liberação" : "fora do ar"} — ninguém de fora
+            consegue comprar ou doar.
+          </p>
+        )}
 
         {/* navegação da vitrine: pills, com rolagem no celular */}
         <nav className="scroll-row mt-4" aria-label="Seções da loja">
@@ -93,11 +132,17 @@ function StoreCatalog() {
         </nav>
       </section>
 
-      <section>
+      {featured && (
+        <section className="shell mt-8">
+          <FeaturedCampaign slug={slug} campaign={featured} />
+        </section>
+      )}
+
+      <section id="produtos" className="scroll-mt-24">
         <div className="shell py-10 md:py-14">
-          {products.length === 0 ? (
-            <p className="text-muted">Esta loja ainda não publicou produtos. Vale voltar depois.</p>
-          ) : (
+          {isPending ? (
+            <SkeletonCards count={4} />
+          ) : hasProducts ? (
             <ul className="grid grid-cols-2 gap-x-6 gap-y-12 md:grid-cols-3 lg:grid-cols-4">
               {products.map((product) => (
                 <li key={product.id}>
@@ -105,6 +150,27 @@ function StoreCatalog() {
                 </li>
               ))}
             </ul>
+          ) : (
+            <EmptyState
+              title="Ainda não há produtos aqui."
+              action={
+                campaigns.length > 0 ? (
+                  <Button asChild variant="secondary">
+                    <Link to="/loja/$slug/campanhas" params={{ slug }}>
+                      Ver campanhas
+                    </Link>
+                  </Button>
+                ) : (
+                  <Button asChild variant="secondary">
+                    <Link to="/loja/$slug/doar" params={{ slug }}>
+                      Apoiar esta loja
+                    </Link>
+                  </Button>
+                )
+              }
+            >
+              Esta loja está montando a vitrine. Vale voltar depois — ou já dar uma força agora.
+            </EmptyState>
           )}
         </div>
       </section>
@@ -112,41 +178,62 @@ function StoreCatalog() {
   );
 }
 
-/** Compartilhar: nativo quando o celular oferece, copiar link quando não. */
-function ShareButton({ name, slug }: { name: string; slug: string }) {
-  const [copied, setCopied] = useState(false);
+type Campaign = ListCampaigns200["items"][number];
 
-  async function share() {
-    const url = `${window.location.origin}/loja/${slug}`;
-    if (navigator.share) {
-      try {
-        await navigator.share({ title: name, url });
-        return;
-      } catch {
-        // pessoa fechou o menu de compartilhar: nada a fazer
-      }
-      return;
-    }
-    try {
-      await navigator.clipboard.writeText(url);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 3000);
-    } catch {
-      // sem clipboard: o link está na barra de endereço
-    }
-  }
+/** A campanha de pé aparece logo abaixo do topo: necessidade, meta e o quanto falta. */
+function FeaturedCampaign({ slug, campaign }: { slug: string; campaign: Campaign }) {
+  const pct = campaign.goalCents ? percent(campaign.raisedCents, campaign.goalCents) : null;
 
   return (
-    <Button variant="inverse-outline" onClick={share}>
-      {copied ? (
+    <article className="card p-5 md:p-7">
+      <div className="flex flex-wrap items-center gap-3">
+        <span className="inline-grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand-soft text-brand-deep">
+          <GlyphCampanha className="h-5 w-5" />
+        </span>
+        <h2 className="font-bold font-display text-xl tracking-tight md:text-2xl">
+          {campaign.title}
+        </h2>
+        <Tag tone="brand">campanha no ar</Tag>
+      </div>
+
+      <p className="mt-5 font-bold font-display text-2xl tabular-nums md:text-3xl">
+        {money(campaign.raisedCents)}
+        {campaign.goalCents && (
+          <span className="font-medium font-sans text-base text-muted">
+            {" "}
+            de {money(campaign.goalCents)}
+          </span>
+        )}
+      </p>
+
+      {pct !== null && (
         <>
-          <Check className="h-4 w-4" aria-hidden /> Link copiado!
-        </>
-      ) : (
-        <>
-          <Share2 className="h-4 w-4" aria-hidden /> Compartilhar
+          <div className="mt-3 h-2.5 w-full overflow-hidden rounded-full bg-surface">
+            <div
+              className="progress-fill h-full rounded-full bg-brand"
+              style={{ width: `${pct}%` }}
+            />
+          </div>
+          <p className="mt-2 text-muted text-sm tabular-nums">
+            {pct}% da meta ·{" "}
+            {campaign.donationCount === 1 ? "1 doação" : `${campaign.donationCount} doações`}
+          </p>
         </>
       )}
-    </Button>
+
+      <div className="mt-6 flex flex-wrap gap-3">
+        <Button asChild>
+          <Link to="/loja/$slug/doar" params={{ slug }} search={{ campanha: campaign.slug }}>
+            Apoiar campanha
+          </Link>
+        </Button>
+        <Button asChild variant="ghost">
+          <Link to="/loja/$slug/campanhas/$campanha" params={{ slug, campanha: campaign.slug }}>
+            Ver a história
+            <ArrowRight className="h-4 w-4" aria-hidden />
+          </Link>
+        </Button>
+      </div>
+    </article>
   );
 }

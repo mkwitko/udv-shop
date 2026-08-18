@@ -22,7 +22,8 @@ export const putWooviConnect200Schema = z.object({
     }),
 "woovi": z.object({
     "connected": z.boolean()
-    })
+    }),
+"applicationFeeBps": z.int().min(-9007199254740991).max(9007199254740991)
     }) as unknown as z.ZodType<PutWooviConnect200>
 
 export const putWooviConnectMutationRequestSchema = z.object({

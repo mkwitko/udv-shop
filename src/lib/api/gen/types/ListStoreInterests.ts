@@ -113,6 +113,19 @@ export type ListStoreInterests200 = {
          * @type string
         */
         createdAt: string;
+        /**
+         * @type object
+        */
+        customer: {
+            /**
+             * @type string
+            */
+            name: string;
+            /**
+             * @type string
+            */
+            phoneMasked: string | null;
+        };
     }[];
     /**
      * @type string

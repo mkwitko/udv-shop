@@ -22,7 +22,7 @@ export function SiteHeader({ storeSlug, storeName }: { storeSlug?: string; store
               className="flex min-w-0 items-center gap-2.5 font-bold font-display tracking-tight"
             >
               <LogoMark />
-              <span className="truncate">{storeName ?? "Prospera"}</span>
+              <span className="truncate">{storeName ?? "Colheita"}</span>
             </Link>
 
             <nav className="hidden items-center gap-0.5 md:flex">

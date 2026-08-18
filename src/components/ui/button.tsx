@@ -22,10 +22,11 @@ const buttonVariants = cva(
         link: "text-brand-deep underline underline-offset-4 decoration-1 hover:text-brand-hover",
       },
       size: {
-        sm: "h-9 px-4 text-sm",
+        // no celular todo botão chega a 44px (§41): o dedo é o ponteiro, não o mouse
+        sm: "h-11 px-4 text-sm sm:h-9",
         md: "h-11 px-5 text-[0.95rem]",
         lg: "h-12 px-7 text-base",
-        icon: "h-9 w-9",
+        icon: "h-11 w-11 sm:h-9 sm:w-9",
       },
     },
     defaultVariants: { variant: "primary", size: "md" },

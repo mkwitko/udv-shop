@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { CreditCard, QrCode } from "lucide-react";
+import { motion, useReducedMotion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
 import { RequireSession } from "#/components/auth/require-session";
@@ -10,6 +11,7 @@ import { StripePanel } from "#/components/pay/stripe-panel";
 import { Button } from "#/components/ui/button";
 import { Field, FormError, Input, Textarea } from "#/components/ui/field";
 import { GlyphEstrela } from "#/components/ui/glyphs";
+import { ShareButton } from "#/components/ui/share-button";
 import { errorMessage } from "#/lib/api/error-message";
 import { createDonation } from "#/lib/api/gen/clients/createDonation";
 import { useGetCampaign } from "#/lib/api/gen/hooks/useGetCampaign";
@@ -59,6 +61,7 @@ function DonatePage() {
     query: { enabled: Boolean(search.campanha) },
   });
 
+  const reduceMotion = useReducedMotion();
   const [phase, setPhase] = useState<Phase>("form");
   const [amountCents, setAmountCents] = useState<number>(5000);
   const [customValue, setCustomValue] = useState("");
@@ -163,23 +166,40 @@ function DonatePage() {
                 chega por e-mail.
               </p>
               <ul className="mt-4 flex flex-wrap gap-2">
-                {numbers.map((n) => (
-                  <li
+                {numbers.map((n, index) => (
+                  <motion.li
                     key={n}
+                    // entrada escalonada sutil (§20): recompensa, não cassino
+                    initial={reduceMotion ? false : { opacity: 0, scale: 0.85, y: 6 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    transition={{
+                      duration: 0.32,
+                      ease: [0.22, 1, 0.36, 1],
+                      delay: reduceMotion ? 0 : Math.min(index, 8) * 0.06,
+                    }}
                     className="inline-grid h-11 min-w-11 place-items-center rounded-md bg-[linear-gradient(140deg,var(--brand),var(--brand-hover))] px-2 font-display font-semibold text-white tabular-nums"
                   >
                     {n}
-                  </li>
+                  </motion.li>
                 ))}
               </ul>
             </div>
           )}
 
           <div className="rise rise-5 mt-8 grid gap-3">
-            <Button asChild size="lg">
+            <ShareButton
+              title={campaign?.title ?? "Apoie esta loja"}
+              path={
+                search.campanha ? `/loja/${slug}/campanhas/${search.campanha}` : `/loja/${slug}`
+              }
+              label={search.campanha ? "Chamar mais gente" : "Compartilhar a loja"}
+              size="lg"
+              variant="primary"
+            />
+            <Button asChild size="lg" variant="secondary">
               <Link to="/conta">Ver minhas doações</Link>
             </Button>
-            <Button asChild size="lg" variant="secondary">
+            <Button asChild size="lg" variant="ghost">
               <Link to="/loja/$slug" params={{ slug }}>
                 Voltar para a loja
               </Link>

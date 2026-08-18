@@ -5,6 +5,7 @@ import { SiteFooter } from "#/components/site/site-footer";
 import { SiteHeader } from "#/components/site/site-header";
 import { Button } from "#/components/ui/button";
 import { ConfirmDialog } from "#/components/ui/confirm";
+import { SkeletonRows } from "#/components/ui/skeleton";
 import { Tag } from "#/components/ui/tag";
 import { useToast } from "#/components/ui/toast";
 import { errorMessage } from "#/lib/api/error-message";
@@ -143,10 +144,7 @@ function PlatformStores() {
         </fieldset>
 
         {isPending ? (
-          <div className="mt-6 grid gap-3">
-            <div className="h-24 animate-pulse rounded-lg bg-surface" />
-            <div className="h-24 animate-pulse rounded-lg bg-surface" />
-          </div>
+          <SkeletonRows rows={2} className="mt-6" />
         ) : items.length === 0 ? (
           <div className="card mt-6 px-6 py-14 text-center">
             <h2 className="font-display text-lg font-semibold">Nada por aqui</h2>

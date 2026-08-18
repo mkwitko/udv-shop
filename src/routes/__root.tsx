@@ -17,13 +17,13 @@ export const Route = createRootRouteWithContext<RouterContext>()({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { name: "theme-color", content: "#ffffff", media: "(prefers-color-scheme: light)" },
-      { name: "theme-color", content: "#070a09", media: "(prefers-color-scheme: dark)" },
-      { title: "Prospera — sua loja no ar hoje" },
+      { name: "theme-color", content: "#fdfcfa", media: "(prefers-color-scheme: light)" },
+      { name: "theme-color", content: "#1c1715", media: "(prefers-color-scheme: dark)" },
+      { title: "Colheita — o que sua comunidade cultiva, cresce junto" },
       {
         name: "description",
         content:
-          "Sua loja, campanhas, doações e sorteios num lugar só. Pix e cartão, com o dinheiro caindo direto na sua conta.",
+          "Venda, receba doações, crie campanhas e sorteios num lugar só. Pix e cartão, com o dinheiro indo direto para quem faz acontecer.",
       },
     ],
     links: [

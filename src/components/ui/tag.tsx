@@ -10,6 +10,7 @@ const tagVariants = cva(
         neutral: "border-line bg-surface text-muted",
         brand: "border-brand/30 bg-brand-soft text-brand-deep",
         accent: "border-accent/35 bg-accent/10 text-accent",
+        success: "border-success/30 bg-success-soft text-success",
         danger: "border-danger/30 bg-danger-soft text-danger",
       },
     },

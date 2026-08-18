@@ -1,5 +1,5 @@
 // Meta tags e JSON-LD das rotas SSR. Tudo que o Google e o WhatsApp leem sai daqui.
-const SITE_NAME = "Prospera";
+const SITE_NAME = "Colheita";
 
 export function siteUrl(): string {
   const fromEnv =
@@ -10,7 +10,7 @@ export function siteUrl(): string {
 export type SeoInput = {
   title: string;
   description: string;
-  /** caminho absoluto do site, ex.: `/loja/nucleo-demo` */
+  /** caminho absoluto do site, ex.: `/loja/boa-colheita` */
   path: string;
   image?: string | undefined;
   type?: "website" | "article" | "product";

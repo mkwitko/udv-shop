@@ -16,7 +16,7 @@ export function getStripe(): Promise<Stripe | null> {
 }
 
 /**
- * O Payment Element vem com o tema do Stripe; aqui ele herda os tokens da Prospera.
+ * O Payment Element vem com o tema do Stripe; aqui ele herda os tokens da Colheita.
  * Lido em runtime porque os valores mudam com o tema claro/escuro.
  */
 export function stripeAppearance() {

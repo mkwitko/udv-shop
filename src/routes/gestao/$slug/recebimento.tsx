@@ -34,6 +34,8 @@ function PaymentsAdmin() {
         </h2>
         <p className="mt-0.5 text-muted text-sm">Para onde vai o dinheiro de quem compra ou doa.</p>
       </div>
+
+      <FeeNote slug={slug} />
       <div className="grid items-start gap-6 lg:grid-cols-2">
         <PixBlock slug={slug} />
         <CardBlock slug={slug} />
@@ -246,5 +248,26 @@ function BillingBlock({ slug }: { slug: string }) {
         <ExternalLink className="h-4 w-4" aria-hidden />
       </Button>
     </section>
+  );
+}
+
+/**
+ * O diferencial "sem intermediário" dito com honestidade (§27 do brief): o dinheiro não
+ * fica parado aqui, e a taxa aparece com o número de verdade — nunca "100% grátis".
+ */
+function FeeNote({ slug }: { slug: string }) {
+  const { data: connect } = useGetConnectStatus(slug);
+  const bps = connect?.applicationFeeBps;
+  const fee =
+    bps === undefined ? null : (bps / 100).toLocaleString("pt-BR", { maximumFractionDigits: 2 });
+
+  return (
+    <p className="rounded-[1rem] border border-line bg-surface px-4 py-3 text-[0.95rem]">
+      <span className="font-semibold">O pagamento vai direto para a conta da sua loja.</span>{" "}
+      <span className="text-muted">
+        O dinheiro não fica parado na plataforma.
+        {fee ? ` Taxa da plataforma: ${fee}% por venda, descontada na hora.` : ""}
+      </span>
+    </p>
   );
 }

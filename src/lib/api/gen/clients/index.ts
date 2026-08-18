@@ -46,6 +46,7 @@ export { refresh } from "./refresh.ts";
 export { refundOrder } from "./refundOrder.ts";
 export { register } from "./register.ts";
 export { resetPassword } from "./resetPassword.ts";
+export { restoreProduct } from "./restoreProduct.ts";
 export { stripeWebhook } from "./stripeWebhook.ts";
 export { updateCampaign } from "./updateCampaign.ts";
 export { updateCampaignStatus } from "./updateCampaignStatus.ts";

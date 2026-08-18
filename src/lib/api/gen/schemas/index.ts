@@ -46,6 +46,7 @@ export { refresh200Schema, refreshMutationResponseSchema } from "./refreshSchema
 export { refundOrder202Schema, refundOrderMutationResponseSchema, refundOrderPathParamsSchema } from "./refundOrderSchema.ts";
 export { register201Schema, registerMutationRequestSchema, registerMutationResponseSchema } from "./registerSchema.ts";
 export { resetPassword204Schema, resetPasswordMutationRequestSchema, resetPasswordMutationResponseSchema } from "./resetPasswordSchema.ts";
+export { restoreProduct200Schema, restoreProductMutationResponseSchema, restoreProductPathParamsSchema } from "./restoreProductSchema.ts";
 export { stripeWebhook200Schema, stripeWebhookMutationResponseSchema } from "./stripeWebhookSchema.ts";
 export { updateCampaign200Schema, updateCampaignMutationRequestSchema, updateCampaignMutationResponseSchema, updateCampaignPathParamsSchema } from "./updateCampaignSchema.ts";
 export { updateCampaignStatus200Schema, updateCampaignStatusMutationRequestSchema, updateCampaignStatusMutationResponseSchema, updateCampaignStatusPathParamsSchema } from "./updateCampaignStatusSchema.ts";
