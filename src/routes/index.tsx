@@ -435,14 +435,17 @@ function StepBig({
   children: React.ReactNode;
 }) {
   return (
-    <Reveal>
-      <div>
+    <Reveal className="h-full">
+      <div className="flex h-full flex-col">
         <p className="font-bold font-display text-7xl text-brand-soft leading-none md:text-8xl dark:text-brand-soft">
           {n}
         </p>
         <h3 className="-mt-4 font-bold font-display text-xl">{title}</h3>
         <p className="mt-1.5 max-w-[36ch] text-[0.95rem] text-muted">{body}</p>
-        <div className="mt-4 rounded-[1rem] border border-line bg-surface p-3">{children}</div>
+        {/* o contexto cresce para os três cards terminarem na mesma linha */}
+        <div className="mt-4 flex flex-1 flex-col justify-center rounded-[1rem] border border-line bg-surface p-3">
+          {children}
+        </div>
       </div>
     </Reveal>
   );
