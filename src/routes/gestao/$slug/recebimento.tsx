@@ -17,6 +17,9 @@ import {
 import { longDate } from "#/lib/format";
 
 export const Route = createFileRoute("/gestao/$slug/recebimento")({
+  // o onboarding do Stripe volta para cá com ?connect=ok|refresh
+  validateSearch: (search: Record<string, unknown>): { connect?: "ok" | "refresh" } =>
+    search.connect === "ok" || search.connect === "refresh" ? { connect: search.connect } : {},
   component: PaymentsAdmin,
 });
 
@@ -26,8 +29,16 @@ export const Route = createFileRoute("/gestao/$slug/recebimento")({
  */
 function PaymentsAdmin() {
   const { slug } = Route.useParams();
+  const { connect } = Route.useSearch();
   return (
     <div className="grid gap-6">
+      {connect && (
+        <output className="card block p-4 text-sm">
+          {connect === "ok"
+            ? "Cadastro enviado. A confirmação pode levar alguns minutos — esta página mostra o estado atual da sua conta."
+            : "O cadastro não foi concluído. Você pode continuar de onde parou pelo botão abaixo."}
+        </output>
+      )}
       <div>
         <h2 className="font-bold font-display text-lg tracking-tight">
           Recebimento das suas vendas

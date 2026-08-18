@@ -14,6 +14,7 @@ export type { CreateSettlement201, CreateSettlementMutation, CreateSettlementMut
 export type { CreateStore201, CreateStore201StatusEnumKey, CreateStoreMutation, CreateStoreMutationRequest, CreateStoreMutationResponse } from "./CreateStore.ts";
 export type { CreateStripeAccountLink201, CreateStripeAccountLinkMutation, CreateStripeAccountLinkMutationResponse, CreateStripeAccountLinkPathParams } from "./CreateStripeAccountLink.ts";
 export type { CreateSupplier201, CreateSupplierMutation, CreateSupplierMutationRequest, CreateSupplierMutationResponse, CreateSupplierPathParams } from "./CreateSupplier.ts";
+export type { DeleteStoreDomain200, DeleteStoreDomainMutation, DeleteStoreDomainMutationResponse, DeleteStoreDomainPathParams } from "./DeleteStoreDomain.ts";
 export type { DrawRaffle202, DrawRaffleMutation, DrawRaffleMutationResponse, DrawRafflePathParams } from "./DrawRaffle.ts";
 export type { ForgotPassword204, ForgotPassword204EnumKey, ForgotPasswordMutation, ForgotPasswordMutationRequest, ForgotPasswordMutationResponse } from "./ForgotPassword.ts";
 export type { GetBillingStatus200, GetBillingStatus200StatusEnumKey, GetBillingStatusPathParams, GetBillingStatusQuery, GetBillingStatusQueryResponse } from "./GetBillingStatus.ts";
@@ -27,7 +28,9 @@ export type { GetMyOrder200, GetMyOrderPathParams, GetMyOrderQuery, GetMyOrderQu
 export type { GetPayout200, GetPayoutPathParams, GetPayoutQuery, GetPayoutQueryResponse } from "./GetPayout.ts";
 export type { GetProduct200, GetProduct200AvailabilityEnumKey, GetProductPathParams, GetProductQuery, GetProductQueryResponse, PayoutKindEnum3Key } from "./GetProduct.ts";
 export type { GetRaffle200, GetRaffle200StatusEnumKey, GetRafflePathParams, GetRaffleQuery, GetRaffleQueryResponse } from "./GetRaffle.ts";
+export type { GetStatement200, GetStatementPathParams, GetStatementQuery, GetStatementQueryParams, GetStatementQueryResponse } from "./GetStatement.ts";
 export type { GetStore200, GetStore200StatusEnumKey, GetStorePathParams, GetStoreQuery, GetStoreQueryResponse } from "./GetStore.ts";
+export type { GetStoreDomain200, GetStoreDomainPathParams, GetStoreDomainQuery, GetStoreDomainQueryResponse } from "./GetStoreDomain.ts";
 export type { ItemsAcceptedTypesEnumKey, ItemsStatusEnum4Key, ListCampaigns200, ListCampaignsPathParams, ListCampaignsQuery, ListCampaignsQueryParams, ListCampaignsQueryParamsAllEnumKey, ListCampaignsQueryResponse } from "./ListCampaigns.ts";
 export type { ItemsTypeEnumKey, ListMyDonations200, ListMyDonationsQuery, ListMyDonationsQueryParams, ListMyDonationsQueryParamsStatusEnumKey, ListMyDonationsQueryResponse } from "./ListMyDonations.ts";
 export type { ListMyInterests200, ListMyInterestsQuery, ListMyInterestsQueryParams, ListMyInterestsQueryParamsStatusEnumKey, ListMyInterestsQueryResponse } from "./ListMyInterests.ts";
@@ -46,11 +49,13 @@ export type { Logout204, Logout204EnumKey, LogoutMutation, LogoutMutationRespons
 export type { NotifyInterests200, NotifyInterestsMutation, NotifyInterestsMutationResponse, NotifyInterestsPathParams } from "./NotifyInterests.ts";
 export type { PresignUpload201, PresignUploadMutation, PresignUploadMutationRequest, PresignUploadMutationRequestContentTypeEnumKey, PresignUploadMutationResponse } from "./PresignUpload.ts";
 export type { PutRaffle200, PutRaffle200StatusEnumKey, PutRaffleMutation, PutRaffleMutationRequest, PutRaffleMutationResponse, PutRafflePathParams } from "./PutRaffle.ts";
+export type { PutStoreDomain200, PutStoreDomainMutation, PutStoreDomainMutationRequest, PutStoreDomainMutationResponse, PutStoreDomainPathParams } from "./PutStoreDomain.ts";
 export type { PutWooviConnect200, PutWooviConnectMutation, PutWooviConnectMutationRequest, PutWooviConnectMutationResponse, PutWooviConnectPathParams } from "./PutWooviConnect.ts";
 export type { Refresh200, RefreshMutation, RefreshMutationResponse } from "./Refresh.ts";
 export type { RefundOrder202, RefundOrder202StatusEnumKey, RefundOrderMutation, RefundOrderMutationResponse, RefundOrderPathParams } from "./RefundOrder.ts";
 export type { Register201, RegisterMutation, RegisterMutationRequest, RegisterMutationResponse } from "./Register.ts";
 export type { ResetPassword204, ResetPassword204EnumKey, ResetPasswordMutation, ResetPasswordMutationRequest, ResetPasswordMutationResponse } from "./ResetPassword.ts";
+export type { ResolveStoreDomain200, ResolveStoreDomain200StatusEnumKey, ResolveStoreDomainQuery, ResolveStoreDomainQueryParams, ResolveStoreDomainQueryResponse } from "./ResolveStoreDomain.ts";
 export type { PayoutKindEnum5Key, RestoreProduct200, RestoreProduct200AvailabilityEnumKey, RestoreProductMutation, RestoreProductMutationResponse, RestoreProductPathParams } from "./RestoreProduct.ts";
 export type { StripeWebhook200, StripeWebhookMutation, StripeWebhookMutationResponse } from "./StripeWebhook.ts";
 export type { UpdateCampaign200, UpdateCampaign200AcceptedTypesEnumKey, UpdateCampaign200StatusEnumKey, UpdateCampaignMutation, UpdateCampaignMutationRequest, UpdateCampaignMutationRequestAcceptedTypesEnumKey, UpdateCampaignMutationResponse, UpdateCampaignPathParams } from "./UpdateCampaign.ts";
@@ -61,6 +66,7 @@ export type { UpdateStore200, UpdateStore200StatusEnumKey, UpdateStoreMutation, 
 export type { UpdateStoreStatus200, UpdateStoreStatus200StatusEnumKey, UpdateStoreStatusMutation, UpdateStoreStatusMutationRequest, UpdateStoreStatusMutationRequestStatusEnumKey, UpdateStoreStatusMutationResponse, UpdateStoreStatusPathParams } from "./UpdateStoreStatus.ts";
 export type { UpdateSupplier200, UpdateSupplierMutation, UpdateSupplierMutationRequest, UpdateSupplierMutationResponse, UpdateSupplierPathParams } from "./UpdateSupplier.ts";
 export type { VerifyEmail204, VerifyEmail204EnumKey, VerifyEmailMutation, VerifyEmailMutationRequest, VerifyEmailMutationResponse } from "./VerifyEmail.ts";
+export type { VerifyStoreDomain200, VerifyStoreDomainMutation, VerifyStoreDomainMutationResponse, VerifyStoreDomainPathParams } from "./VerifyStoreDomain.ts";
 export type { WooviWebhook200, WooviWebhookMutation, WooviWebhookMutationResponse } from "./WooviWebhook.ts";
 export { adminListStoresQueryParamsStatusEnum } from "./AdminListStores.ts";
 export { itemsStatusEnum2 } from "./AdminListStores.ts";
@@ -111,6 +117,7 @@ export { listSuppliersQueryParamsAllEnum } from "./ListSuppliers.ts";
 export { presignUploadMutationRequestContentTypeEnum } from "./PresignUpload.ts";
 export { putRaffle200StatusEnum } from "./PutRaffle.ts";
 export { refundOrder202StatusEnum } from "./RefundOrder.ts";
+export { resolveStoreDomain200StatusEnum } from "./ResolveStoreDomain.ts";
 export { payoutKindEnum5 } from "./RestoreProduct.ts";
 export { restoreProduct200AvailabilityEnum } from "./RestoreProduct.ts";
 export { updateCampaign200AcceptedTypesEnum } from "./UpdateCampaign.ts";

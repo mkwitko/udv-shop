@@ -89,3 +89,18 @@ cor em [DESIGN.md](./DESIGN.md).
 Checkout, doação, `/gestao/:slug` e `/plataforma` — planos 8 e 9 da spec. Os botões de
 comprar, doar e "Gerenciar" já estão nas telas, desabilitados. `/conta` lista as lojas do
 usuário via `GET /me/stores`, mas não edita nada ainda.
+
+## Entrada do servidor e domínio próprio
+
+`src/server.ts` é a entrada do worker (`main` do `wrangler.jsonc` aponta para ele). Existe
+por um motivo só: quando o Host não é o da plataforma, ele pergunta à API
+(`GET /stores/by-domain`, cache de 60s por isolate) de quem é aquele endereço e reescreve
+o caminho para `/loja/{slug}{path}` antes de entregar ao roteador. O resto do app não sabe
+que isso aconteceu — nenhuma rota nova, nenhum componente duplicado.
+
+Não são reescritos: Host da plataforma (`VITE_SITE_URL`, `localhost`), `/loja/*`,
+`/_serverFn*`, `/api/*`, `/assets/*` e qualquer caminho com extensão. API indisponível ou
+host desconhecido cai na landing, nunca em erro.
+
+`lib/api/download.ts` baixa os CSVs da API fora do cliente gerado (as rotas devolvem
+arquivo, não JSON) e tenta um refresh de sessão antes de desistir num 401.

@@ -23,8 +23,10 @@ import { Route as GestaoSlugRouteImport } from './routes/gestao/$slug'
 import { Route as LojaSlugRouteImport } from './routes/loja/$slug'
 import { Route as GestaoSlugIndexRouteImport } from './routes/gestao/$slug/index'
 import { Route as GestaoSlugCampanhasRouteImport } from './routes/gestao/$slug/campanhas'
+import { Route as GestaoSlugConfiguracoesRouteImport } from './routes/gestao/$slug/configuracoes'
 import { Route as GestaoSlugDoacoesRouteImport } from './routes/gestao/$slug/doacoes'
 import { Route as GestaoSlugEncomendasRouteImport } from './routes/gestao/$slug/encomendas'
+import { Route as GestaoSlugExtratoRouteImport } from './routes/gestao/$slug/extrato'
 import { Route as GestaoSlugPedidosRouteImport } from './routes/gestao/$slug/pedidos'
 import { Route as GestaoSlugProdutosRouteImport } from './routes/gestao/$slug/produtos'
 import { Route as GestaoSlugRecebimentoRouteImport } from './routes/gestao/$slug/recebimento'
@@ -106,6 +108,11 @@ const GestaoSlugCampanhasRoute = GestaoSlugCampanhasRouteImport.update({
   path: '/campanhas',
   getParentRoute: () => GestaoSlugRoute,
 } as any)
+const GestaoSlugConfiguracoesRoute = GestaoSlugConfiguracoesRouteImport.update({
+  id: '/configuracoes',
+  path: '/configuracoes',
+  getParentRoute: () => GestaoSlugRoute,
+} as any)
 const GestaoSlugDoacoesRoute = GestaoSlugDoacoesRouteImport.update({
   id: '/doacoes',
   path: '/doacoes',
@@ -114,6 +121,11 @@ const GestaoSlugDoacoesRoute = GestaoSlugDoacoesRouteImport.update({
 const GestaoSlugEncomendasRoute = GestaoSlugEncomendasRouteImport.update({
   id: '/encomendas',
   path: '/encomendas',
+  getParentRoute: () => GestaoSlugRoute,
+} as any)
+const GestaoSlugExtratoRoute = GestaoSlugExtratoRouteImport.update({
+  id: '/extrato',
+  path: '/extrato',
   getParentRoute: () => GestaoSlugRoute,
 } as any)
 const GestaoSlugPedidosRoute = GestaoSlugPedidosRouteImport.update({
@@ -182,8 +194,10 @@ export interface FileRoutesByFullPath {
   '/gestao/$slug': typeof GestaoSlugRouteWithChildren
   '/loja/$slug': typeof LojaSlugRouteWithChildren
   '/gestao/$slug/campanhas': typeof GestaoSlugCampanhasRoute
+  '/gestao/$slug/configuracoes': typeof GestaoSlugConfiguracoesRoute
   '/gestao/$slug/doacoes': typeof GestaoSlugDoacoesRoute
   '/gestao/$slug/encomendas': typeof GestaoSlugEncomendasRoute
+  '/gestao/$slug/extrato': typeof GestaoSlugExtratoRoute
   '/gestao/$slug/pedidos': typeof GestaoSlugPedidosRoute
   '/gestao/$slug/produtos': typeof GestaoSlugProdutosRoute
   '/gestao/$slug/recebimento': typeof GestaoSlugRecebimentoRoute
@@ -208,8 +222,10 @@ export interface FileRoutesByTo {
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/gestao/$slug/campanhas': typeof GestaoSlugCampanhasRoute
+  '/gestao/$slug/configuracoes': typeof GestaoSlugConfiguracoesRoute
   '/gestao/$slug/doacoes': typeof GestaoSlugDoacoesRoute
   '/gestao/$slug/encomendas': typeof GestaoSlugEncomendasRoute
+  '/gestao/$slug/extrato': typeof GestaoSlugExtratoRoute
   '/gestao/$slug/pedidos': typeof GestaoSlugPedidosRoute
   '/gestao/$slug/produtos': typeof GestaoSlugProdutosRoute
   '/gestao/$slug/recebimento': typeof GestaoSlugRecebimentoRoute
@@ -237,8 +253,10 @@ export interface FileRoutesById {
   '/gestao/$slug': typeof GestaoSlugRouteWithChildren
   '/loja/$slug': typeof LojaSlugRouteWithChildren
   '/gestao/$slug/campanhas': typeof GestaoSlugCampanhasRoute
+  '/gestao/$slug/configuracoes': typeof GestaoSlugConfiguracoesRoute
   '/gestao/$slug/doacoes': typeof GestaoSlugDoacoesRoute
   '/gestao/$slug/encomendas': typeof GestaoSlugEncomendasRoute
+  '/gestao/$slug/extrato': typeof GestaoSlugExtratoRoute
   '/gestao/$slug/pedidos': typeof GestaoSlugPedidosRoute
   '/gestao/$slug/produtos': typeof GestaoSlugProdutosRoute
   '/gestao/$slug/recebimento': typeof GestaoSlugRecebimentoRoute
@@ -267,8 +285,10 @@ export interface FileRouteTypes {
     | '/gestao/$slug'
     | '/loja/$slug'
     | '/gestao/$slug/campanhas'
+    | '/gestao/$slug/configuracoes'
     | '/gestao/$slug/doacoes'
     | '/gestao/$slug/encomendas'
+    | '/gestao/$slug/extrato'
     | '/gestao/$slug/pedidos'
     | '/gestao/$slug/produtos'
     | '/gestao/$slug/recebimento'
@@ -293,8 +313,10 @@ export interface FileRouteTypes {
     | '/robots.txt'
     | '/sitemap.xml'
     | '/gestao/$slug/campanhas'
+    | '/gestao/$slug/configuracoes'
     | '/gestao/$slug/doacoes'
     | '/gestao/$slug/encomendas'
+    | '/gestao/$slug/extrato'
     | '/gestao/$slug/pedidos'
     | '/gestao/$slug/produtos'
     | '/gestao/$slug/recebimento'
@@ -321,8 +343,10 @@ export interface FileRouteTypes {
     | '/gestao/$slug'
     | '/loja/$slug'
     | '/gestao/$slug/campanhas'
+    | '/gestao/$slug/configuracoes'
     | '/gestao/$slug/doacoes'
     | '/gestao/$slug/encomendas'
+    | '/gestao/$slug/extrato'
     | '/gestao/$slug/pedidos'
     | '/gestao/$slug/produtos'
     | '/gestao/$slug/recebimento'
@@ -451,6 +475,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GestaoSlugCampanhasRouteImport
       parentRoute: typeof GestaoSlugRoute
     }
+    '/gestao/$slug/configuracoes': {
+      id: '/gestao/$slug/configuracoes'
+      path: '/configuracoes'
+      fullPath: '/gestao/$slug/configuracoes'
+      preLoaderRoute: typeof GestaoSlugConfiguracoesRouteImport
+      parentRoute: typeof GestaoSlugRoute
+    }
     '/gestao/$slug/doacoes': {
       id: '/gestao/$slug/doacoes'
       path: '/doacoes'
@@ -463,6 +494,13 @@ declare module '@tanstack/react-router' {
       path: '/encomendas'
       fullPath: '/gestao/$slug/encomendas'
       preLoaderRoute: typeof GestaoSlugEncomendasRouteImport
+      parentRoute: typeof GestaoSlugRoute
+    }
+    '/gestao/$slug/extrato': {
+      id: '/gestao/$slug/extrato'
+      path: '/extrato'
+      fullPath: '/gestao/$slug/extrato'
+      preLoaderRoute: typeof GestaoSlugExtratoRouteImport
       parentRoute: typeof GestaoSlugRoute
     }
     '/gestao/$slug/pedidos': {
@@ -540,8 +578,10 @@ declare module '@tanstack/react-router' {
 
 interface GestaoSlugRouteChildren {
   GestaoSlugCampanhasRoute: typeof GestaoSlugCampanhasRoute
+  GestaoSlugConfiguracoesRoute: typeof GestaoSlugConfiguracoesRoute
   GestaoSlugDoacoesRoute: typeof GestaoSlugDoacoesRoute
   GestaoSlugEncomendasRoute: typeof GestaoSlugEncomendasRoute
+  GestaoSlugExtratoRoute: typeof GestaoSlugExtratoRoute
   GestaoSlugPedidosRoute: typeof GestaoSlugPedidosRoute
   GestaoSlugProdutosRoute: typeof GestaoSlugProdutosRoute
   GestaoSlugRecebimentoRoute: typeof GestaoSlugRecebimentoRoute
@@ -551,8 +591,10 @@ interface GestaoSlugRouteChildren {
 
 const GestaoSlugRouteChildren: GestaoSlugRouteChildren = {
   GestaoSlugCampanhasRoute: GestaoSlugCampanhasRoute,
+  GestaoSlugConfiguracoesRoute: GestaoSlugConfiguracoesRoute,
   GestaoSlugDoacoesRoute: GestaoSlugDoacoesRoute,
   GestaoSlugEncomendasRoute: GestaoSlugEncomendasRoute,
+  GestaoSlugExtratoRoute: GestaoSlugExtratoRoute,
   GestaoSlugPedidosRoute: GestaoSlugPedidosRoute,
   GestaoSlugProdutosRoute: GestaoSlugProdutosRoute,
   GestaoSlugRecebimentoRoute: GestaoSlugRecebimentoRoute,

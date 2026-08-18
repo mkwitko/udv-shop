@@ -14,6 +14,7 @@ export { createSettlement201Schema, createSettlementMutationRequestSchema, creat
 export { createStore201Schema, createStoreMutationRequestSchema, createStoreMutationResponseSchema } from "./createStoreSchema.ts";
 export { createStripeAccountLink201Schema, createStripeAccountLinkMutationResponseSchema, createStripeAccountLinkPathParamsSchema } from "./createStripeAccountLinkSchema.ts";
 export { createSupplier201Schema, createSupplierMutationRequestSchema, createSupplierMutationResponseSchema, createSupplierPathParamsSchema } from "./createSupplierSchema.ts";
+export { deleteStoreDomain200Schema, deleteStoreDomainMutationResponseSchema, deleteStoreDomainPathParamsSchema } from "./deleteStoreDomainSchema.ts";
 export { drawRaffle202Schema, drawRaffleMutationResponseSchema, drawRafflePathParamsSchema } from "./drawRaffleSchema.ts";
 export { forgotPassword204Schema, forgotPasswordMutationRequestSchema, forgotPasswordMutationResponseSchema } from "./forgotPasswordSchema.ts";
 export { getBillingStatus200Schema, getBillingStatusPathParamsSchema, getBillingStatusQueryResponseSchema } from "./getBillingStatusSchema.ts";
@@ -27,6 +28,8 @@ export { getMyOrder200Schema, getMyOrderPathParamsSchema, getMyOrderQueryRespons
 export { getPayout200Schema, getPayoutPathParamsSchema, getPayoutQueryResponseSchema } from "./getPayoutSchema.ts";
 export { getProduct200Schema, getProductPathParamsSchema, getProductQueryResponseSchema } from "./getProductSchema.ts";
 export { getRaffle200Schema, getRafflePathParamsSchema, getRaffleQueryResponseSchema } from "./getRaffleSchema.ts";
+export { getStatement200Schema, getStatementPathParamsSchema, getStatementQueryParamsSchema, getStatementQueryResponseSchema } from "./getStatementSchema.ts";
+export { getStoreDomain200Schema, getStoreDomainPathParamsSchema, getStoreDomainQueryResponseSchema } from "./getStoreDomainSchema.ts";
 export { getStore200Schema, getStorePathParamsSchema, getStoreQueryResponseSchema } from "./getStoreSchema.ts";
 export { listCampaigns200Schema, listCampaignsPathParamsSchema, listCampaignsQueryParamsSchema, listCampaignsQueryResponseSchema } from "./listCampaignsSchema.ts";
 export { listMyDonations200Schema, listMyDonationsQueryParamsSchema, listMyDonationsQueryResponseSchema } from "./listMyDonationsSchema.ts";
@@ -46,11 +49,13 @@ export { logout204Schema, logoutMutationResponseSchema } from "./logoutSchema.ts
 export { notifyInterests200Schema, notifyInterestsMutationResponseSchema, notifyInterestsPathParamsSchema } from "./notifyInterestsSchema.ts";
 export { presignUpload201Schema, presignUploadMutationRequestSchema, presignUploadMutationResponseSchema } from "./presignUploadSchema.ts";
 export { putRaffle200Schema, putRaffleMutationRequestSchema, putRaffleMutationResponseSchema, putRafflePathParamsSchema } from "./putRaffleSchema.ts";
+export { putStoreDomain200Schema, putStoreDomainMutationRequestSchema, putStoreDomainMutationResponseSchema, putStoreDomainPathParamsSchema } from "./putStoreDomainSchema.ts";
 export { putWooviConnect200Schema, putWooviConnectMutationRequestSchema, putWooviConnectMutationResponseSchema, putWooviConnectPathParamsSchema } from "./putWooviConnectSchema.ts";
 export { refresh200Schema, refreshMutationResponseSchema } from "./refreshSchema.ts";
 export { refundOrder202Schema, refundOrderMutationResponseSchema, refundOrderPathParamsSchema } from "./refundOrderSchema.ts";
 export { register201Schema, registerMutationRequestSchema, registerMutationResponseSchema } from "./registerSchema.ts";
 export { resetPassword204Schema, resetPasswordMutationRequestSchema, resetPasswordMutationResponseSchema } from "./resetPasswordSchema.ts";
+export { resolveStoreDomain200Schema, resolveStoreDomainQueryParamsSchema, resolveStoreDomainQueryResponseSchema } from "./resolveStoreDomainSchema.ts";
 export { restoreProduct200Schema, restoreProductMutationResponseSchema, restoreProductPathParamsSchema } from "./restoreProductSchema.ts";
 export { stripeWebhook200Schema, stripeWebhookMutationResponseSchema } from "./stripeWebhookSchema.ts";
 export { updateCampaign200Schema, updateCampaignMutationRequestSchema, updateCampaignMutationResponseSchema, updateCampaignPathParamsSchema } from "./updateCampaignSchema.ts";
@@ -61,4 +66,5 @@ export { updateStore200Schema, updateStoreMutationRequestSchema, updateStoreMuta
 export { updateStoreStatus200Schema, updateStoreStatusMutationRequestSchema, updateStoreStatusMutationResponseSchema, updateStoreStatusPathParamsSchema } from "./updateStoreStatusSchema.ts";
 export { updateSupplier200Schema, updateSupplierMutationRequestSchema, updateSupplierMutationResponseSchema, updateSupplierPathParamsSchema } from "./updateSupplierSchema.ts";
 export { verifyEmail204Schema, verifyEmailMutationRequestSchema, verifyEmailMutationResponseSchema } from "./verifyEmailSchema.ts";
+export { verifyStoreDomain200Schema, verifyStoreDomainMutationResponseSchema, verifyStoreDomainPathParamsSchema } from "./verifyStoreDomainSchema.ts";
 export { wooviWebhook200Schema, wooviWebhookMutationResponseSchema } from "./wooviWebhookSchema.ts";

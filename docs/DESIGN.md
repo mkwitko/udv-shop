@@ -125,6 +125,7 @@ Antes de criar, procurar: `Button` (variantes semânticas, nunca `OrangeButton`)
 | Produto | ativo → arquivado → restaurado | Arquivado sai da vitrine, não recebe compras, mantém histórico e volta por "Restaurar produto". Não existe exclusão permanente. |
 | Encomenda | esperando → avisado → comprou/desistiu | A lista mostra nome, data e **telefone mascarado** (`(48) ****-5678`); o contato completo não fica exposto. |
 | Campanha | rascunho → no ar → pausada → encerrada | Verbos concretos: "Pausar campanha", "Retomar", "Encerrar" — com confirmação que explica a consequência. |
+| Endereço próprio | sem endereço → esperando o DNS → no ar | Enquanto o CNAME não é visto, a tela mostra tipo, nome e destino do registro, com botão de copiar, e diz o que o DNS respondeu na última checagem. |
 | Repasse | a pagar → pago → crédito | Saldo positivo diz "R$ 282,50 a pagar"; zero diz "em dia"; negativo diz "crédito de R$ X com esta pessoa" (aconteceu um reembolso depois do repasse). |
 
 ## Dinheiro e transparência
@@ -149,6 +150,11 @@ Se a sobra fica negativa, a linha vira vermelha e a tela diz o motivo em portugu
 *"Assim a loja paga para vender. Diminua o repasse ou aumente o preço."* — e o salvamento
 é barrado antes de chegar na API. A palavra é sempre **parceiro**, nunca "fornecedor",
 "supplier" ou "split".
+
+O **extrato** fecha a conta na frente de quem lê — entrada, taxa, repasse e o que sobrou —
+e a exportação para planilha usa as mesmas regras da tela (telefone de encomenda sai
+mascarado). Nunca usar "faturamento", "receita bruta" ou "líquido": é "vendas",
+"doações", "taxa da plataforma", "repasse" e "ficou com a loja".
 
 ## Proibido
 

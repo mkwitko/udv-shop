@@ -2,7 +2,7 @@ import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { SiteFooter } from "#/components/site/site-footer";
 import { SiteHeader } from "#/components/site/site-header";
 import { StoreOffline } from "#/components/store/store-offline";
-import { useGetStore, getStoreQueryOptions } from "#/lib/api/gen/hooks/useGetStore";
+import { getStoreQueryOptions, useGetStore } from "#/lib/api/gen/hooks/useGetStore";
 import { useListMyStores } from "#/lib/api/gen/hooks/useListMyStores";
 import { publicRequest } from "#/lib/api/public";
 import { useSession } from "#/lib/auth/session";

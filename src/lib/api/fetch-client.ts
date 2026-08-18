@@ -44,7 +44,7 @@ export class ApiError<TError = unknown> extends Error {
   }
 }
 
-function resolveBaseUrl(): string {
+export function resolveBaseUrl(): string {
   const fromEnv =
     typeof import.meta.env?.VITE_API_URL === "string" ? import.meta.env.VITE_API_URL : "";
   return (fromEnv || "http://localhost:3333").replace(/\/$/, "");

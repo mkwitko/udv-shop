@@ -33,6 +33,8 @@ const TABS = [
   { to: "/gestao/$slug/campanhas", label: "Campanhas" },
   { to: "/gestao/$slug/doacoes", label: "Doações" },
   { to: "/gestao/$slug/recebimento", label: "Recebimento" },
+  { to: "/gestao/$slug/extrato", label: "Extrato", adminOnly: true },
+  { to: "/gestao/$slug/configuracoes", label: "Configurações", ownerOnly: true },
 ] as const;
 
 function ManageLayout() {
@@ -42,9 +44,11 @@ function ManageLayout() {
   const reducedMotion = useReducedMotion();
   const { data, isPending } = useListMyStores();
   const store = data?.items.find((candidate) => candidate.slug === slug);
-  const visibleTabs = TABS.filter(
-    (tab) => !("adminOnly" in tab && tab.adminOnly) || store?.role !== "staff",
-  );
+  const visibleTabs = TABS.filter((tab) => {
+    if ("adminOnly" in tab && tab.adminOnly && store?.role === "staff") return false;
+    if ("ownerOnly" in tab && tab.ownerOnly && store?.role !== "owner") return false;
+    return true;
+  });
 
   // quem não tem papel nesta loja não vê o painel — a API recusaria de todo jeito,
   // mas aqui a pessoa é levada de volta em vez de ver telas de erro
