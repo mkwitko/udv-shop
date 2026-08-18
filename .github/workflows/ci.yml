@@ -1,0 +1,83 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm check
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm build
+        env:
+          VITE_API_URL: https://api.example.org
+          VITE_SITE_URL: https://example.org
+
+  e2e:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: udv
+          POSTGRES_PASSWORD: udv
+          POSTGRES_DB: udvshop
+        ports:
+          - 5436:5432
+        options: >-
+          --health-cmd "pg_isready -U udv"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: checkout da API (mesma organização)
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/udv-shop-api
+          path: udv-shop-api
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm install --frozen-lockfile
+        working-directory: udv-shop-api
+      - name: prepara e sobe a API com pagamentos falsos
+        working-directory: udv-shop-api
+        run: |
+          cp .env.example .env
+          node -e "
+            const fs = require('fs');
+            let env = fs.readFileSync('.env', 'utf8');
+            env = env.replace(/^DEV_FAKE_PAYMENTS=.*/m, 'DEV_FAKE_PAYMENTS=true');
+            env = env.replace(/^COOKIE_SECRET=.*/m, 'COOKIE_SECRET=segredo-de-ci-nao-usar-em-prod');
+            fs.writeFileSync('.env', env);
+          "
+          pnpm keys:generate >> .env
+          pnpm db:generate
+          pnpm db:deploy
+          pnpm db:seed
+          (npx tsx --env-file=.env src/server.ts &) && npx wait-on -t 60000 http://localhost:3333/health
+        env:
+          DATABASE_URL: postgresql://udv:udv@localhost:5436/udvshop
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm exec playwright test
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: playwright-report
+          retention-days: 7

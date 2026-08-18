@@ -60,7 +60,7 @@ function ForgotPasswordPage() {
           spam.
         </p>
       ) : (
-        <form onSubmit={onSubmit} className="grid gap-4" noValidate>
+        <form onSubmit={onSubmit} method="post" className="grid gap-4" noValidate>
           <FormError>{formError}</FormError>
 
           <Field label="E-mail" htmlFor="email" error={errors.email?.message}>

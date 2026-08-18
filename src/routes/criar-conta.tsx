@@ -62,7 +62,7 @@ function RegisterPage() {
         </>
       }
     >
-      <form onSubmit={onSubmit} className="grid gap-4" noValidate>
+      <form onSubmit={onSubmit} method="post" className="grid gap-4" noValidate>
         <FormError>{formError}</FormError>
 
         <Field label="Seu nome" htmlFor="name" error={errors.name?.message}>
