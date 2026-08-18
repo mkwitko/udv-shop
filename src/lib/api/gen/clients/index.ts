@@ -1,3 +1,4 @@
+export { adminListStores } from "./adminListStores.ts";
 export { archiveProduct } from "./archiveProduct.ts";
 export { cancelDonationSubscription } from "./cancelDonationSubscription.ts";
 export { cancelInterest } from "./cancelInterest.ts";

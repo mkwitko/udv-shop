@@ -24,6 +24,10 @@ export type GetMe200 = {
      * @type boolean
     */
     emailVerified: boolean;
+    /**
+     * @type boolean
+    */
+    platformAdmin: boolean;
 };
 
 export type GetMeQueryResponse = GetMe200;

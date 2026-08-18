@@ -32,6 +32,10 @@ export type Refresh200 = {
          * @type boolean
         */
         emailVerified: boolean;
+        /**
+         * @type boolean
+        */
+        platformAdmin: boolean;
     };
 };
 

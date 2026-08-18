@@ -1,3 +1,4 @@
+export { adminListStores200Schema, adminListStoresQueryParamsSchema, adminListStoresQueryResponseSchema } from "./adminListStoresSchema.ts";
 export { archiveProduct204Schema, archiveProductMutationResponseSchema, archiveProductPathParamsSchema } from "./archiveProductSchema.ts";
 export { cancelDonationSubscription202Schema, cancelDonationSubscriptionMutationResponseSchema, cancelDonationSubscriptionPathParamsSchema } from "./cancelDonationSubscriptionSchema.ts";
 export { cancelInterest200Schema, cancelInterestMutationResponseSchema, cancelInterestPathParamsSchema } from "./cancelInterestSchema.ts";

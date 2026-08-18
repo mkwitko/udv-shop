@@ -13,7 +13,8 @@ export const getMe200Schema = z.object({
     "id": z.string(),
 "name": z.string(),
 "email": z.string(),
-"emailVerified": z.boolean()
+"emailVerified": z.boolean(),
+"platformAdmin": z.boolean()
     }) as unknown as z.ZodType<GetMe200>
 
 export const getMeQueryResponseSchema = z.lazy(() => getMe200Schema) as unknown as z.ZodType<GetMeQueryResponse>

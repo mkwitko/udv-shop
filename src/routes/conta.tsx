@@ -80,16 +80,23 @@ function AccountPage() {
               <p className="mt-1 text-muted">{user?.email}</p>
             </div>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={async () => {
-              await logout();
-              await navigate({ to: "/", replace: true });
-            }}
-          >
-            Sair
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            {user?.platformAdmin && (
+              <Button asChild variant="secondary" size="sm">
+                <Link to="/plataforma">Administrar plataforma</Link>
+              </Button>
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={async () => {
+                await logout();
+                await navigate({ to: "/", replace: true });
+              }}
+            >
+              Sair
+            </Button>
+          </div>
         </div>
 
         {user?.emailVerified === false && (

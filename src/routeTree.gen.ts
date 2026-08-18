@@ -15,6 +15,7 @@ import { Route as CriarContaRouteImport } from './routes/criar-conta'
 import { Route as EntrarRouteImport } from './routes/entrar'
 import { Route as LojasRouteImport } from './routes/lojas'
 import { Route as NovaLojaRouteImport } from './routes/nova-loja'
+import { Route as PlataformaRouteImport } from './routes/plataforma'
 import { Route as RecuperarSenhaRouteImport } from './routes/recuperar-senha'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
@@ -62,6 +63,11 @@ const LojasRoute = LojasRouteImport.update({
 const NovaLojaRoute = NovaLojaRouteImport.update({
   id: '/nova-loja',
   path: '/nova-loja',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlataformaRoute = PlataformaRouteImport.update({
+  id: '/plataforma',
+  path: '/plataforma',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RecuperarSenhaRoute = RecuperarSenhaRouteImport.update({
@@ -163,6 +169,7 @@ export interface FileRoutesByFullPath {
   '/entrar': typeof EntrarRoute
   '/lojas': typeof LojasRoute
   '/nova-loja': typeof NovaLojaRoute
+  '/plataforma': typeof PlataformaRoute
   '/recuperar-senha': typeof RecuperarSenhaRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -189,6 +196,7 @@ export interface FileRoutesByTo {
   '/entrar': typeof EntrarRoute
   '/lojas': typeof LojasRoute
   '/nova-loja': typeof NovaLojaRoute
+  '/plataforma': typeof PlataformaRoute
   '/recuperar-senha': typeof RecuperarSenhaRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -214,6 +222,7 @@ export interface FileRoutesById {
   '/entrar': typeof EntrarRoute
   '/lojas': typeof LojasRoute
   '/nova-loja': typeof NovaLojaRoute
+  '/plataforma': typeof PlataformaRoute
   '/recuperar-senha': typeof RecuperarSenhaRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -242,6 +251,7 @@ export interface FileRouteTypes {
     | '/entrar'
     | '/lojas'
     | '/nova-loja'
+    | '/plataforma'
     | '/recuperar-senha'
     | '/robots.txt'
     | '/sitemap.xml'
@@ -268,6 +278,7 @@ export interface FileRouteTypes {
     | '/entrar'
     | '/lojas'
     | '/nova-loja'
+    | '/plataforma'
     | '/recuperar-senha'
     | '/robots.txt'
     | '/sitemap.xml'
@@ -292,6 +303,7 @@ export interface FileRouteTypes {
     | '/entrar'
     | '/lojas'
     | '/nova-loja'
+    | '/plataforma'
     | '/recuperar-senha'
     | '/robots.txt'
     | '/sitemap.xml'
@@ -319,6 +331,7 @@ export interface RootRouteChildren {
   EntrarRoute: typeof EntrarRoute
   LojasRoute: typeof LojasRoute
   NovaLojaRoute: typeof NovaLojaRoute
+  PlataformaRoute: typeof PlataformaRoute
   RecuperarSenhaRoute: typeof RecuperarSenhaRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
@@ -368,6 +381,13 @@ declare module '@tanstack/react-router' {
       path: '/nova-loja'
       fullPath: '/nova-loja'
       preLoaderRoute: typeof NovaLojaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/plataforma': {
+      id: '/plataforma'
+      path: '/plataforma'
+      fullPath: '/plataforma'
+      preLoaderRoute: typeof PlataformaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/recuperar-senha': {
@@ -552,6 +572,7 @@ const rootRouteChildren: RootRouteChildren = {
   EntrarRoute: EntrarRoute,
   LojasRoute: LojasRoute,
   NovaLojaRoute: NovaLojaRoute,
+  PlataformaRoute: PlataformaRoute,
   RecuperarSenhaRoute: RecuperarSenhaRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,

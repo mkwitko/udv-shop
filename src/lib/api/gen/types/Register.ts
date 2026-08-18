@@ -32,6 +32,10 @@ export type Register201 = {
          * @type boolean
         */
         emailVerified: boolean;
+        /**
+         * @type boolean
+        */
+        platformAdmin: boolean;
     };
 };
 

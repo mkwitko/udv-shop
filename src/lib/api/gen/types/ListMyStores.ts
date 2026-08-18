@@ -4,13 +4,13 @@
 */
 
 
-export const itemsStatusEnum2 = {
+export const itemsStatusEnum3 = {
     pending: "pending",
     active: "active",
     suspended: "suspended"
 } as const;
 
-export type ItemsStatusEnum2Key = (typeof itemsStatusEnum2)[keyof typeof itemsStatusEnum2];
+export type ItemsStatusEnum3Key = (typeof itemsStatusEnum3)[keyof typeof itemsStatusEnum3];
 
 export const itemsRoleEnum = {
     owner: "owner",
@@ -47,7 +47,7 @@ export type ListMyStores200 = {
         /**
          * @type string
         */
-        status: ItemsStatusEnum2Key;
+        status: ItemsStatusEnum3Key;
         branding: any | null;
         /**
          * @type string

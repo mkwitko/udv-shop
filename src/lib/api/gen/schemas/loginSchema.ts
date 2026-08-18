@@ -15,7 +15,8 @@ export const login200Schema = z.object({
     "id": z.string(),
 "name": z.string(),
 "email": z.string(),
-"emailVerified": z.boolean()
+"emailVerified": z.boolean(),
+"platformAdmin": z.boolean()
     })
     }) as unknown as z.ZodType<Login200>
 
