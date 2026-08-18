@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { Tag } from "#/components/ui/tag";
 import { listCampaignsQueryOptions, useListCampaigns } from "#/lib/api/gen/hooks/useListCampaigns";
 import { publicRequest } from "#/lib/api/public";
 import { money, percent } from "#/lib/format";
@@ -25,8 +26,8 @@ function CampaignList() {
 
   return (
     <section className="shell py-14">
-      <p className="kicker">Obra em andamento</p>
-      <h1 className="mt-4 text-title">Campanhas</h1>
+      <p className="kicker">Campanhas</p>
+      <h1 className="mt-4 text-title">Veja onde sua ajuda faz diferença.</h1>
 
       {campaigns.length === 0 ? (
         <p className="mt-8 text-muted">Nenhuma campanha aberta agora.</p>
@@ -48,14 +49,23 @@ function CampaignList() {
                   />
                 )}
                 <div className="p-6">
-                  <h2 className="font-display text-xl font-semibold transition-colors duration-(--dur) ease-(--ease) group-hover:text-brand-hover">
-                    {campaign.title}
-                  </h2>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h2 className="font-bold font-display text-xl transition-colors duration-(--dur) ease-(--ease) group-hover:text-brand-deep">
+                      {campaign.title}
+                    </h2>
+                    {campaign.status === "paused" && <Tag tone="accent">pausada</Tag>}
+                    {campaign.status === "finished" && <Tag>encerrada</Tag>}
+                  </div>
                   <CampaignProgress
                     raisedCents={campaign.raisedCents}
                     goalCents={campaign.goalCents}
                     donationCount={campaign.donationCount}
                   />
+                  {campaign.status === "active" && (
+                    <p className="mt-4 inline-flex items-center gap-1.5 font-semibold text-brand-deep text-sm">
+                      Quero ajudar →
+                    </p>
+                  )}
                 </div>
               </Link>
             </li>

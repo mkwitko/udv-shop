@@ -28,8 +28,23 @@ function PaymentsAdmin() {
   const { slug } = Route.useParams();
   return (
     <div className="grid max-w-2xl gap-6">
+      <div>
+        <h2 className="font-bold font-display text-lg tracking-tight">
+          Recebimento das suas vendas
+        </h2>
+        <p className="mt-0.5 text-muted text-sm">Para onde vai o dinheiro de quem compra ou doa.</p>
+      </div>
       <PixBlock slug={slug} />
       <CardBlock slug={slug} />
+
+      <div className="rule pt-6">
+        <h2 className="font-bold font-display text-lg tracking-tight">
+          Sua assinatura da plataforma
+        </h2>
+        <p className="mt-0.5 text-muted text-sm">
+          Separada das vendas: é o que mantém a loja no ar.
+        </p>
+      </div>
       <BillingBlock slug={slug} />
     </div>
   );
@@ -171,7 +186,7 @@ const BILLING_LABEL: Record<
   none: { text: "sem assinatura", tone: "neutral" },
   trialing: { text: "em período de testes", tone: "accent" },
   active: { text: "ativa", tone: "brand" },
-  past_due: { text: "pagamento atrasado", tone: "danger" },
+  past_due: { text: "precisamos atualizar seu pagamento", tone: "danger" },
   incomplete: { text: "pagamento pendente", tone: "accent" },
   canceled: { text: "cancelada", tone: "neutral" },
 };

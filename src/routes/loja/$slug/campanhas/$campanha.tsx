@@ -62,14 +62,24 @@ function CampaignPage() {
               <Tag tone="brand">Doação única</Tag>
               {monthly && <Tag tone="accent">Mensal</Tag>}
             </div>
-            <Button asChild className="mt-6 w-full" size="lg">
-              <Link to="/loja/$slug/doar" params={{ slug }} search={{ campanha }}>
-                Doar para esta campanha
-              </Link>
-            </Button>
-            <p className="mt-3 text-sm text-muted">
-              O valor vai direto para a conta de {campaign.store.name}.
-            </p>
+            {campaign.status === "active" ? (
+              <>
+                <Button asChild className="mt-6 w-full" size="lg">
+                  <Link to="/loja/$slug/doar" params={{ slug }} search={{ campanha }}>
+                    Quero ajudar
+                  </Link>
+                </Button>
+                <p className="mt-3 text-muted text-sm">
+                  O valor vai direto para a conta de {campaign.store.name}.
+                </p>
+              </>
+            ) : (
+              <p className="mt-6 rounded-[1rem] bg-surface px-4 py-3 text-[0.95rem] text-muted">
+                {campaign.status === "paused"
+                  ? "Campanha pausada — a loja pode reabri-la em breve."
+                  : "Campanha encerrada. Obrigado a todo mundo que ajudou."}
+              </p>
+            )}
           </div>
         </aside>
       </div>

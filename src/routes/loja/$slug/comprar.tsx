@@ -1,6 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Check, CreditCard, Minus, Plus, QrCode } from "lucide-react";
+import { motion, useReducedMotion } from "motion/react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -17,7 +18,7 @@ import { useGetMyOrder } from "#/lib/api/gen/hooks/useGetMyOrder";
 import { getProductQueryOptions, useGetProduct } from "#/lib/api/gen/hooks/useGetProduct";
 import type { Checkout201 } from "#/lib/api/gen/types/Checkout";
 import { publicRequest } from "#/lib/api/public";
-import { money } from "#/lib/format";
+import { formatPhone, money } from "#/lib/format";
 import { stripePublishableKey } from "#/lib/pay/stripe";
 import { seo } from "#/lib/seo";
 
@@ -122,16 +123,25 @@ function BuyPage() {
     return (
       <section className="halo-top relative">
         <div className="shell mx-auto max-w-md py-16 text-center md:py-24">
-          <span className="rise rise-1 mx-auto inline-grid h-14 w-14 place-items-center rounded-full bg-brand-soft text-brand-deep">
-            <Check className="h-7 w-7" aria-hidden />
-          </span>
-          <h1 className="rise rise-2 mt-6 font-display text-3xl font-semibold tracking-tight">
+          <SuccessCheck />
+          <h1 className="rise rise-2 mt-6 font-bold font-display text-3xl tracking-tight">
             Pedido confirmado!
           </h1>
-          <p className="rise rise-3 mt-4 text-lede text-muted">
-            O pagamento foi aprovado. A loja {result?.order.store.name} vai falar com você pelo
-            telefone que deixou, para combinar a entrega.
-          </p>
+          <div className="rise rise-3 mx-auto mt-6 max-w-sm rounded-[1rem] bg-surface p-5 text-left">
+            <p className="kicker">Próximos passos</p>
+            <ol className="mt-3 grid gap-2.5 text-[0.95rem]">
+              <li className="flex gap-2.5">
+                <StepNum n={1} /> O pagamento foi confirmado.
+              </li>
+              <li className="flex gap-2.5">
+                <StepNum n={2} /> {result?.order.store.name} vai falar com você pelo telefone que
+                deixou, para combinar a entrega.
+              </li>
+              <li className="flex gap-2.5">
+                <StepNum n={3} /> Acompanhe tudo em Minha conta.
+              </li>
+            </ol>
+          </div>
           <div className="rise rise-4 mt-8 grid gap-3">
             <Button asChild size="lg">
               <Link to="/conta">Ver meus pedidos</Link>
@@ -150,14 +160,12 @@ function BuyPage() {
   if (phase === "expired") {
     return (
       <section className="shell mx-auto max-w-md py-16 md:py-24">
-        <h1 className="font-display text-2xl font-semibold tracking-tight">
-          O tempo do pagamento acabou
-        </h1>
+        <h1 className="font-bold font-display text-2xl tracking-tight">O pagamento expirou</h1>
         <p className="mt-3 text-muted">
-          Sem problema: nada foi cobrado. É só começar de novo — o produto continua reservável.
+          Este código Pix não pode mais ser usado. Nada foi cobrado.
         </p>
         <Button size="lg" className="mt-6 w-full" onClick={() => setPhase("form")}>
-          Tentar de novo
+          Voltar para o pagamento
         </Button>
       </section>
     );
@@ -272,7 +280,11 @@ function BuyPage() {
             autoComplete="tel"
             placeholder="(11) 98765-4321"
             aria-invalid={Boolean(errors.contactPhone)}
-            {...register("contactPhone")}
+            {...register("contactPhone", {
+              onChange: (event) => {
+                event.target.value = formatPhone(event.target.value);
+              },
+            })}
           />
         </Field>
 
@@ -304,10 +316,15 @@ function BuyPage() {
           />
         </fieldset>
 
+        <div className="flex items-baseline justify-between rounded-[1rem] bg-surface px-4 py-3">
+          <span className="font-medium text-muted text-sm">Total</span>
+          <span className="font-bold font-display text-xl tabular-nums">{money(totalCents)}</span>
+        </div>
+
         <FormError>{formError}</FormError>
 
         <Button size="lg" type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "Preparando pagamento…" : `Continuar — ${money(totalCents)}`}
+          {isSubmitting ? "Preparando pagamento…" : "Continuar"}
         </Button>
         <p className="text-center text-sm text-muted">Você ainda não paga nada nesta etapa.</p>
       </form>
@@ -333,5 +350,28 @@ function OrderSummary({
       </p>
       <p className="shrink-0 font-display font-semibold tabular-nums">{money(totalCents)}</p>
     </div>
+  );
+}
+
+/** Check de sucesso: scale 0.75 → 1 (§29 do brief), sem confetti. */
+function SuccessCheck() {
+  const reduce = useReducedMotion();
+  return (
+    <motion.span
+      initial={reduce ? false : { opacity: 0, scale: 0.75 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+      className="mx-auto inline-grid h-14 w-14 place-items-center rounded-full bg-success-soft text-success"
+    >
+      <Check className="h-7 w-7" aria-hidden />
+    </motion.span>
+  );
+}
+
+function StepNum({ n }: { n: number }) {
+  return (
+    <span className="mt-0.5 inline-grid h-5 w-5 shrink-0 place-items-center rounded-full bg-brand-soft font-semibold text-brand-deep text-xs">
+      {n}
+    </span>
   );
 }

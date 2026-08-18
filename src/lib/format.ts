@@ -17,3 +17,13 @@ export function percent(part: number, total: number): number {
   if (total <= 0) return 0;
   return Math.min(100, Math.round((part / total) * 100));
 }
+
+/** "(48) 99999-9999" a partir do que a pessoa digitar; guarda só dígitos na API. */
+export function formatPhone(raw: string): string {
+  const digits = raw.replace(/\D/g, "").slice(0, 11);
+  if (digits.length <= 2) return digits;
+  if (digits.length <= 6) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+  if (digits.length <= 10)
+    return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
+  return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+}

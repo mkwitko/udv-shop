@@ -65,12 +65,13 @@ function ProductPage() {
                 key={url}
                 src={url}
                 alt={product.name}
-                className="w-full bg-surface object-cover"
+                loading="lazy"
+                className="aspect-[4/3] w-full rounded-[1.25rem] bg-surface object-cover"
               />
             ))}
           </div>
         ) : (
-          <div className="aspect-4/5 w-full bg-surface" />
+          <div className="aspect-[4/3] w-full rounded-[1.25rem] bg-[radial-gradient(circle_at_30%_25%,var(--glow),transparent_65%)]" />
         )}
       </div>
 
@@ -86,10 +87,13 @@ function ProductPage() {
         <h1 className="mt-6 text-title text-balance">{product.name}</h1>
         <p className="mt-4 font-display text-3xl text-brand-deep">{money(product.priceCents)}</p>
 
-        <div className="mt-4 flex gap-2">
-          {onDemand && <Tag tone="brand">Sob encomenda</Tag>}
-          {soldOut && <Tag>Esgotado no momento</Tag>}
-          {!onDemand && product.stock > 0 && <Tag tone="neutral">{product.stock} disponíveis</Tag>}
+        <div className="mt-4 flex flex-wrap gap-2">
+          {onDemand && <Tag tone="brand">Feito sob encomenda</Tag>}
+          {soldOut && <Tag>Esgotado</Tag>}
+          {!onDemand && product.stock > 3 && <Tag tone="neutral">Disponível</Tag>}
+          {!onDemand && product.stock > 0 && product.stock <= 3 && (
+            <Tag tone="accent">Últimas unidades</Tag>
+          )}
         </div>
 
         {product.description && (
@@ -102,9 +106,13 @@ function ProductPage() {
           ) : (
             <>
               {soldOut ? (
-                <Button size="lg" className="w-full sm:w-auto" disabled>
-                  Esgotado no momento
-                </Button>
+                <div className="rounded-[1rem] border border-line bg-surface p-4">
+                  <p className="font-bold font-display">Esgotado</p>
+                  <p className="mt-1 text-muted text-sm">
+                    Este produto não está disponível agora. Vale voltar depois — a loja repõe a
+                    vitrine por aqui.
+                  </p>
+                </div>
               ) : (
                 <Button asChild size="lg" className="w-full sm:w-auto">
                   <Link to="/loja/$slug/comprar" params={{ slug }} search={{ produto, qtd: 1 }}>
@@ -112,9 +120,11 @@ function ProductPage() {
                   </Link>
                 </Button>
               )}
-              <p className="mt-3 text-sm text-muted">
-                Pague com Pix ou cartão. A entrega é combinada direto com a loja.
-              </p>
+              {!soldOut && (
+                <p className="mt-3 text-muted text-sm">
+                  Pague com Pix ou cartão. A entrega é combinada direto com a loja.
+                </p>
+              )}
             </>
           )}
         </div>

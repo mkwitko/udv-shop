@@ -3,6 +3,7 @@ import { Bell } from "lucide-react";
 import { useState } from "react";
 import { Button } from "#/components/ui/button";
 import { FormError } from "#/components/ui/field";
+import { useToast } from "#/components/ui/toast";
 import { errorMessage } from "#/lib/api/error-message";
 import { notifyInterests } from "#/lib/api/gen/clients/notifyInterests";
 import {
@@ -20,20 +21,19 @@ function InterestsAdmin() {
   const { queryClient } = useRouter().options.context;
   const { data, isPending } = useGetInterestDemand(slug);
   const [error, setError] = useState<string | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
   const [busySlug, setBusySlug] = useState<string | null>(null);
+  const toast = useToast();
   const items = data?.items ?? [];
 
   async function notify(productSlug: string, productName: string) {
     setBusySlug(productSlug);
     setError(null);
-    setNotice(null);
     try {
       const result = await notifyInterests(slug, productSlug);
-      setNotice(
+      toast(
         result.notified === 1
-          ? `1 pessoa avisada de que ${productName} chegou.`
-          : `${result.notified} pessoas avisadas de que ${productName} chegou.`,
+          ? `Aviso enviado para 1 pessoa: ${productName} chegou.`
+          : `Aviso enviado para ${result.notified} pessoas: ${productName} chegou.`,
       );
       await queryClient.invalidateQueries({ queryKey: getInterestDemandQueryKey(slug) });
     } catch (cause) {
@@ -52,11 +52,6 @@ function InterestsAdmin() {
       </p>
 
       <FormError>{error}</FormError>
-      {notice && (
-        <p className="mt-4 rounded-md border border-brand/30 bg-brand-soft px-3.5 py-2.5 text-sm text-brand-deep">
-          {notice}
-        </p>
-      )}
 
       {isPending ? (
         <div className="mt-6 h-32 animate-pulse rounded-lg bg-surface" />

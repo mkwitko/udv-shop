@@ -5,8 +5,10 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "#/components/ui/button";
+import { ConfirmDialog } from "#/components/ui/confirm";
 import { Field, FormError, Input, Textarea } from "#/components/ui/field";
 import { Tag } from "#/components/ui/tag";
+import { useToast } from "#/components/ui/toast";
 import { errorMessage } from "#/lib/api/error-message";
 import { archiveProduct } from "#/lib/api/gen/clients/archiveProduct";
 import { createProduct } from "#/lib/api/gen/clients/createProduct";
@@ -107,13 +109,9 @@ function ProductsAdmin() {
                   )}
                 </p>
               </div>
-              <Button
-                variant="secondary"
-                size="icon"
-                aria-label={`Editar ${product.name}`}
-                onClick={() => setEditing(product)}
-              >
+              <Button variant="secondary" size="sm" onClick={() => setEditing(product)}>
                 <Pencil className="h-4 w-4" aria-hidden />
+                Editar
               </Button>
             </li>
           ))}
@@ -220,11 +218,16 @@ function ProductForm({
     }
   }
 
+  const [confirmArchive, setConfirmArchive] = useState(false);
+  const toast = useToast();
+
   async function archive() {
     if (!product) return;
+    setConfirmArchive(false);
     setArchiving(true);
     try {
       await archiveProduct(slug, product.slug);
+      toast("Produto tirado do ar.");
       await onDone();
     } catch (error) {
       setFormError(errorMessage(error));
@@ -335,21 +338,31 @@ function ProductForm({
 
         <FormError>{formError}</FormError>
 
-        <div className="flex flex-col gap-2 sm:flex-row">
-          <Button
-            size="lg"
-            type="submit"
-            disabled={isSubmitting || uploading}
-            className="sm:flex-1"
+        <Button size="lg" type="submit" disabled={isSubmitting || uploading}>
+          {isSubmitting ? "Salvando…" : product ? "Salvar alterações" : "Publicar produto"}
+        </Button>
+
+        {product && (
+          <button
+            type="button"
+            onClick={() => setConfirmArchive(true)}
+            disabled={archiving}
+            className="justify-self-start text-muted text-sm underline underline-offset-4 hover:text-danger"
           >
-            {isSubmitting ? "Salvando…" : product ? "Salvar alterações" : "Publicar produto"}
-          </Button>
-          {product && (
-            <Button type="button" variant="danger" size="lg" onClick={archive} disabled={archiving}>
-              {archiving ? "Tirando do ar…" : "Tirar do ar"}
-            </Button>
-          )}
-        </div>
+            {archiving ? "Tirando do ar…" : "Arquivar produto"}
+          </button>
+        )}
+
+        <ConfirmDialog
+          open={confirmArchive}
+          title="Arquivar este produto?"
+          confirmLabel="Arquivar produto"
+          busy={archiving}
+          onCancel={() => setConfirmArchive(false)}
+          onConfirm={archive}
+        >
+          Ele some da vitrine. Pedidos já feitos não mudam.
+        </ConfirmDialog>
       </form>
     </div>
   );

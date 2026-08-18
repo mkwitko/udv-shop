@@ -5,7 +5,9 @@ import { RequireSession } from "#/components/auth/require-session";
 import { SiteFooter } from "#/components/site/site-footer";
 import { SiteHeader } from "#/components/site/site-header";
 import { Button } from "#/components/ui/button";
+import { ConfirmDialog } from "#/components/ui/confirm";
 import { Tag } from "#/components/ui/tag";
+import { useToast } from "#/components/ui/toast";
 import { errorMessage } from "#/lib/api/error-message";
 import { cancelDonationSubscription } from "#/lib/api/gen/clients/cancelDonationSubscription";
 import { cancelInterest } from "#/lib/api/gen/clients/cancelInterest";
@@ -177,13 +179,13 @@ const ORDER_STATUS: Record<
   string,
   { text: string; tone: "brand" | "accent" | "neutral" | "danger" }
 > = {
-  pending_payment: { text: "aguardando pagamento", tone: "accent" },
-  paid: { text: "pago", tone: "brand" },
-  delivery_arranged: { text: "entrega combinada", tone: "accent" },
-  delivered: { text: "entregue", tone: "neutral" },
-  cancelled: { text: "cancelado", tone: "neutral" },
-  refund_requested: { text: "reembolso em andamento", tone: "danger" },
-  refunded: { text: "reembolsado", tone: "danger" },
+  pending_payment: { text: "Aguardando pagamento", tone: "accent" },
+  paid: { text: "Pagamento confirmado", tone: "brand" },
+  delivery_arranged: { text: "Entrega combinada", tone: "accent" },
+  delivered: { text: "Entregue", tone: "neutral" },
+  cancelled: { text: "Cancelado", tone: "neutral" },
+  refund_requested: { text: "Reembolso em andamento", tone: "danger" },
+  refunded: { text: "Reembolsado", tone: "neutral" },
 };
 
 function SectionShell({ title, children }: { title: string; children: React.ReactNode }) {
@@ -241,21 +243,23 @@ function MyDonations() {
   const { data, isPending } = useListMyDonations({ limit: 10 });
   const [error, setError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [cancelling, setCancelling] = useState<string | null>(null);
+  const toast = useToast();
   const donations = data?.items ?? [];
   if (!isPending && donations.length === 0) return null;
 
   async function cancel(id: string) {
-    if (!window.confirm("Cancelar sua contribuição mensal? Você pode voltar a doar quando quiser."))
-      return;
     setBusyId(id);
     setError(null);
     try {
       await cancelDonationSubscription(id);
       await queryClient.invalidateQueries({ queryKey: listMyDonationsQueryKey({ limit: 10 }) });
+      toast("Doação mensal cancelada.");
     } catch (cause) {
       setError(errorMessage(cause));
     } finally {
       setBusyId(null);
+      setCancelling(null);
     }
   }
 
@@ -299,7 +303,7 @@ function MyDonations() {
                     variant="ghost"
                     size="sm"
                     disabled={busyId === donation.id}
-                    onClick={() => cancel(donation.id)}
+                    onClick={() => setCancelling(donation.id)}
                   >
                     Cancelar mensal
                   </Button>
@@ -309,6 +313,19 @@ function MyDonations() {
           ))}
         </ul>
       )}
+
+      <ConfirmDialog
+        open={cancelling !== null}
+        title="Cancelar esta doação mensal?"
+        confirmLabel="Cancelar doação mensal"
+        busy={busyId === cancelling}
+        onCancel={() => setCancelling(null)}
+        onConfirm={() => {
+          if (cancelling) void cancel(cancelling);
+        }}
+      >
+        Novas cobranças mensais deixarão de acontecer. Você pode voltar a doar quando quiser.
+      </ConfirmDialog>
     </SectionShell>
   );
 }

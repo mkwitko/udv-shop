@@ -2,6 +2,7 @@ import { TanStackDevtools } from "@tanstack/react-devtools";
 import type { QueryClient } from "@tanstack/react-query";
 import { createRootRouteWithContext, HeadContent, Scripts } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
+import { ToastProvider } from "../components/ui/toast";
 import TanStackQueryDevtools from "../integrations/tanstack-query/devtools";
 import { SessionProvider } from "../lib/auth/session";
 import { themeBootScript } from "../lib/theme";
@@ -43,7 +44,9 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <script dangerouslySetInnerHTML={{ __html: themeBootScript }} />
       </head>
       <body>
-        <SessionProvider>{children}</SessionProvider>
+        <SessionProvider>
+          <ToastProvider>{children}</ToastProvider>
+        </SessionProvider>
         {import.meta.env.DEV && (
           <TanStackDevtools
             config={{ position: "bottom-right" }}

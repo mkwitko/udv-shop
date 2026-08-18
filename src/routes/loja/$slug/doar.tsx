@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Check, CreditCard, QrCode } from "lucide-react";
+import { CreditCard, QrCode } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
 import { RequireSession } from "#/components/auth/require-session";
@@ -9,6 +9,7 @@ import { StepHeading } from "#/components/pay/steps";
 import { StripePanel } from "#/components/pay/stripe-panel";
 import { Button } from "#/components/ui/button";
 import { Field, FormError, Input, Textarea } from "#/components/ui/field";
+import { GlyphEstrela } from "#/components/ui/glyphs";
 import { errorMessage } from "#/lib/api/error-message";
 import { createDonation } from "#/lib/api/gen/clients/createDonation";
 import { useGetCampaign } from "#/lib/api/gen/hooks/useGetCampaign";
@@ -143,10 +144,10 @@ function DonatePage() {
       <section className="halo-top relative">
         <div className="shell mx-auto max-w-md py-16 text-center md:py-24">
           <span className="rise rise-1 mx-auto inline-grid h-14 w-14 place-items-center rounded-full bg-brand-soft text-brand-deep">
-            <Check className="h-7 w-7" aria-hidden />
+            <GlyphEstrela className="h-7 w-7" />
           </span>
-          <h1 className="rise rise-2 mt-6 font-display text-3xl font-semibold tracking-tight">
-            Doação recebida. Obrigado!
+          <h1 className="rise rise-2 mt-6 font-bold font-display text-3xl tracking-tight">
+            Obrigado por ajudar!
           </h1>
           <p className="rise rise-3 mt-4 text-lede text-muted">
             {type === "monthly"
@@ -278,7 +279,7 @@ function DonatePage() {
                   }}
                   className={`h-12 rounded-lg border font-display font-semibold tabular-nums transition-colors [transition-duration:var(--dur)] ${
                     active
-                      ? "border-brand bg-brand-soft text-brand-deep"
+                      ? "border-brand bg-brand-pale text-brand-deep"
                       : "border-line bg-elevated hover:border-line-strong"
                   }`}
                 >
@@ -359,6 +360,14 @@ function DonatePage() {
           />
         </Field>
 
+        {type === "monthly" && effectiveCents !== null && (
+          <p className="rounded-[1rem] bg-warning-soft px-4 py-3 text-[0.95rem]">
+            <span className="font-semibold">Doação mensal:</span> você será cobrado{" "}
+            <span className="font-bold tabular-nums">{money(effectiveCents)} por mês</span>, e pode
+            cancelar quando quiser na sua conta.
+          </p>
+        )}
+
         <FormError>{formError}</FormError>
 
         <Button size="lg" type="submit" disabled={submitting || effectiveCents === null}>
@@ -386,7 +395,7 @@ function TypeChoice({
   return (
     <label
       className={`cursor-pointer rounded-lg border p-3.5 transition-colors [transition-duration:var(--dur)] ${
-        checked ? "border-brand bg-brand-soft" : "border-line bg-elevated hover:border-line-strong"
+        checked ? "border-brand bg-brand-pale" : "border-line bg-elevated hover:border-line-strong"
       }`}
     >
       <input type="radio" name="type" className="sr-only" checked={checked} onChange={onSelect} />

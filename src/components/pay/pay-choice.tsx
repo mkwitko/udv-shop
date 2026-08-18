@@ -20,7 +20,7 @@ export function PayChoice({
   return (
     <label
       className={`flex cursor-pointer items-center gap-3.5 rounded-lg border p-4 transition-colors [transition-duration:var(--dur)] ${
-        checked ? "border-brand bg-brand-soft" : "border-line bg-elevated hover:border-line-strong"
+        checked ? "border-brand bg-brand-pale" : "border-line bg-elevated hover:border-line-strong"
       } ${disabled ? "cursor-not-allowed opacity-55" : ""}`}
     >
       <input

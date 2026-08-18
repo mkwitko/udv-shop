@@ -61,7 +61,12 @@ export function PixPanel({ brCode, qrCodeImageUrl, expiresAt, onExpired }: PixPa
       </div>
 
       <div className="grid gap-2">
-        <Button size="lg" variant={copied ? "secondary" : "primary"} onClick={copy}>
+        <Button
+          size="lg"
+          className="h-[52px]"
+          variant={copied ? "secondary" : "primary"}
+          onClick={copy}
+        >
           {copied ? (
             <>
               <Check className="h-4 w-4" aria-hidden />

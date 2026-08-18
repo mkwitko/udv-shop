@@ -5,8 +5,10 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "#/components/ui/button";
+import { ConfirmDialog } from "#/components/ui/confirm";
 import { Field, FormError, Input, Textarea } from "#/components/ui/field";
 import { Tag } from "#/components/ui/tag";
+import { useToast } from "#/components/ui/toast";
 import { errorMessage } from "#/lib/api/error-message";
 import { createCampaign } from "#/lib/api/gen/clients/createCampaign";
 import { drawRaffle } from "#/lib/api/gen/clients/drawRaffle";
@@ -110,6 +112,8 @@ function CampaignRow({
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [showRaffle, setShowRaffle] = useState(false);
+  const [confirmFinish, setConfirmFinish] = useState(false);
+  const toast = useToast();
   const meta = STATUS_META[campaign.status] ?? { label: campaign.status, tone: "neutral" as const };
   const pct = campaign.goalCents ? percent(campaign.raisedCents, campaign.goalCents) : null;
 
@@ -119,6 +123,13 @@ function CampaignRow({
     try {
       await updateCampaignStatus(slug, campaign.slug, { status });
       await onChanged();
+      toast(
+        status === "active"
+          ? "Campanha no ar."
+          : status === "paused"
+            ? "Campanha pausada."
+            : "Campanha encerrada.",
+      );
     } catch (cause) {
       setError(errorMessage(cause));
     } finally {
@@ -162,7 +173,7 @@ function CampaignRow({
           </Button>
         )}
         {campaign.status !== "finished" && (
-          <Button size="sm" variant="ghost" disabled={busy} onClick={() => setStatus("finished")}>
+          <Button size="sm" variant="ghost" disabled={busy} onClick={() => setConfirmFinish(true)}>
             Encerrar
           </Button>
         )}
@@ -173,6 +184,20 @@ function CampaignRow({
       </div>
 
       {showRaffle && <RafflePanel slug={slug} campaignSlug={campaign.slug} />}
+
+      <ConfirmDialog
+        open={confirmFinish}
+        title="Encerrar esta campanha?"
+        confirmLabel="Encerrar campanha"
+        busy={busy}
+        onCancel={() => setConfirmFinish(false)}
+        onConfirm={() => {
+          setConfirmFinish(false);
+          void setStatus("finished");
+        }}
+      >
+        Ela sai do ar e deixa de aceitar doações. O que já foi arrecadado continua valendo.
+      </ConfirmDialog>
     </li>
   );
 }
@@ -219,9 +244,10 @@ function RafflePanel({ slug, campaignSlug }: { slug: string; campaignSlug: strin
     }
   }
 
+  const [confirmDraw, setConfirmDraw] = useState(false);
+
   async function draw() {
-    if (!window.confirm("Fazer o sorteio agora? O resultado é definitivo e sai por e-mail."))
-      return;
+    setConfirmDraw(false);
     setBusy(true);
     setError(null);
     try {
@@ -300,15 +326,30 @@ function RafflePanel({ slug, campaignSlug }: { slug: string; campaignSlug: strin
       </ul>
       <FormError>{error}</FormError>
       {raffle.status === "open" && (
-        <Button size="sm" className="mt-3" variant="danger" disabled={busy} onClick={draw}>
-          Fazer o sorteio agora
+        <Button size="sm" className="mt-3" disabled={busy} onClick={() => setConfirmDraw(true)}>
+          Sortear
         </Button>
       )}
       {raffle.seed && (
-        <p className="mt-3 break-all text-xs text-muted">
-          Auditoria: seed {raffle.seed} · algoritmo {raffle.algorithm}
+        <p className="mt-3 break-all text-muted text-xs">
+          Código de auditoria: {raffle.seed} · algoritmo {raffle.algorithm}
+          <span className="block">
+            Usado para tornar o sorteio verificável por qualquer pessoa.
+          </span>
         </p>
       )}
+
+      <ConfirmDialog
+        open={confirmDraw}
+        title="Sortear agora?"
+        confirmLabel="Realizar sorteio"
+        busy={busy}
+        onCancel={() => setConfirmDraw(false)}
+        onConfirm={draw}
+      >
+        {raffle.totalParticipants} participantes · {raffle.totalEntries} números ·{" "}
+        {raffle.prizes.length} prêmios. Depois de realizado, o resultado não pode ser alterado.
+      </ConfirmDialog>
     </div>
   );
 }
