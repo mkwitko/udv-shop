@@ -80,9 +80,9 @@ export function CampaignProgress({
     <div className="mt-4">
       {pct !== null && (
         <div className="h-1.5 w-full overflow-hidden rounded-full bg-surface">
-          {/* arrecadação caminha em direção ao sol: verde → âmbar */}
+          {/* progresso é cobre — o fio da marca */}
           <div
-            className="progress-fill h-full rounded-full bg-[linear-gradient(90deg,var(--brand),var(--sun))]"
+            className="progress-fill h-full rounded-full bg-brand"
             style={{ width: `${pct}%` }}
           />
         </div>

@@ -30,8 +30,8 @@ export function stripeAppearance() {
       colorText: token("--ink"),
       colorTextSecondary: token("--ink-muted"),
       colorDanger: token("--danger"),
-      fontFamily: '"Archivo Variable", ui-sans-serif, system-ui, sans-serif',
-      borderRadius: "0.625rem",
+      fontFamily: '"Instrument Sans Variable", ui-sans-serif, system-ui, sans-serif',
+      borderRadius: "0.75rem",
     },
   };
 }

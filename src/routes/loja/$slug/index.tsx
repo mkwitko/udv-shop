@@ -41,7 +41,7 @@ function StoreCatalog() {
 
   return (
     <>
-      <section className="horizon">
+      <section className="thread thread-glow relative">
         <div className="shell py-14 md:py-20">
           <p className="rise rise-1 kicker">Loja</p>
           <h1 className="rise rise-2 mt-4 max-w-[18ch] text-title text-balance">{store?.name}</h1>

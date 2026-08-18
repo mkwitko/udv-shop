@@ -120,7 +120,7 @@ function BuyPage() {
 
   if (phase === "done") {
     return (
-      <section className="horizon">
+      <section className="thread thread-glow relative">
         <div className="shell mx-auto max-w-md py-16 text-center md:py-24">
           <span className="rise rise-1 mx-auto inline-grid h-14 w-14 place-items-center rounded-full bg-brand-soft text-brand">
             <Check className="h-7 w-7" aria-hidden />

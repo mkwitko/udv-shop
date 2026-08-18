@@ -1,13 +1,27 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, useRouter } from "@tanstack/react-router";
 import { ArrowRight, Plus, Store } from "lucide-react";
+import { useState } from "react";
 import { RequireSession } from "#/components/auth/require-session";
 import { SiteFooter } from "#/components/site/site-footer";
 import { SiteHeader } from "#/components/site/site-header";
 import { Button } from "#/components/ui/button";
 import { Tag } from "#/components/ui/tag";
+import { errorMessage } from "#/lib/api/error-message";
+import { cancelDonationSubscription } from "#/lib/api/gen/clients/cancelDonationSubscription";
+import { cancelInterest } from "#/lib/api/gen/clients/cancelInterest";
+import {
+  listMyDonationsQueryKey,
+  useListMyDonations,
+} from "#/lib/api/gen/hooks/useListMyDonations";
+import {
+  listMyInterestsQueryKey,
+  useListMyInterests,
+} from "#/lib/api/gen/hooks/useListMyInterests";
+import { useListMyOrders } from "#/lib/api/gen/hooks/useListMyOrders";
 import { useListMyStores } from "#/lib/api/gen/hooks/useListMyStores";
 import type { ListMyStores200 } from "#/lib/api/gen/types/ListMyStores";
 import { useSession } from "#/lib/auth/session";
+import { longDate, money } from "#/lib/format";
 import { seo } from "#/lib/seo";
 
 export const Route = createFileRoute("/conta")({
@@ -100,6 +114,10 @@ function AccountPage() {
             </ul>
           )}
         </section>
+
+        <MyOrders />
+        <MyDonations />
+        <MyInterests />
       </main>
 
       <SiteFooter />
@@ -128,9 +146,10 @@ function StoreRow({ store }: { store: ListMyStores200["items"][number] }) {
             <ArrowRight className="h-3.5 w-3.5" aria-hidden />
           </Link>
         </Button>
-        {/* painel de gestão é o próximo plano; o botão fica visível para não sumir a rota */}
-        <Button variant="ghost" size="sm" disabled title="Painel de gestão em breve">
-          Gerenciar
+        <Button asChild size="sm">
+          <Link to="/gestao/$slug" params={{ slug: store.slug }}>
+            Gerenciar
+          </Link>
         </Button>
       </div>
     </li>
@@ -151,5 +170,204 @@ function EmptyStores() {
         <Link to="/nova-loja">Criar minha loja</Link>
       </Button>
     </div>
+  );
+}
+
+const ORDER_STATUS: Record<
+  string,
+  { text: string; tone: "brand" | "accent" | "neutral" | "danger" }
+> = {
+  pending_payment: { text: "aguardando pagamento", tone: "accent" },
+  paid: { text: "pago", tone: "brand" },
+  delivery_arranged: { text: "entrega combinada", tone: "accent" },
+  delivered: { text: "entregue", tone: "neutral" },
+  cancelled: { text: "cancelado", tone: "neutral" },
+  refund_requested: { text: "reembolso em andamento", tone: "danger" },
+  refunded: { text: "reembolsado", tone: "danger" },
+};
+
+function SectionShell({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <section className="mt-12">
+      <h2 className="font-display text-xl font-semibold tracking-tight">{title}</h2>
+      {children}
+    </section>
+  );
+}
+
+function MyOrders() {
+  const { data, isPending } = useListMyOrders({ limit: 10 });
+  const orders = data?.items ?? [];
+  if (!isPending && orders.length === 0) return null;
+
+  return (
+    <SectionShell title="Meus pedidos">
+      {isPending ? (
+        <div className="mt-6 h-24 animate-pulse rounded-lg bg-surface" />
+      ) : (
+        <ul className="mt-6 grid gap-2.5">
+          {orders.map((order) => {
+            const status = ORDER_STATUS[order.status] ?? {
+              text: order.status,
+              tone: "neutral" as const,
+            };
+            return (
+              <li
+                key={order.id}
+                className="card flex flex-wrap items-center justify-between gap-3 p-4"
+              >
+                <div className="min-w-0">
+                  <p className="flex flex-wrap items-center gap-2 text-sm">
+                    <span className="font-medium">{order.store.name}</span>
+                    <Tag tone={status.tone}>{status.text}</Tag>
+                  </p>
+                  <p className="mt-1 truncate text-sm text-muted">
+                    {order.items.map((item) => `${item.qty}× ${item.name}`).join(" · ")}
+                  </p>
+                  <p className="mt-1 text-xs text-muted">{longDate(order.createdAt)}</p>
+                </div>
+                <p className="font-display font-semibold tabular-nums">{money(order.totalCents)}</p>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </SectionShell>
+  );
+}
+
+function MyDonations() {
+  const { queryClient } = useRouter().options.context;
+  const { data, isPending } = useListMyDonations({ limit: 10 });
+  const [error, setError] = useState<string | null>(null);
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const donations = data?.items ?? [];
+  if (!isPending && donations.length === 0) return null;
+
+  async function cancel(id: string) {
+    if (!window.confirm("Cancelar sua contribuição mensal? Você pode voltar a doar quando quiser."))
+      return;
+    setBusyId(id);
+    setError(null);
+    try {
+      await cancelDonationSubscription(id);
+      await queryClient.invalidateQueries({ queryKey: listMyDonationsQueryKey({ limit: 10 }) });
+    } catch (cause) {
+      setError(errorMessage(cause));
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  return (
+    <SectionShell title="Minhas doações">
+      {error && <p className="mt-4 text-sm text-danger">{error}</p>}
+      {isPending ? (
+        <div className="mt-6 h-24 animate-pulse rounded-lg bg-surface" />
+      ) : (
+        <ul className="mt-6 grid gap-2.5">
+          {donations.map((donation) => (
+            <li
+              key={donation.id}
+              className="card flex flex-wrap items-center justify-between gap-3 p-4"
+            >
+              <div className="min-w-0">
+                <p className="flex flex-wrap items-center gap-2 text-sm">
+                  <span className="font-medium">
+                    {donation.campaign ? donation.campaign.title : donation.store.name}
+                  </span>
+                  {donation.type === "monthly" && (
+                    <Tag tone={donation.subscriptionActive ? "brand" : "neutral"}>
+                      mensal{donation.subscriptionActive ? "" : " (cancelada)"}
+                    </Tag>
+                  )}
+                </p>
+                {donation.raffleNumbers.length > 0 && (
+                  <p className="mt-1 text-sm text-muted tabular-nums">
+                    Números da sorte: {donation.raffleNumbers.join(", ")}
+                  </p>
+                )}
+                <p className="mt-1 text-xs text-muted">{longDate(donation.createdAt)}</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <p className="font-display font-semibold tabular-nums">
+                  {money(donation.amountCents)}
+                  {donation.type === "monthly" && <span className="text-sm text-muted">/mês</span>}
+                </p>
+                {donation.type === "monthly" && donation.subscriptionActive && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    disabled={busyId === donation.id}
+                    onClick={() => cancel(donation.id)}
+                  >
+                    Cancelar mensal
+                  </Button>
+                )}
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </SectionShell>
+  );
+}
+
+function MyInterests() {
+  const { queryClient } = useRouter().options.context;
+  const { data, isPending } = useListMyInterests({ limit: 10 });
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const interests = (data?.items ?? []).filter(
+    (interest) => interest.status === "open" || interest.status === "notified",
+  );
+  if (!isPending && interests.length === 0) return null;
+
+  async function remove(id: string) {
+    setBusyId(id);
+    try {
+      await cancelInterest(id);
+      await queryClient.invalidateQueries({ queryKey: listMyInterestsQueryKey({ limit: 10 }) });
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  return (
+    <SectionShell title="Minhas encomendas">
+      {isPending ? (
+        <div className="mt-6 h-24 animate-pulse rounded-lg bg-surface" />
+      ) : (
+        <ul className="mt-6 grid gap-2.5">
+          {interests.map((interest) => (
+            <li
+              key={interest.id}
+              className="card flex flex-wrap items-center justify-between gap-3 p-4"
+            >
+              <div className="min-w-0">
+                <p className="flex flex-wrap items-center gap-2 text-sm">
+                  <span className="font-medium">{interest.product.name}</span>
+                  {interest.status === "notified" ? (
+                    <Tag tone="brand">chegou! visite a loja</Tag>
+                  ) : (
+                    <Tag tone="accent">na lista de espera</Tag>
+                  )}
+                </p>
+                <p className="mt-1 text-sm text-muted">
+                  {interest.store.name} · {money(interest.product.priceCents)}
+                </p>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled={busyId === interest.id}
+                onClick={() => remove(interest.id)}
+              >
+                Sair da lista
+              </Button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </SectionShell>
   );
 }

@@ -89,8 +89,8 @@ function Landing() {
       <SiteHeader />
 
       <main>
-        {/* Hero: o sol nasce atrás do painel — assinatura da marca */}
-        <section className="horizon relative">
+        {/* Hero: o fio de cobre se desenha na base — assinatura da marca */}
+        <section className="thread thread-glow relative">
           <div className="grid-field pointer-events-none absolute inset-0" aria-hidden />
 
           <div className="shell relative pt-16 pb-14 md:pt-28">
@@ -100,7 +100,9 @@ function Landing() {
                   Loja, campanhas e sorteios num lugar só
                 </Tag>
               </div>
-              <h1 className="rise rise-2 text-display">Sua loja no ar hoje.</h1>
+              <h1 className="rise rise-2 text-display">
+                Sua loja no ar <span className="copper-word">hoje</span>.
+              </h1>
               <p className="rise rise-3 mx-auto mt-6 max-w-2xl text-lede text-muted">
                 Venda seus produtos, receba doações e faça sorteios sem planilha e sem complicação.
                 O dinheiro cai direto na sua conta.

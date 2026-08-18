@@ -140,7 +140,7 @@ function DonatePage() {
   if (phase === "done") {
     const numbers = liveDonation?.raffleNumbers ?? result?.donation.raffleNumbers ?? [];
     return (
-      <section className="horizon">
+      <section className="thread thread-glow relative">
         <div className="shell mx-auto max-w-md py-16 text-center md:py-24">
           <span className="rise rise-1 mx-auto inline-grid h-14 w-14 place-items-center rounded-full bg-brand-soft text-brand">
             <Check className="h-7 w-7" aria-hidden />
@@ -165,7 +165,7 @@ function DonatePage() {
                 {numbers.map((n) => (
                   <li
                     key={n}
-                    className="inline-grid h-11 min-w-11 place-items-center rounded-md bg-[linear-gradient(160deg,var(--sun),var(--brand)_72%)] px-2 font-display font-semibold text-white tabular-nums"
+                    className="inline-grid h-11 min-w-11 place-items-center rounded-md bg-[linear-gradient(140deg,var(--brand),var(--brand-hover))] px-2 font-display font-semibold text-white tabular-nums"
                   >
                     {n}
                   </li>
