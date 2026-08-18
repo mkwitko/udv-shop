@@ -145,7 +145,7 @@ function EmptyStores() {
       </span>
       <h3 className="mt-5 font-display text-lg font-semibold">Nenhuma loja ainda</h3>
       <p className="mt-2 max-w-sm text-muted">
-        Crie a loja do seu núcleo, cadastre os primeiros produtos e compartilhe o link.
+        Crie sua loja, cadastre os primeiros produtos e compartilhe o link.
       </p>
       <Button asChild className="mt-6">
         <Link to="/nova-loja">Criar minha loja</Link>

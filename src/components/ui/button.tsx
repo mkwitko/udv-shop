@@ -8,8 +8,10 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        primary: "bg-brand text-brand-ink hover:bg-brand-hover",
-        secondary: "bg-surface text-ink border border-line hover:border-line-strong",
+        primary:
+          "bg-brand text-brand-ink hover:bg-brand-hover shadow-[inset_0_1px_0_rgb(255_255_255/0.16),0_1px_2px_rgb(0_0_0/0.1)]",
+        secondary:
+          "bg-elevated text-ink border border-line hover:border-line-strong shadow-[0_1px_2px_rgb(0_0_0/0.05)]",
         outline: "border border-line-strong text-ink hover:bg-surface",
         ghost: "text-muted hover:text-ink hover:bg-surface",
         danger: "bg-danger-soft text-danger border border-danger/30 hover:border-danger/60",
@@ -17,7 +19,7 @@ const buttonVariants = cva(
       },
       size: {
         sm: "h-9 px-3.5 text-sm",
-        md: "h-10 px-4 text-[0.95rem]",
+        md: "h-11 px-4 text-[0.95rem]",
         lg: "h-12 px-6 text-base",
         icon: "h-9 w-9",
       },

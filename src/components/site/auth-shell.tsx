@@ -24,7 +24,7 @@ export function AuthShell({
           className="flex items-center gap-2.5 font-display font-semibold tracking-tight"
         >
           <LogoMark />
-          lojinha
+          Prospera
         </Link>
         <ThemeToggle />
       </header>

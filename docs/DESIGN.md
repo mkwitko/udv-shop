@@ -1,8 +1,33 @@
-# Identidade visual
+# Identidade visual — Prospera
 
-Produto de software vendido para quem organiza um núcleo. A tela precisa parecer
-ferramenta confiável — não folder de igreja, não template de startup. Antes de qualquer
-tela nova, leia isto.
+Marca: **Prospera**. Conceito: **amanhecer** — prosperidade é o dia nascendo sobre o
+campo. O verde é o campo (confiança), o âmbar é o sol (crescimento). A tela precisa
+parecer ferramenta confiável e acolhedora — não folder, não template de startup. Antes
+de qualquer tela nova, leia isto.
+
+## Regras de ouro
+
+- **Mobile-first**: todo layout nasce em ~390px; `sm:`/`md:` só adicionam. Tap targets
+  ≥ 44px (botão `md` = h-11).
+- **Público leigo**: uma decisão por tela, botão grande com verbo claro ("Pagar com
+  Pix"), passo indicado ("Passo 1 de 2"), status em linguagem de gente ("esperando o
+  banco confirmar"). Nada de jargão técnico na tela.
+- **Copy sem "núcleo"**: fala-se de "sua loja", "sua conta", "quem organiza". O nome do
+  público não aparece.
+
+## Assinatura: o horizonte
+
+`.horizon` — linha fina com um sol de luz subindo atrás (CSS puro, `::before` +
+`::after`). Anima no load (`sun-rise`). Onde usar: hero da landing, topo da página da
+loja, confirmação de pagamento. Nunca em tela utilitária (formulário, gestão).
+
+## Movimento
+
+- Entrada em cascata: `.rise` + `.rise-1..5` (fade + 14px para cima, 550ms).
+- Barra de progresso: `.progress-fill` preenche da esquerda ao montar; gradiente
+  verde→âmbar (a arrecadação caminha para o sol).
+- Hover de card sobe 2px; foto de produto escala 3%.
+- Uma curva e uma duração: `--ease`, `--dur: 180ms`. `prefers-reduced-motion` zera tudo.
 
 ## Proibido
 
@@ -38,8 +63,11 @@ hidratar.
 | `--ink-muted` | `#56635e` | `#93a29c` | texto secundário (≥ 4.5:1 nos dois temas) |
 | `--line` | `#e3e7e5` | `#1c2622` | borda padrão |
 | `--brand` | `#0d7a5f` | `#2ed3a3` | ação primária, link, progresso |
+| `--sun` | `#e18f14` | `#ffb84d` | o sol: logo, horizonte, ponta do progresso |
 | `--accent` | `#b7791f` | `#e0a63a` | aviso, estado pendente |
 | `--danger` | `#b42318` | `#ff8b7e` | erro |
+
+`--sun` é marca, `--accent` é semântica de aviso — não misturar os papéis.
 
 O verde clareia no escuro porque `#0d7a5f` sobre `#070a09` não passa em contraste. Os
 tokens do shadcn (`--primary`, `--muted`, `--border`, …) são remapeados para estes, então

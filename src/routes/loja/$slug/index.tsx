@@ -22,7 +22,7 @@ export const Route = createFileRoute("/loja/$slug/")({
       ...seo({
         title: store.name,
         description:
-          store.description ?? `Produtos e campanhas do núcleo ${store.name}, direto na fonte.`,
+          store.description ?? `Produtos e campanhas de ${store.name}, direto de quem faz.`,
         path: `/loja/${params.slug}`,
       }),
       scripts: [organizationLd(store)],
@@ -39,16 +39,20 @@ function StoreCatalog() {
 
   return (
     <>
-      <section className="shell py-14">
-        <p className="kicker">Loja do núcleo</p>
-        <h1 className="mt-4 max-w-[18ch] text-title text-balance">{store?.name}</h1>
-        {store?.description && (
-          <p className="mt-5 max-w-[52ch] text-lede text-muted">{store.description}</p>
-        )}
+      <section className="horizon">
+        <div className="shell py-14 md:py-20">
+          <p className="rise rise-1 kicker">Loja</p>
+          <h1 className="rise rise-2 mt-4 max-w-[18ch] text-title text-balance">{store?.name}</h1>
+          {store?.description && (
+            <p className="rise rise-3 mt-5 max-w-[52ch] text-lede text-muted">
+              {store.description}
+            </p>
+          )}
+        </div>
       </section>
 
-      <section className="rule">
-        <div className="shell py-14">
+      <section>
+        <div className="shell py-10 md:py-14">
           {products.length === 0 ? (
             <p className="text-muted">Esta loja ainda não publicou produtos. Vale voltar depois.</p>
           ) : (

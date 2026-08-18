@@ -20,7 +20,7 @@ export const Route = createFileRoute("/loja/$slug/p/$produto")({
         title: product.name,
         description:
           product.description ??
-          `${product.name} por ${money(product.priceCents)}, direto do núcleo.`,
+          `${product.name} por ${money(product.priceCents)}, direto de quem faz.`,
         path,
         image: product.imageUrls[0],
         type: "product",

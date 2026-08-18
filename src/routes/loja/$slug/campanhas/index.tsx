@@ -12,7 +12,7 @@ export const Route = createFileRoute("/loja/$slug/campanhas/")({
   head: ({ params }) =>
     seo({
       title: "Campanhas",
-      description: "Campanhas abertas deste núcleo e quanto já foi arrecadado.",
+      description: "Campanhas abertas desta loja e quanto já foi arrecadado.",
       path: `/loja/${params.slug}/campanhas`,
     }),
   component: CampaignList,
@@ -80,7 +80,11 @@ export function CampaignProgress({
     <div className="mt-4">
       {pct !== null && (
         <div className="h-1.5 w-full overflow-hidden rounded-full bg-surface">
-          <div className="h-full rounded-full bg-brand" style={{ width: `${pct}%` }} />
+          {/* arrecadação caminha em direção ao sol: verde → âmbar */}
+          <div
+            className="progress-fill h-full rounded-full bg-[linear-gradient(90deg,var(--brand),var(--sun))]"
+            style={{ width: `${pct}%` }}
+          />
         </div>
       )}
       <p className="mt-3 text-sm text-muted">

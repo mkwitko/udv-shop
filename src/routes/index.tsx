@@ -21,9 +21,9 @@ export const Route = createFileRoute("/")({
     context.queryClient.ensureQueryData(listStoresQueryOptions({ limit: 12 }, publicRequest)),
   head: () =>
     seo({
-      title: "A loja do seu núcleo, no ar em minutos",
+      title: "Sua loja no ar hoje",
       description:
-        "Loja, campanhas, doações e sorteios num lugar só. Pix e cartão, com o valor caindo direto na conta do núcleo.",
+        "Sua loja, campanhas, doações e sorteios num lugar só. Pix e cartão, com o dinheiro caindo direto na sua conta.",
       path: "/",
     }),
   component: Landing,
@@ -38,7 +38,7 @@ const FEATURES = [
   {
     icon: Wallet,
     title: "Cartão e Pix no mesmo checkout",
-    body: "Stripe para cartão, Woovi para Pix. O dinheiro vai para a conta do núcleo, não para uma conta central.",
+    body: "Quem compra escolhe como pagar. O dinheiro vai para a sua conta, não para uma conta central.",
   },
   {
     icon: HeartHandshake,
@@ -71,7 +71,7 @@ const STEPS = [
   {
     n: "02",
     title: "Ligue o recebimento",
-    body: "Conecte a conta Stripe do núcleo e a chave Pix. É o que garante que o valor não passa por terceiros.",
+    body: "Conecte sua conta e sua chave Pix seguindo o passo a passo. É o que garante que o valor não passa por terceiros.",
   },
   {
     n: "03",
@@ -89,38 +89,41 @@ function Landing() {
       <SiteHeader />
 
       <main>
-        {/* Hero */}
-        <section className="relative overflow-hidden">
-          <div className="glow-field pointer-events-none absolute inset-0" aria-hidden />
+        {/* Hero: o sol nasce atrás do painel — assinatura da marca */}
+        <section className="horizon relative">
           <div className="grid-field pointer-events-none absolute inset-0" aria-hidden />
 
-          <div className="shell relative pt-20 pb-16 md:pt-28">
+          <div className="shell relative pt-16 pb-14 md:pt-28">
             <div className="mx-auto max-w-3xl text-center">
-              <Tag tone="brand" className="mb-6">
-                Loja, campanhas e sorteios num lugar só
-              </Tag>
-              <h1 className="text-display">A loja do seu núcleo, no ar hoje.</h1>
-              <p className="mx-auto mt-6 max-w-2xl text-lede text-muted">
-                Venda produtos, arrecade para a obra e organize sorteios sem planilha, sem
-                intermediário e sem taxa surpresa. O valor cai direto na conta do núcleo.
+              <div className="rise rise-1">
+                <Tag tone="brand" className="mb-6">
+                  Loja, campanhas e sorteios num lugar só
+                </Tag>
+              </div>
+              <h1 className="rise rise-2 text-display">Sua loja no ar hoje.</h1>
+              <p className="rise rise-3 mx-auto mt-6 max-w-2xl text-lede text-muted">
+                Venda seus produtos, receba doações e faça sorteios sem planilha e sem complicação.
+                O dinheiro cai direto na sua conta.
               </p>
-              <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
-                <Button asChild size="lg">
+              <div className="rise rise-4 mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
+                <Button asChild size="lg" className="w-full sm:w-auto">
                   <Link to="/criar-conta">
-                    Criar minha loja
+                    Criar minha loja grátis
                     <ArrowRight className="h-4 w-4" aria-hidden />
                   </Link>
                 </Button>
-                <Button asChild size="lg" variant="secondary">
-                  <Link to="/lojas">Ver uma loja aberta</Link>
+                <Button asChild size="lg" variant="secondary" className="w-full sm:w-auto">
+                  <Link to="/lojas">Visitar uma loja aberta</Link>
                 </Button>
               </div>
-              <p className="mt-4 text-sm text-muted">
-                Grátis para começar. A plataforma só cobra quando a loja vende.
+              <p className="rise rise-4 mt-4 text-sm text-muted">
+                Grátis para começar. Só cobramos quando você vende.
               </p>
             </div>
 
-            <DashboardPreview />
+            <div className="rise rise-5">
+              <DashboardPreview />
+            </div>
           </div>
         </section>
 
@@ -128,7 +131,7 @@ function Landing() {
         <section id="recursos" className="shell scroll-mt-20 py-20">
           <p className="kicker">O que já vem pronto</p>
           <h2 className="mt-3 max-w-2xl text-title">
-            Tudo que um núcleo faz no papel, funcionando sozinho.
+            Tudo que hoje vive na planilha e no caderninho, funcionando sozinho.
           </h2>
 
           <ul className="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -188,7 +191,7 @@ function Landing() {
 
           {stores.length === 0 ? (
             <p className="mt-8 text-muted">
-              Nenhuma loja aberta ainda. Se o seu núcleo quiser ser o primeiro,{" "}
+              Nenhuma loja aberta ainda. Quer ser a primeira?{" "}
               <Link to="/criar-conta" className="text-brand underline underline-offset-4">
                 crie a loja
               </Link>
@@ -227,7 +230,7 @@ function Landing() {
             <div className="glow-field pointer-events-none absolute inset-0" aria-hidden />
             <div className="relative">
               <h2 className="mx-auto max-w-2xl text-title">
-                Seu núcleo vende melhor do que organiza. A gente resolve a segunda parte.
+                Você vende melhor do que organiza. A gente resolve a segunda parte.
               </h2>
               <div className="mt-8 flex flex-wrap justify-center gap-3">
                 <Button asChild size="lg">
@@ -259,7 +262,7 @@ function DashboardPreview() {
           <span className="h-2.5 w-2.5 rounded-full bg-line-strong" />
           <span className="h-2.5 w-2.5 rounded-full bg-line-strong" />
           <span className="h-2.5 w-2.5 rounded-full bg-line-strong" />
-          <p className="ml-3 text-xs text-muted">lojinha.app/gestao/nucleo-demo</p>
+          <p className="ml-3 text-xs text-muted">prospera.app/gestao/nucleo-demo</p>
         </div>
 
         <div className="grid gap-4 p-5 sm:grid-cols-3">

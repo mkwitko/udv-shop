@@ -18,11 +18,11 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { name: "theme-color", content: "#ffffff", media: "(prefers-color-scheme: light)" },
       { name: "theme-color", content: "#070a09", media: "(prefers-color-scheme: dark)" },
-      { title: "lojinha — a loja do seu núcleo, no ar em minutos" },
+      { title: "Prospera — sua loja no ar hoje" },
       {
         name: "description",
         content:
-          "Plataforma de loja, campanhas, doações e sorteios para núcleos. Pix e cartão, repasse direto para a conta do núcleo.",
+          "Sua loja, campanhas, doações e sorteios num lugar só. Pix e cartão, com o dinheiro caindo direto na sua conta.",
       },
     ],
     links: [

@@ -24,7 +24,7 @@ export const Route = createFileRoute("/entrar")({
   head: () =>
     seo({
       title: "Entrar",
-      description: "Acesse sua conta para gerenciar a loja do seu núcleo.",
+      description: "Acesse sua conta para cuidar da sua loja.",
       path: "/entrar",
       noIndex: true,
     }),

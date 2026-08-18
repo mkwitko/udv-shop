@@ -11,7 +11,7 @@ export const Route = createFileRoute("/lojas")({
   head: () =>
     seo({
       title: "Lojas",
-      description: "Todas as lojinhas de núcleo abertas na plataforma.",
+      description: "Todas as lojas abertas na plataforma.",
       path: "/lojas",
     }),
   component: Stores,

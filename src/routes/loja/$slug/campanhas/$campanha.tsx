@@ -16,7 +16,7 @@ export const Route = createFileRoute("/loja/$slug/campanhas/$campanha")({
     if (!campaign) return {};
     return seo({
       title: campaign.title,
-      description: (campaign.story ?? `Campanha do núcleo ${campaign.store.name}.`).slice(0, 180),
+      description: (campaign.story ?? `Campanha de ${campaign.store.name}.`).slice(0, 180),
       path: `/loja/${params.slug}/campanhas/${params.campanha}`,
       image: campaign.coverImageUrl ?? undefined,
       type: "article",
@@ -67,7 +67,7 @@ function CampaignPage() {
               Doar
             </Button>
             <p className="mt-3 text-sm text-muted">
-              O valor vai direto para a conta do núcleo {campaign.store.name}.
+              O valor vai direto para a conta de {campaign.store.name}.
             </p>
           </div>
         </aside>

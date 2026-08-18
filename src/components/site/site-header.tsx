@@ -20,7 +20,7 @@ export function SiteHeader({ storeSlug, storeName }: { storeSlug?: string; store
             className="flex items-center gap-2.5 font-display text-[0.98rem] font-semibold tracking-tight"
           >
             <LogoMark />
-            {storeName ?? "lojinha"}
+            {storeName ?? "Prospera"}
           </Link>
 
           <nav className="hidden items-center gap-1 md:flex">
@@ -74,6 +74,20 @@ export function SiteHeader({ storeSlug, storeName }: { storeSlug?: string; store
           )}
         </div>
       </div>
+
+      {storeSlug && (
+        <nav
+          className="scroll-row shell border-t border-line pt-2 pb-2 md:hidden"
+          aria-label="Seções da loja"
+        >
+          <Link to="/loja/$slug" params={{ slug: storeSlug }} className={navLinkClass}>
+            Produtos
+          </Link>
+          <Link to="/loja/$slug/campanhas" params={{ slug: storeSlug }} className={navLinkClass}>
+            Campanhas
+          </Link>
+        </nav>
+      )}
     </header>
   );
 }

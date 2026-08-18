@@ -22,7 +22,7 @@ export const Route = createFileRoute("/criar-conta")({
   head: () =>
     seo({
       title: "Criar conta",
-      description: "Crie sua conta e abra a loja do seu núcleo em minutos.",
+      description: "Crie sua conta e coloque sua loja no ar hoje.",
       path: "/criar-conta",
     }),
   component: RegisterPage,

@@ -1,5 +1,5 @@
 // Meta tags e JSON-LD das rotas SSR. Tudo que o Google e o WhatsApp leem sai daqui.
-const SITE_NAME = "Lojinha dos Núcleos";
+const SITE_NAME = "Prospera";
 
 export function siteUrl(): string {
   const fromEnv =

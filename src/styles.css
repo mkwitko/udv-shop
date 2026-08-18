@@ -23,8 +23,13 @@
   --danger: #b42318;
   --danger-soft: #fef3f2;
 
+  /* O sol da marca: prosperidade é o dia nascendo sobre o campo. */
+  --sun: #e18f14;
+  --sun-soft: #fdf3e3;
   --glow: color-mix(in oklab, var(--brand) 14%, transparent);
+  --glow-sun: color-mix(in oklab, var(--sun) 20%, transparent);
   --grid-line: color-mix(in oklab, var(--ink) 6%, transparent);
+  --edge: transparent; /* fio de luz no topo do card — só existe no escuro */
 
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
   --dur: 180ms;
@@ -50,8 +55,12 @@
     --danger: #ff8b7e;
     --danger-soft: #24100e;
 
+    --sun: #ffb84d;
+    --sun-soft: #2b1e0a;
     --glow: color-mix(in oklab, var(--brand) 18%, transparent);
+    --glow-sun: color-mix(in oklab, var(--sun) 16%, transparent);
     --grid-line: color-mix(in oklab, var(--ink) 8%, transparent);
+    --edge: rgb(255 255 255 / 0.045);
     --shadow-card: 0 1px 2px rgb(0 0 0 / 0.4), 0 16px 40px -24px rgb(0 0 0 / 0.8);
   }
 }
@@ -75,6 +84,7 @@
 
   --glow: color-mix(in oklab, var(--brand) 18%, transparent);
   --grid-line: color-mix(in oklab, var(--ink) 8%, transparent);
+  --edge: rgb(255 255 255 / 0.045);
   --shadow-card: 0 1px 2px rgb(0 0 0 / 0.4), 0 16px 40px -24px rgb(0 0 0 / 0.8);
 }
 
@@ -91,6 +101,8 @@
   --color-brand-ink: var(--brand-ink);
   --color-brand-soft: var(--brand-soft);
   --color-accent: var(--accent);
+  --color-sun: var(--sun);
+  --color-sun-soft: var(--sun-soft);
   --color-danger: var(--danger);
   --color-danger-soft: var(--danger-soft);
 
@@ -212,10 +224,81 @@
     background: radial-gradient(ellipse 60% 50% at 50% -10%, var(--glow), transparent 70%);
   }
 
+  /* ───────────────────────────────────────────────────────────────────────────
+     Assinatura da marca: o horizonte. Uma linha e um sol subindo atrás dela —
+     prosperidade é o dia nascendo sobre o campo. Usar no hero da landing, no
+     topo da loja e na confirmação de pagamento. Nunca em tela utilitária.
+     ─────────────────────────────────────────────────────────────────────────── */
+  .horizon {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .horizon::before {
+    /* o sol: meio disco de luz encostado na base da seção */
+    content: "";
+    position: absolute;
+    inset: auto 0 0 0;
+    height: min(46vw, 20rem);
+    background:
+      radial-gradient(ellipse 52% 88% at 50% 100%, var(--glow-sun), transparent 68%),
+      radial-gradient(ellipse 30% 46% at 50% 100%, var(--glow), transparent 72%);
+    animation: sun-rise 1.1s var(--ease) both;
+    pointer-events: none;
+  }
+
+  .horizon::after {
+    /* a linha do horizonte */
+    content: "";
+    position: absolute;
+    inset: auto 0 0 0;
+    height: 1px;
+    background: linear-gradient(
+      to right,
+      transparent,
+      color-mix(in oklab, var(--sun) 55%, var(--line)) 35%,
+      color-mix(in oklab, var(--sun) 55%, var(--line)) 65%,
+      transparent
+    );
+    pointer-events: none;
+  }
+
+  /* Entrada suave em cascata: aplicar .rise + .rise-1..5 nos filhos do hero. */
+  .rise {
+    animation: rise 0.55s var(--ease) both;
+  }
+
+  .rise-1 { animation-delay: 60ms; }
+  .rise-2 { animation-delay: 140ms; }
+  .rise-3 { animation-delay: 220ms; }
+  .rise-4 { animation-delay: 300ms; }
+  .rise-5 { animation-delay: 380ms; }
+
+  /* Barra de progresso de campanha: preenche da esquerda ao montar. */
+  .progress-fill {
+    transform-origin: left;
+    animation: progress-in 0.9s var(--ease) both;
+    animation-delay: 200ms;
+  }
+
   .card {
     background-color: var(--elevated);
     border: 1px solid var(--line);
     border-radius: var(--radius-lg);
+    box-shadow: inset 0 1px 0 var(--edge);
+  }
+
+  /* Fileira que estoura a viewport estreita: rola de lado em vez de espremer. */
+  .scroll-row {
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .scroll-row::-webkit-scrollbar {
+    display: none;
   }
 
   .card-hover {
@@ -241,5 +324,36 @@
      altura. Com `height: 1px` a seção achata e o conteúdo escapa por baixo do rodapé. */
   .rule {
     border-top: 1px solid var(--line);
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes sun-rise {
+  from {
+    opacity: 0;
+    transform: translateY(28%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes progress-in {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
   }
 }

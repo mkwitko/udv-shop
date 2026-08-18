@@ -31,7 +31,7 @@ export const Route = createFileRoute("/nova-loja")({
   head: () =>
     seo({
       title: "Criar loja",
-      description: "Abra a loja do seu núcleo.",
+      description: "Abra sua loja em poucos minutos.",
       path: "/nova-loja",
       noIndex: true,
     }),
@@ -84,7 +84,7 @@ function NewStorePage() {
       <main className="shell max-w-2xl py-14">
         <p className="kicker">Nova loja</p>
         <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight">
-          Vamos abrir a loja do seu núcleo
+          Vamos abrir a sua loja
         </h1>
         <p className="mt-2 text-muted">
           A loja nasce aguardando liberação. Você já pode cadastrar produtos; ela aparece na vitrine
@@ -97,7 +97,7 @@ function NewStorePage() {
           <Field label="Nome da loja" htmlFor="name" error={errors.name?.message}>
             <Input
               id="name"
-              placeholder="Núcleo Estrela do Norte"
+              placeholder="Loja Estrela do Norte"
               aria-invalid={Boolean(errors.name)}
               {...register("name", {
                 onChange: (event) => {
@@ -113,7 +113,7 @@ function NewStorePage() {
           <Field
             label="Endereço da loja"
             htmlFor="slug"
-            hint={`Sua loja vai ficar em /loja/${slug || "seu-nucleo"}`}
+            hint={`Sua loja vai ficar em /loja/${slug || "minha-loja"}`}
             error={errors.slug?.message}
           >
             <Input
@@ -133,7 +133,7 @@ function NewStorePage() {
             <Textarea
               id="description"
               rows={4}
-              placeholder="O que o núcleo produz, para onde vai o valor arrecadado…"
+              placeholder="O que você vende, para onde vai o valor arrecadado…"
               {...register("description")}
             />
           </Field>
