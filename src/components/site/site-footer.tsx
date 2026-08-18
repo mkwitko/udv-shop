@@ -44,14 +44,6 @@ export function SiteFooter() {
         <p>Cada loja é cuidada por quem a criou.</p>
         <p>© {new Date().getFullYear()} Prospera</p>
       </div>
-
-      {/* a assinatura de rodapé: o wordmark em escala de cartaz, cortado na base */}
-      <p
-        className="-mb-[0.36em] select-none text-center font-bold font-display leading-none tracking-tight text-[clamp(4.5rem,17vw,13rem)] text-[color-mix(in_oklab,var(--brand)_14%,transparent)]"
-        aria-hidden
-      >
-        Prospera
-      </p>
     </footer>
   );
 }

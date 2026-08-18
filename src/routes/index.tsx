@@ -1,8 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, Bell, Check, PartyPopper, QrCode, Ticket } from "lucide-react";
+import { ArrowRight, Bell, Check, PartyPopper, Ticket } from "lucide-react";
+import { animate, useInView, useReducedMotion } from "motion/react";
+import { useEffect, useRef, useState } from "react";
 import { SiteFooter } from "#/components/site/site-footer";
 import { SiteHeader } from "#/components/site/site-header";
 import { Button } from "#/components/ui/button";
+import { Reveal } from "#/components/ui/reveal";
 import { listStoresQueryOptions, useListStores } from "#/lib/api/gen/hooks/useListStores";
 import { publicRequest } from "#/lib/api/public";
 import { seo } from "#/lib/seo";
@@ -93,7 +96,7 @@ function Landing() {
           </div>
         </section>
 
-        {/* ═══ Bento: cada recurso na sua forma, não seis cards iguais ═══════ */}
+        {/* ═══ Bento: metades em cima, terços embaixo — tudo claro e quente ══ */}
         <section id="recursos" className="shell scroll-mt-24 py-16 md:py-24">
           <p className="kicker">O que já vem pronto</p>
           <h2 className="mt-3 max-w-2xl text-title">
@@ -101,180 +104,218 @@ function Landing() {
           </h2>
 
           <div className="mt-10 grid gap-4 md:grid-cols-6">
-            {/* campanha com meta — o carro-chefe, tile grande com UI real */}
-            <div className="card card-hover p-6 md:col-span-4">
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div>
-                  <h3 className="font-bold font-display text-xl">Campanhas com meta</h3>
-                  <p className="mt-1 max-w-[44ch] text-[0.95rem] text-muted">
-                    Doação avulsa ou mensal, barra de progresso pública e a lista de quem doou só
-                    para a gestão.
+            {/* campanha com meta — UI real, barra animando */}
+            <Reveal className="md:col-span-3">
+              <div className="card card-hover h-full p-6">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <h3 className="font-bold font-display text-xl">Campanhas com meta</h3>
+                    <p className="mt-1 max-w-[40ch] text-[0.95rem] text-muted">
+                      Doação avulsa ou mensal, barra de progresso pública e a lista de quem doou só
+                      para a gestão.
+                    </p>
+                  </div>
+                  <span className="inline-grid h-11 w-11 shrink-0 place-items-center rounded-[0.9rem] bg-brand text-white">
+                    <PartyPopper className="h-5 w-5" aria-hidden />
+                  </span>
+                </div>
+                <div className="mt-6 rounded-[0.9rem] bg-surface p-4">
+                  <div className="flex items-baseline justify-between gap-3">
+                    <p className="font-bold font-display">Reforma da cozinha</p>
+                    <p className="text-muted text-sm tabular-nums">62%</p>
+                  </div>
+                  <div className="mt-2.5 h-2.5 w-full overflow-hidden rounded-full bg-line">
+                    <div className="progress-fill h-full w-[62%] rounded-full bg-brand" />
+                  </div>
+                  <p className="mt-2 text-muted text-sm tabular-nums">
+                    <span className="font-semibold text-ink">R$ 12.400</span> de R$ 20.000 · 87
+                    doações
                   </p>
                 </div>
-                <span className="inline-grid h-11 w-11 shrink-0 place-items-center rounded-[0.9rem] bg-brand text-white">
-                  <PartyPopper className="h-5 w-5" aria-hidden />
-                </span>
               </div>
-              <div className="mt-6 rounded-[0.9rem] bg-surface p-4">
-                <div className="flex items-baseline justify-between gap-3">
-                  <p className="font-bold font-display">Reforma da cozinha</p>
-                  <p className="text-muted text-sm tabular-nums">62%</p>
-                </div>
-                <div className="mt-2.5 h-2.5 w-full overflow-hidden rounded-full bg-line">
-                  <div className="progress-fill h-full w-[62%] rounded-full bg-brand" />
-                </div>
-                <p className="mt-2 text-muted text-sm tabular-nums">
-                  <span className="font-semibold text-ink">R$ 12.400</span> de R$ 20.000 · 87
-                  doações
-                </p>
-              </div>
-            </div>
+            </Reveal>
 
-            {/* pix — tile escuro, contraste estrutural */}
-            <div className="card card-hover bg-ink p-6 text-bg md:col-span-2 dark:border-line-strong">
-              <span className="inline-grid h-11 w-11 place-items-center rounded-[0.9rem] bg-white/12 text-white">
-                <QrCode className="h-5 w-5" aria-hidden />
-              </span>
-              <h3 className="mt-4 font-bold font-display text-xl text-white">Pix na hora</h3>
-              <p className="mt-1 text-[0.95rem] text-white/70">
-                QR na tela, aprovação em segundos. Cartão no mesmo checkout, quem compra escolhe.
-              </p>
-              <p className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-white/12 px-3 py-1 font-medium text-sm text-white">
-                <Check className="h-3.5 w-3.5" aria-hidden /> aprovado · R$ 45,00
-              </p>
-            </div>
-
-            {/* sorteio — números da sorte como objeto */}
-            <div className="card card-hover p-6 md:col-span-2">
-              <span className="inline-grid h-11 w-11 place-items-center rounded-[0.9rem] bg-brand-soft text-brand-deep">
-                <Ticket className="h-5 w-5" aria-hidden />
-              </span>
-              <h3 className="mt-4 font-bold font-display text-xl">Sorteio auditável</h3>
-              <p className="mt-1 text-[0.95rem] text-muted">
-                Cada doação vira número da sorte. O resultado sai por e-mail.
-              </p>
-              <div className="mt-4 flex gap-2">
-                {[7, 33, 41].map((n) => (
-                  <span
-                    key={n}
-                    className="inline-grid h-10 w-10 place-items-center rounded-[0.7rem] bg-brand font-bold font-display text-white tabular-nums"
-                  >
-                    {n}
+            {/* pix — a tela de pagamento em miniatura, quente */}
+            <Reveal delay={0.06} className="md:col-span-3">
+              <div className="card card-hover h-full p-6">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <h3 className="font-bold font-display text-xl">Pix na hora</h3>
+                    <p className="mt-1 max-w-[40ch] text-[0.95rem] text-muted">
+                      QR na tela, aprovação em segundos. Cartão no mesmo checkout — quem compra
+                      escolhe.
+                    </p>
+                  </div>
+                  <span className="inline-grid h-11 w-11 shrink-0 place-items-center rounded-[0.9rem] bg-brand-soft text-brand-deep">
+                    <PixGlyph />
                   </span>
-                ))}
+                </div>
+                <div className="mt-6 flex items-center gap-4 rounded-[0.9rem] bg-surface p-4">
+                  <QrIllustration />
+                  <div className="min-w-0">
+                    <p className="font-bold font-display tabular-nums">R$ 45,00</p>
+                    <p className="mt-0.5 text-muted text-sm">Caneca Esperança</p>
+                    <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-success-soft px-2.5 py-1 font-semibold text-success text-xs">
+                      <Check className="h-3.5 w-3.5" aria-hidden /> aprovado em 4s
+                    </p>
+                  </div>
+                </div>
               </div>
-            </div>
+            </Reveal>
+
+            {/* sorteio */}
+            <Reveal className="md:col-span-2">
+              <div className="card card-hover h-full p-6">
+                <span className="inline-grid h-11 w-11 place-items-center rounded-[0.9rem] bg-brand text-white">
+                  <Ticket className="h-5 w-5" aria-hidden />
+                </span>
+                <h3 className="mt-4 font-bold font-display text-xl">Sorteio auditável</h3>
+                <p className="mt-1 text-[0.95rem] text-muted">
+                  Cada doação vira número da sorte. O resultado sai por e-mail.
+                </p>
+                <div className="mt-4 flex gap-2">
+                  {[7, 33, 41].map((n) => (
+                    <span
+                      key={n}
+                      className="inline-grid h-10 w-10 place-items-center rounded-[0.7rem] bg-brand-soft font-bold font-display text-brand-deep tabular-nums"
+                    >
+                      {n}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </Reveal>
 
             {/* encomenda */}
-            <div className="card card-hover p-6 md:col-span-2">
-              <span className="inline-grid h-11 w-11 place-items-center rounded-[0.9rem] bg-success text-white">
-                <Bell className="h-5 w-5" aria-hidden />
-              </span>
-              <h3 className="mt-4 font-bold font-display text-xl">Encomenda sem grupo</h3>
-              <p className="mt-1 text-[0.95rem] text-muted">
-                Produto sob encomenda junta a lista. Chegou, todo mundo é avisado de uma vez.
-              </p>
-            </div>
-
-            {/* catálogo — vitrine em miniatura */}
-            <div className="card card-hover p-6 md:col-span-2">
-              <h3 className="font-bold font-display text-xl">Catálogo que se cuida</h3>
-              <p className="mt-1 text-[0.95rem] text-muted">
-                Foto, preço, estoque, página própria. Esgotou, some da vitrine sozinho.
-              </p>
-              <div className="mt-4 grid grid-cols-3 gap-2" aria-hidden>
-                {["#f7b98d", "#e8a06b", "#d98b52"].map((hue) => (
-                  <div
-                    key={hue}
-                    className="aspect-square rounded-[0.7rem]"
-                    style={{ background: `linear-gradient(140deg, ${hue}, #b45f31)` }}
-                  />
-                ))}
+            <Reveal delay={0.06} className="md:col-span-2">
+              <div className="card card-hover h-full p-6">
+                <span className="inline-grid h-11 w-11 place-items-center rounded-[0.9rem] bg-success text-white">
+                  <Bell className="h-5 w-5" aria-hidden />
+                </span>
+                <h3 className="mt-4 font-bold font-display text-xl">Encomenda sem grupo</h3>
+                <p className="mt-1 text-[0.95rem] text-muted">
+                  Produto sob encomenda junta a lista de interessados. Chegou, todo mundo é avisado
+                  de uma vez.
+                </p>
               </div>
-            </div>
+            </Reveal>
+
+            {/* catálogo */}
+            <Reveal delay={0.12} className="md:col-span-2">
+              <div className="card card-hover h-full p-6">
+                <h3 className="font-bold font-display text-xl">Catálogo que se cuida</h3>
+                <p className="mt-1 text-[0.95rem] text-muted">
+                  Foto, preço, estoque, página própria. Esgotou, some da vitrine sozinho.
+                </p>
+                <div className="mt-4 grid grid-cols-3 gap-2" aria-hidden>
+                  {["#f7b98d", "#e8a06b", "#d98b52"].map((hue) => (
+                    <div
+                      key={hue}
+                      className="aspect-square rounded-[0.7rem]"
+                      style={{ background: `linear-gradient(140deg, ${hue}, #b45f31)` }}
+                    />
+                  ))}
+                </div>
+              </div>
+            </Reveal>
           </div>
         </section>
 
         {/* ═══ Como funciona: três telefones, o produto onde ele vive ════════ */}
         <section id="como-funciona" className="scroll-mt-24 bg-surface py-16 md:py-24">
-          <div className="shell">
+          <div className="shell text-center">
             <p className="kicker">Como funciona</p>
-            <h2 className="mt-3 max-w-xl text-title">Três passos, uma tarde.</h2>
+            <h2 className="mx-auto mt-3 max-w-xl text-title">Três passos, uma tarde.</h2>
           </div>
 
           <div className="snap-row mt-10 px-5 md:justify-center md:px-8">
-            <PhoneStep n={1} title="Crie a loja">
-              <div className="grid gap-2.5">
-                <p className="font-bold font-display text-lg">Vamos abrir a sua loja</p>
-                <div className="rounded-xl border border-line bg-elevated px-3 py-2.5 text-sm">
-                  Loja Boa Colheita
-                </div>
-                <div className="rounded-xl border border-line bg-elevated px-3 py-2.5 text-muted text-sm">
-                  prospera.app/loja/boa-colheita
-                </div>
-                <span className="mt-1 rounded-full bg-brand px-4 py-2.5 text-center font-semibold text-sm text-white">
-                  Criar loja
-                </span>
-              </div>
-            </PhoneStep>
-
-            <PhoneStep n={2} title="Ligue o recebimento">
-              <div className="grid gap-2.5">
-                <p className="font-bold font-display text-lg">Receber por Pix</p>
-                <div className="rounded-xl border border-line bg-elevated px-3 py-2.5 text-sm">
-                  chave@boacolheita.org
-                </div>
-                <p className="flex items-center gap-2 rounded-xl bg-success-soft px-3 py-2.5 font-medium text-sm text-success">
-                  <Check className="h-4 w-4" aria-hidden /> Pix ligado. Já pode vender.
-                </p>
-                <p className="text-muted text-xs">
-                  O valor não passa por terceiros — cai na conta da chave.
-                </p>
-              </div>
-            </PhoneStep>
-
-            <PhoneStep n={3} title="Divulgue o link">
-              <div className="grid gap-2.5">
-                <div className="max-w-[85%] rounded-2xl rounded-bl-md bg-elevated p-3 shadow-sm">
-                  <p className="text-sm">Gente, a lojinha tá no ar! 🍊</p>
-                </div>
-                <div className="ml-auto max-w-[90%] rounded-2xl rounded-br-md bg-brand-soft p-3">
-                  <p className="font-semibold text-brand-deep text-sm">
+            <Reveal>
+              <PhoneStep n={1} title="Crie a loja">
+                <div className="grid gap-2.5">
+                  <p className="font-bold font-display text-lg">Vamos abrir a sua loja</p>
+                  <div className="rounded-xl border border-line bg-bg px-3 py-2.5 text-sm">
+                    Loja Boa Colheita
+                  </div>
+                  <div className="rounded-xl border border-line bg-bg px-3 py-2.5 text-muted text-sm">
                     prospera.app/loja/boa-colheita
+                  </div>
+                  <span className="mt-1 rounded-full bg-brand px-4 py-2.5 text-center font-semibold text-sm text-white">
+                    Criar loja
+                  </span>
+                </div>
+              </PhoneStep>
+            </Reveal>
+
+            <Reveal delay={0.08}>
+              <PhoneStep n={2} title="Ligue o recebimento">
+                <div className="grid gap-2.5">
+                  <p className="font-bold font-display text-lg">Receber por Pix</p>
+                  <div className="rounded-xl border border-line bg-bg px-3 py-2.5 text-sm">
+                    chave@boacolheita.org
+                  </div>
+                  <p className="flex items-center gap-2 rounded-xl bg-success-soft px-3 py-2.5 font-medium text-sm text-success">
+                    <Check className="h-4 w-4" aria-hidden /> Pix ligado. Já pode vender.
                   </p>
-                  <p className="mt-1 text-muted text-xs">
-                    Loja Boa Colheita — produtos e campanhas
+                  <p className="text-muted text-xs">
+                    O valor não passa por terceiros — cai na conta da chave.
                   </p>
                 </div>
-                <p className="text-center text-muted text-xs">
-                  abre bonito no grupo, com foto e tudo
-                </p>
-              </div>
-            </PhoneStep>
+              </PhoneStep>
+            </Reveal>
+
+            <Reveal delay={0.16}>
+              <PhoneStep n={3} title="Divulgue o link">
+                <div className="grid gap-2.5">
+                  <div className="max-w-[85%] rounded-2xl rounded-bl-md bg-bg p-3 shadow-sm">
+                    <p className="text-sm">Gente, a lojinha tá no ar! 🍊</p>
+                  </div>
+                  <div className="ml-auto max-w-[90%] rounded-2xl rounded-br-md bg-brand-soft p-3">
+                    <p className="font-semibold text-brand-deep text-sm">
+                      prospera.app/loja/boa-colheita
+                    </p>
+                    <p className="mt-1 text-muted text-xs">
+                      Loja Boa Colheita — produtos e campanhas
+                    </p>
+                  </div>
+                  <p className="text-center text-muted text-xs">
+                    abre bonito no grupo, com foto e tudo
+                  </p>
+                </div>
+              </PhoneStep>
+            </Reveal>
           </div>
 
-          <div className="shell mt-10 flex flex-col gap-3 sm:flex-row">
+          <div className="shell mt-12 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Button asChild size="lg" className="w-full sm:w-auto">
-              <Link to="/criar-conta">Começar agora</Link>
+              <Link to="/criar-conta">
+                Começar agora
+                <ArrowRight className="h-4 w-4" aria-hidden />
+              </Link>
             </Button>
-            <Button asChild size="lg" variant="ghost" className="w-full sm:w-auto">
+            <Button asChild size="lg" variant="secondary" className="w-full sm:w-auto">
               <Link to="/entrar">Já tenho conta</Link>
             </Button>
           </div>
         </section>
 
         {/* ═══ A conta, sem letra miúda ═══════════════════════════════════════ */}
-        <section className="bg-ink text-bg">
-          <div className="shell grid gap-10 py-16 sm:grid-cols-3 md:py-20">
-            <BigFact big="R$ 0" label="para começar — só cobramos quando você vende" />
-            <BigFact big="5%" label="de taxa, declarada antes de cada venda" />
-            <BigFact big="100%" label="do repasse direto na sua conta, sem parada" />
-          </div>
+        <section className="shell py-16 md:py-24">
+          <Reveal>
+            <div className="grid gap-8 rounded-[1.5rem] bg-brand-soft px-6 py-10 sm:grid-cols-3 md:px-12 md:py-14">
+              <BigFact
+                value={0}
+                prefix="R$ "
+                label="para começar — só cobramos quando você vende"
+              />
+              <BigFact value={5} suffix="%" label="de taxa, declarada antes de cada venda" />
+              <BigFact value={100} suffix="%" label="do repasse direto na sua conta, sem parada" />
+            </div>
+          </Reveal>
         </section>
 
-        {/* ═══ Lojas abertas: carrossel com paradas ═══════════════════════════ */}
-        <section className="py-16 md:py-24">
-          <div className="shell flex flex-wrap items-end justify-between gap-4">
+        {/* ═══ Lojas abertas ══════════════════════════════════════════════════ */}
+        <section className="shell pb-16 md:pb-24">
+          <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
               <p className="kicker">Para quem compra</p>
               <h2 className="mt-3 text-title">Lojas abertas agora</h2>
@@ -288,7 +329,7 @@ function Landing() {
           </div>
 
           {stores.length === 0 ? (
-            <p className="shell mt-8 text-muted">
+            <p className="mt-8 text-muted">
               Nenhuma loja aberta ainda. Quer ser a primeira?{" "}
               <Link to="/criar-conta" className="text-brand-deep underline underline-offset-4">
                 crie a loja
@@ -296,37 +337,34 @@ function Landing() {
               .
             </p>
           ) : (
-            <ul className="snap-row mt-8 px-5 md:px-8">
+            <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {stores.map((store, index) => (
-                <li key={store.id}>
-                  <Link
-                    to="/loja/$slug"
-                    params={{ slug: store.slug }}
-                    className="card card-hover group block w-72 overflow-hidden sm:w-80"
-                  >
-                    <div
-                      className="flex h-28 items-end p-4"
-                      style={{
-                        background: `linear-gradient(140deg, ${["#f26527", "#e8763c", "#d95b1d"][index % 3]}, #b44410)`,
-                      }}
+                <Reveal key={store.id} delay={index * 0.05}>
+                  <li className="h-full list-none">
+                    <Link
+                      to="/loja/$slug"
+                      params={{ slug: store.slug }}
+                      className="card card-hover group flex h-full flex-col p-6"
                     >
-                      <span className="inline-grid h-12 w-12 place-items-center rounded-full bg-white font-bold font-display text-brand-deep text-xl shadow-md">
+                      <span className="inline-grid h-12 w-12 place-items-center rounded-full bg-brand font-bold font-display text-white text-xl">
                         {store.name.charAt(0)}
                       </span>
-                    </div>
-                    <div className="p-5">
-                      <h3 className="font-bold font-display text-lg group-hover:text-brand-deep">
+                      <h3 className="mt-4 font-bold font-display text-lg group-hover:text-brand-deep">
                         {store.name}
                       </h3>
                       {store.description && (
                         <p className="mt-1 line-clamp-2 text-muted text-sm">{store.description}</p>
                       )}
-                      <p className="mt-3 inline-flex items-center gap-1.5 font-medium text-brand-deep text-sm">
-                        visitar loja <ArrowRight className="h-3.5 w-3.5" aria-hidden />
+                      <p className="mt-auto inline-flex items-center gap-1.5 pt-4 font-medium text-brand-deep text-sm">
+                        visitar loja
+                        <ArrowRight
+                          className="h-3.5 w-3.5 transition-transform [transition-duration:var(--dur)] group-hover:translate-x-0.5"
+                          aria-hidden
+                        />
                       </p>
-                    </div>
-                  </Link>
-                </li>
+                    </Link>
+                  </li>
+                </Reveal>
               ))}
             </ul>
           )}
@@ -399,6 +437,40 @@ function HeroCollage() {
   );
 }
 
+/** QR ilustrativo em tangerina — padrão determinístico, só forma. */
+function QrIllustration() {
+  const cells: boolean[] = Array.from({ length: 49 }, (_, i) => (i * 7 + 3) % 5 !== 0);
+  return (
+    <div className="grid aspect-square w-20 shrink-0 grid-cols-7 gap-[2px] rounded-lg bg-white p-2 shadow-sm">
+      {cells.map((on, i) => (
+        <span
+          // biome-ignore lint/suspicious/noArrayIndexKey: padrão estático
+          key={i}
+          className={`rounded-[1px] ${on ? "bg-[#b4400e]" : "bg-transparent"}`}
+        />
+      ))}
+    </div>
+  );
+}
+
+/** Losango do Pix, desenhado — o glifo que todo brasileiro reconhece. */
+function PixGlyph() {
+  return (
+    <svg viewBox="0 0 16 16" className="h-5 w-5" fill="none" stroke="currentColor">
+      <title>Pix</title>
+      <rect
+        x="3.2"
+        y="3.2"
+        width="9.6"
+        height="9.6"
+        rx="2.4"
+        strokeWidth="1.4"
+        transform="rotate(45 8 8)"
+      />
+    </svg>
+  );
+}
+
 function PhoneStep({
   n,
   title,
@@ -426,11 +498,48 @@ function PhoneStep({
   );
 }
 
-function BigFact({ big, label }: { big: string; label: string }) {
+/** Número grande que conta até o valor quando entra na tela. */
+function BigFact({
+  value,
+  prefix = "",
+  suffix = "",
+  label,
+}: {
+  value: number;
+  prefix?: string;
+  suffix?: string;
+  label: string;
+}) {
+  const ref = useRef<HTMLParagraphElement>(null);
+  const inView = useInView(ref, { once: true, margin: "-60px" });
+  const reduce = useReducedMotion();
+  const [display, setDisplay] = useState(reduce ? value : 0);
+
+  useEffect(() => {
+    if (!inView) return;
+    if (reduce) {
+      setDisplay(value);
+      return;
+    }
+    const controls = animate(0, value, {
+      duration: 1.1,
+      ease: [0.2, 0.7, 0.2, 1],
+      onUpdate: (latest) => setDisplay(Math.round(latest)),
+    });
+    return () => controls.stop();
+  }, [inView, reduce, value]);
+
   return (
     <div>
-      <p className="font-bold font-display text-5xl text-white tabular-nums md:text-6xl">{big}</p>
-      <p className="mt-2 max-w-[24ch] text-sm text-white/70">{label}</p>
+      <p
+        ref={ref}
+        className="font-bold font-display text-5xl text-brand-deep tabular-nums md:text-6xl"
+      >
+        {prefix}
+        {display}
+        {suffix}
+      </p>
+      <p className="mt-2 max-w-[24ch] text-muted text-sm">{label}</p>
     </div>
   );
 }

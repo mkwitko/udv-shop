@@ -317,13 +317,14 @@
     flex-shrink: 0;
   }
 
-  /* Moldura de telefone para os passos — o produto mostrado onde ele vive. */
+  /* Moldura de telefone para os passos — leve, clara, com sombra em vez de aro. */
   .phone {
     width: 16.5rem;
-    border: 6px solid var(--ink);
-    border-radius: 2.2rem;
-    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 1.8rem;
+    background: var(--elevated);
     overflow: hidden;
+    box-shadow: var(--shadow-card);
   }
 
   .card {
