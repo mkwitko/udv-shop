@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { ImagePlus, Pencil, Plus, X } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "#/components/ui/button";
@@ -141,6 +141,8 @@ function ProductForm({
   );
   const [uploading, setUploading] = useState(false);
   const [archiving, setArchiving] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
+  const dragDepth = useRef(0);
 
   const {
     register,
@@ -180,6 +182,7 @@ function ProductForm({
       });
       if (!response.ok) throw new Error("upload_failed");
       setImages((current) => [...current, { key: presigned.key, url: presigned.publicUrl }]);
+      return true;
     } catch (error) {
       setFormError(
         error instanceof Error && error.message === "upload_failed"
@@ -188,6 +191,15 @@ function ProductForm({
       );
     } finally {
       setUploading(false);
+    }
+    return false;
+  }
+
+  async function addFiles(files: FileList | File[]) {
+    // uma por vez para manter a ordem; um erro interrompe as seguintes
+    for (const file of Array.from(files)) {
+      const ok = await pickImage(file);
+      if (!ok) break;
     }
   }
 
@@ -236,7 +248,7 @@ function ProductForm({
   }
 
   return (
-    <div className="max-w-lg">
+    <div className="max-w-xl">
       <div className="flex items-center justify-between gap-3">
         <h2 className="font-display text-lg font-semibold tracking-tight">
           {product ? `Editar ${product.name}` : "Novo produto"}
@@ -246,95 +258,132 @@ function ProductForm({
         </Button>
       </div>
 
-      <form onSubmit={handleSubmit(submit)} className="mt-6 grid gap-5">
-        <Field label="Nome do produto" htmlFor="name" error={errors.name?.message}>
-          <Input id="name" placeholder="Camiseta bordada" {...register("name")} />
-        </Field>
+      <form onSubmit={handleSubmit(submit)} className="mt-6 grid gap-8">
+        <section className="grid gap-5">
+          <h3 className="kicker">Sobre o produto</h3>
 
-        <Field
-          label="Preço"
-          htmlFor="price"
-          hint="Escreva como no dia a dia: 45 ou 45,90"
-          error={errors.price?.message}
-        >
-          <Input id="price" inputMode="decimal" placeholder="R$ 0,00" {...register("price")} />
-        </Field>
-
-        <Field
-          label="Descrição (opcional)"
-          htmlFor="description"
-          error={errors.description?.message}
-        >
-          <Textarea
-            id="description"
-            rows={3}
-            placeholder="Material, tamanho, história de quem faz…"
-            {...register("description")}
-          />
-        </Field>
-
-        <label className="flex items-start gap-3 text-sm">
-          <input
-            type="checkbox"
-            className="mt-0.5 h-5 w-5 accent-(--brand)"
-            {...register("onDemand")}
-          />
-          <span>
-            <span className="font-medium text-ink">Feito sob encomenda</span>
-            <span className="block text-muted">
-              Sem estoque: quem quiser entra numa lista e é avisado quando chegar.
-            </span>
-          </span>
-        </label>
-
-        {!onDemand && (
-          <Field label="Quantidade em estoque" htmlFor="stock" error={errors.stock?.message}>
-            <Input id="stock" type="number" min={0} inputMode="numeric" {...register("stock")} />
+          <Field label="Nome do produto" htmlFor="name" error={errors.name?.message}>
+            <Input id="name" placeholder="Camiseta bordada" {...register("name")} />
           </Field>
-        )}
 
-        <div className="grid gap-2">
-          <span className="text-sm font-medium text-ink">Fotos</span>
-          <div className="flex flex-wrap gap-2">
-            {images.map((image) => (
-              <span key={image.key} className="relative">
-                <img
-                  src={image.url}
-                  alt=""
-                  className="h-20 w-20 rounded-md border border-line bg-surface object-cover"
-                />
-                <button
-                  type="button"
-                  aria-label="Remover foto"
-                  onClick={() =>
-                    setImages((current) =>
-                      current.filter((candidate) => candidate.key !== image.key),
-                    )
-                  }
-                  className="-top-2 -right-2 absolute inline-grid h-6 w-6 place-items-center rounded-full border border-line bg-elevated text-muted hover:text-danger"
-                >
-                  <X className="h-3.5 w-3.5" aria-hidden />
-                </button>
+          <Field
+            label="Preço"
+            htmlFor="price"
+            hint="Escreva como no dia a dia: 45 ou 45,90"
+            error={errors.price?.message}
+          >
+            <Input id="price" inputMode="decimal" placeholder="R$ 0,00" {...register("price")} />
+          </Field>
+
+          <Field
+            label="Descrição (opcional)"
+            htmlFor="description"
+            error={errors.description?.message}
+          >
+            <Textarea
+              id="description"
+              rows={3}
+              placeholder="Material, tamanho, história de quem faz…"
+              {...register("description")}
+            />
+          </Field>
+        </section>
+
+        <section className="grid gap-5">
+          <h3 className="kicker">Estoque</h3>
+
+          <label className="flex items-start gap-3 text-sm">
+            <input
+              type="checkbox"
+              className="mt-0.5 h-5 w-5 accent-(--brand)"
+              {...register("onDemand")}
+            />
+            <span>
+              <span className="font-medium text-ink">Feito sob encomenda</span>
+              <span className="block text-muted">
+                Sem estoque: quem quiser entra numa lista e é avisado quando chegar.
               </span>
-            ))}
-            <label className="inline-grid h-20 w-20 cursor-pointer place-items-center rounded-md border border-line border-dashed text-muted hover:border-line-strong hover:text-ink">
-              <ImagePlus className="h-5 w-5" aria-hidden />
-              <span className="sr-only">Adicionar foto</span>
-              <input
-                type="file"
-                accept={ACCEPTED_TYPES.join(",")}
-                className="sr-only"
-                disabled={uploading}
-                onChange={(event) => {
-                  const file = event.target.files?.[0];
-                  if (file) void pickImage(file);
-                  event.target.value = "";
-                }}
-              />
-            </label>
-          </div>
-          {uploading && <p className="text-sm text-muted">Enviando foto…</p>}
-        </div>
+            </span>
+          </label>
+
+          {!onDemand && (
+            <Field label="Quantidade em estoque" htmlFor="stock" error={errors.stock?.message}>
+              <Input id="stock" type="number" min={0} inputMode="numeric" {...register("stock")} />
+            </Field>
+          )}
+        </section>
+
+        <section className="grid gap-3">
+          <h3 className="kicker">Fotos</h3>
+
+          {images.length > 0 && (
+            <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+              {images.map((image) => (
+                <span key={image.key} className="relative">
+                  <img
+                    src={image.url}
+                    alt=""
+                    className="aspect-square w-full rounded-[0.9rem] border border-line bg-surface object-cover"
+                  />
+                  <button
+                    type="button"
+                    aria-label="Remover foto"
+                    onClick={() =>
+                      setImages((current) =>
+                        current.filter((candidate) => candidate.key !== image.key),
+                      )
+                    }
+                    className="-top-2 -right-2 absolute inline-grid h-7 w-7 place-items-center rounded-full border border-line bg-elevated text-muted shadow-sm hover:text-danger"
+                  >
+                    <X className="h-3.5 w-3.5" aria-hidden />
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
+
+          <label
+            onDragEnter={(event) => {
+              event.preventDefault();
+              dragDepth.current += 1;
+              setDragOver(true);
+            }}
+            onDragOver={(event) => event.preventDefault()}
+            onDragLeave={() => {
+              dragDepth.current = Math.max(0, dragDepth.current - 1);
+              if (dragDepth.current === 0) setDragOver(false);
+            }}
+            onDrop={(event) => {
+              event.preventDefault();
+              dragDepth.current = 0;
+              setDragOver(false);
+              if (!uploading && event.dataTransfer.files.length > 0) {
+                void addFiles(event.dataTransfer.files);
+              }
+            }}
+            className={`flex cursor-pointer flex-col items-center justify-center gap-1.5 rounded-[1rem] border-2 border-dashed px-4 py-8 text-center transition-colors [transition-duration:var(--dur)] ${
+              dragOver ? "border-brand bg-brand-soft/60" : "border-line hover:border-line-strong"
+            }`}
+          >
+            <ImagePlus className="h-6 w-6 text-muted" aria-hidden />
+            <span className="font-medium text-ink text-sm">
+              {uploading ? "Enviando foto…" : "Arraste as fotos aqui"}
+            </span>
+            <span className="text-muted text-xs">ou toque para escolher · JPG, PNG, WebP</span>
+            <input
+              type="file"
+              multiple
+              accept={ACCEPTED_TYPES.join(",")}
+              className="sr-only"
+              disabled={uploading}
+              onChange={(event) => {
+                const files = event.target.files;
+                if (files && files.length > 0) void addFiles(Array.from(files));
+                event.target.value = "";
+              }}
+            />
+          </label>
+        </section>
 
         <FormError>{formError}</FormError>
 

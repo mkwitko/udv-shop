@@ -45,105 +45,165 @@ function Overview() {
   const storeUrl = `${siteUrl()}/loja/${slug}`;
 
   return (
-    <div className="grid max-w-2xl gap-8">
+    <div className="grid gap-8">
       {/* o que você quer fazer hoje */}
       <section>
         <h2 className="font-bold font-display text-xl tracking-tight">
           O que você quer fazer hoje?
         </h2>
-        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
-          <ActionCard to="/gestao/$slug/produtos" slug={slug} label="Adicionar produto">
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <ActionCard
+            to="/gestao/$slug/produtos"
+            slug={slug}
+            label="Adicionar produto"
+            hint="Foto, preço, pronto"
+            tone="brand"
+          >
             <Plus className="h-5 w-5" aria-hidden />
           </ActionCard>
-          <ActionCard to="/gestao/$slug/pedidos" slug={slug} label="Ver pedidos">
+          <ActionCard
+            to="/gestao/$slug/pedidos"
+            slug={slug}
+            label="Ver pedidos"
+            hint="Quem comprou e quando"
+            tone="sky"
+          >
             <GlyphSacola className="h-5 w-5" />
           </ActionCard>
-          <ActionCard to="/gestao/$slug/campanhas" slug={slug} label="Criar campanha">
+          <ActionCard
+            to="/gestao/$slug/campanhas"
+            slug={slug}
+            label="Criar campanha"
+            hint="Arrecadar com meta"
+            tone="coral"
+          >
             <GlyphCampanha className="h-5 w-5" />
           </ActionCard>
-          <ActionCard to="/gestao/$slug/doacoes" slug={slug} label="Ver doações">
+          <ActionCard
+            to="/gestao/$slug/doacoes"
+            slug={slug}
+            label="Ver doações"
+            hint="Quem apoiou sua loja"
+            tone="plum"
+          >
             <GlyphCoracao className="h-5 w-5" />
           </ActionCard>
-          <ActionCard to="/gestao/$slug/recebimento" slug={slug} label="Recebimento">
+          <ActionCard
+            to="/gestao/$slug/recebimento"
+            slug={slug}
+            label="Recebimento"
+            hint="Pix e assinatura"
+            tone="sand"
+          >
             <GlyphPix className="h-5 w-5" />
           </ActionCard>
-          <ActionCard to="/gestao/$slug/campanhas" slug={slug} label="Sorteios">
+          <ActionCard
+            to="/gestao/$slug/campanhas"
+            slug={slug}
+            label="Sorteios"
+            hint="Números da sorte"
+            tone="lavender"
+          >
             <GlyphBilhete className="h-5 w-5" />
           </ActionCard>
         </div>
       </section>
 
-      {/* quanto falta */}
-      {pct < 100 && (
-        <section className="card p-5 md:p-6">
-          <div className="flex items-baseline justify-between gap-3">
-            <h2 className="font-bold font-display text-lg tracking-tight">
-              Sua loja está {pct}% pronta
-            </h2>
-            <p className="text-muted text-sm tabular-nums">{pct}%</p>
-          </div>
-          <div className="mt-3 h-2.5 w-full overflow-hidden rounded-full bg-surface">
-            <div
-              className="progress-fill h-full rounded-full bg-brand"
-              style={{ width: `${pct}%` }}
-            />
-          </div>
-          <ul className="mt-5 grid gap-2.5">
-            {steps.map((step) => (
-              <li key={step.label} className="flex items-center gap-3 text-[0.95rem]">
-                <span
-                  className={`inline-grid h-6 w-6 shrink-0 place-items-center rounded-full ${
-                    step.done
-                      ? "bg-success text-white"
-                      : "border border-line-strong text-transparent"
-                  }`}
-                >
-                  <Check className="h-3.5 w-3.5" aria-hidden />
-                </span>
-                {step.to && !step.done ? (
-                  <Link
-                    to={step.to}
-                    params={{ slug }}
-                    className="inline-flex items-center gap-1.5 font-medium text-ink hover:text-brand-deep"
+      <div className="grid items-start gap-6 lg:grid-cols-2">
+        {/* quanto falta */}
+        {pct < 100 && (
+          <section className="card p-5 md:p-6">
+            <div className="flex items-baseline justify-between gap-3">
+              <h2 className="font-bold font-display text-lg tracking-tight">
+                Sua loja está {pct}% pronta
+              </h2>
+              <p className="text-muted text-sm tabular-nums">{pct}%</p>
+            </div>
+            <div className="mt-3 h-2.5 w-full overflow-hidden rounded-full bg-surface">
+              <div
+                className="progress-fill h-full rounded-full bg-brand"
+                style={{ width: `${pct}%` }}
+              />
+            </div>
+            <ul className="mt-5 grid gap-2.5">
+              {steps.map((step) => (
+                <li key={step.label} className="flex items-center gap-3 text-[0.95rem]">
+                  <span
+                    className={`inline-grid h-6 w-6 shrink-0 place-items-center rounded-full ${
+                      step.done
+                        ? "bg-success text-white"
+                        : "border border-line-strong text-transparent"
+                    }`}
                   >
-                    {step.label}
-                    <ArrowRight className="h-3.5 w-3.5" aria-hidden />
-                  </Link>
-                ) : (
-                  <span className={step.done ? "text-muted line-through" : ""}>{step.label}</span>
-                )}
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
+                    <Check className="h-3.5 w-3.5" aria-hidden />
+                  </span>
+                  {step.to && !step.done ? (
+                    <Link
+                      to={step.to}
+                      params={{ slug }}
+                      className="inline-flex items-center gap-1.5 font-medium text-ink hover:text-brand-deep"
+                    >
+                      {step.label}
+                      <ArrowRight className="h-3.5 w-3.5" aria-hidden />
+                    </Link>
+                  ) : (
+                    <span className={step.done ? "text-muted line-through" : ""}>{step.label}</span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
-      <ShareCard storeUrl={storeUrl} />
+        <ShareCard storeUrl={storeUrl} />
+      </div>
     </div>
   );
 }
+
+const TILE_TONES = {
+  brand: "bg-brand-soft text-brand-deep",
+  coral: "bg-coral/18 text-coral",
+  plum: "bg-plum/15 text-plum",
+  lavender: "bg-lavender/18 text-lavender",
+  sky: "bg-sky/18 text-sky",
+  sand: "bg-sand/35 text-brand-deep",
+} as const;
 
 function ActionCard({
   to,
   slug,
   label,
+  hint,
+  tone,
   children,
 }: {
   to: string;
   slug: string;
   label: string;
+  hint: string;
+  tone: keyof typeof TILE_TONES;
   children: React.ReactNode;
 }) {
   return (
     <Link
       to={to}
       params={{ slug }}
-      className="card card-hover flex min-h-24 flex-col justify-between gap-3 p-4"
+      className="card card-hover group flex min-h-[4.5rem] items-center gap-4 p-4"
     >
-      <span className="inline-grid h-10 w-10 place-items-center rounded-[0.8rem] bg-brand-soft text-brand-deep">
+      <span
+        className={`inline-grid h-11 w-11 shrink-0 place-items-center rounded-[0.9rem] transition-transform [transition-duration:var(--dur)] group-hover:scale-110 ${TILE_TONES[tone]}`}
+      >
         {children}
       </span>
-      <span className="font-semibold text-sm leading-tight">{label}</span>
+      <span className="min-w-0 flex-1">
+        <span className="block font-semibold text-sm leading-tight">{label}</span>
+        <span className="mt-0.5 block truncate text-muted text-xs">{hint}</span>
+      </span>
+      <ArrowRight
+        className="h-4 w-4 shrink-0 text-muted opacity-0 transition-all [transition-duration:var(--dur)] group-hover:translate-x-0.5 group-hover:text-brand-deep group-hover:opacity-100"
+        aria-hidden
+      />
     </Link>
   );
 }

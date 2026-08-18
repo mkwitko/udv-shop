@@ -1,4 +1,5 @@
-import { createFileRoute, Link, Outlet, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useMatchRoute, useNavigate } from "@tanstack/react-router";
+import { motion, useReducedMotion } from "motion/react";
 import { useEffect } from "react";
 import { RequireSession } from "#/components/auth/require-session";
 import { SiteFooter } from "#/components/site/site-footer";
@@ -35,6 +36,8 @@ const TABS = [
 function ManageLayout() {
   const { slug } = Route.useParams();
   const navigate = useNavigate();
+  const matchRoute = useMatchRoute();
+  const reducedMotion = useReducedMotion();
   const { data, isPending } = useListMyStores();
   const store = data?.items.find((candidate) => candidate.slug === slug);
 
@@ -78,21 +81,35 @@ function ManageLayout() {
             </div>
 
             <nav className="scroll-row mt-5 -mb-px" aria-label="Seções da gestão">
-              {TABS.map((tab) => (
-                <Link
-                  key={tab.to}
-                  to={tab.to}
-                  params={{ slug }}
-                  activeOptions={{ exact: "exact" in tab && tab.exact }}
-                  className="whitespace-nowrap border-b-2 border-transparent px-3 pb-3 text-sm text-muted transition-colors [transition-duration:var(--dur)] hover:text-ink"
-                  activeProps={{
-                    className:
-                      "whitespace-nowrap border-b-2 border-brand px-3 pb-3 text-sm font-medium text-ink",
-                  }}
-                >
-                  {tab.label}
-                </Link>
-              ))}
+              {TABS.map((tab) => {
+                const exact = "exact" in tab && tab.exact;
+                const active = Boolean(matchRoute({ to: tab.to, params: { slug }, fuzzy: !exact }));
+                return (
+                  <Link
+                    key={tab.to}
+                    to={tab.to}
+                    params={{ slug }}
+                    aria-current={active ? "page" : undefined}
+                    className={`relative whitespace-nowrap px-3 pb-3 text-sm transition-colors [transition-duration:var(--dur)] ${
+                      active ? "font-semibold text-ink" : "text-muted hover:text-ink"
+                    }`}
+                  >
+                    {tab.label}
+                    {active && (
+                      <motion.span
+                        layoutId="gestao-tab-indicator"
+                        transition={
+                          reducedMotion
+                            ? { duration: 0 }
+                            : { type: "spring", stiffness: 500, damping: 40 }
+                        }
+                        className="absolute inset-x-2 -bottom-px h-[2.5px] rounded-full bg-brand"
+                        aria-hidden
+                      />
+                    )}
+                  </Link>
+                );
+              })}
             </nav>
           </div>
         </header>
