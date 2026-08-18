@@ -1,0 +1,69 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { ProductCard } from "#/components/store/product-card";
+import { getStoreQueryOptions, useGetStore } from "#/lib/api/gen/hooks/useGetStore";
+import { listProductsQueryOptions, useListProducts } from "#/lib/api/gen/hooks/useListProducts";
+import { publicRequest } from "#/lib/api/public";
+import { organizationLd, seo } from "#/lib/seo";
+
+export const Route = createFileRoute("/loja/$slug/")({
+  loader: async ({ context, params }) => {
+    const [store] = await Promise.all([
+      context.queryClient.ensureQueryData(getStoreQueryOptions(params.slug, publicRequest)),
+      context.queryClient.ensureQueryData(
+        listProductsQueryOptions(params.slug, { limit: 24 }, publicRequest),
+      ),
+    ]);
+    return { store };
+  },
+  head: ({ loaderData, params }) => {
+    const store = loaderData?.store;
+    if (!store) return {};
+    return {
+      ...seo({
+        title: store.name,
+        description:
+          store.description ?? `Produtos e campanhas do núcleo ${store.name}, direto na fonte.`,
+        path: `/loja/${params.slug}`,
+      }),
+      scripts: [organizationLd(store)],
+    };
+  },
+  component: StoreCatalog,
+});
+
+function StoreCatalog() {
+  const { slug } = Route.useParams();
+  const { data: store } = useGetStore(slug, { client: publicRequest });
+  const { data } = useListProducts(slug, { limit: 24 }, { client: publicRequest });
+  const products = data?.items ?? [];
+
+  return (
+    <>
+      <section className="shell py-14">
+        <p className="kicker">Loja do núcleo</p>
+        <h1 className="mt-4 max-w-[18ch] text-title text-balance">{store?.name}</h1>
+        {store?.description && (
+          <p className="mt-5 max-w-[52ch] text-lede text-ink-soft">{store.description}</p>
+        )}
+      </section>
+
+      <section className="rule">
+        <div className="shell py-14">
+          {products.length === 0 ? (
+            <p className="text-ink-soft">
+              Esta loja ainda não publicou produtos. Vale voltar depois.
+            </p>
+          ) : (
+            <ul className="grid grid-cols-2 gap-x-6 gap-y-12 md:grid-cols-3 lg:grid-cols-4">
+              {products.map((product) => (
+                <li key={product.id}>
+                  <ProductCard product={product} storeSlug={slug} />
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </section>
+    </>
+  );
+}
