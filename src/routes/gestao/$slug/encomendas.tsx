@@ -53,7 +53,7 @@ function InterestsAdmin() {
 
       <FormError>{error}</FormError>
       {notice && (
-        <p className="mt-4 rounded-md border border-brand/30 bg-brand-soft px-3.5 py-2.5 text-sm text-brand">
+        <p className="mt-4 rounded-md border border-brand/30 bg-brand-soft px-3.5 py-2.5 text-sm text-brand-deep">
           {notice}
         </p>
       )}

@@ -73,7 +73,7 @@ function LoginPage() {
       footer={
         <>
           Ainda não tem conta?{" "}
-          <Link to="/criar-conta" className="text-brand underline underline-offset-4">
+          <Link to="/criar-conta" className="text-brand-deep underline underline-offset-4">
             criar conta
           </Link>
         </>

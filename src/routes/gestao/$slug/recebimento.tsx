@@ -66,7 +66,7 @@ function PixBlock({ slug }: { slug: string }) {
   return (
     <section className="card p-5">
       <header className="flex items-center gap-3">
-        <span className="inline-grid h-10 w-10 place-items-center rounded-md bg-brand-soft text-brand">
+        <span className="inline-grid h-10 w-10 place-items-center rounded-md bg-brand-soft text-brand-deep">
           <QrCode className="h-5 w-5" aria-hidden />
         </span>
         <div>
@@ -101,7 +101,7 @@ function PixBlock({ slug }: { slug: string }) {
         </Field>
         <FormError>{error}</FormError>
         {saved && (
-          <p className="flex items-center gap-2 text-sm text-brand">
+          <p className="flex items-center gap-2 text-sm text-brand-deep">
             <Check className="h-4 w-4" aria-hidden /> Chave salva. O Pix já está valendo.
           </p>
         )}
@@ -134,7 +134,7 @@ function CardBlock({ slug }: { slug: string }) {
   return (
     <section className="card p-5">
       <header className="flex items-center gap-3">
-        <span className="inline-grid h-10 w-10 place-items-center rounded-md bg-brand-soft text-brand">
+        <span className="inline-grid h-10 w-10 place-items-center rounded-md bg-brand-soft text-brand-deep">
           <CreditCard className="h-5 w-5" aria-hidden />
         </span>
         <div>

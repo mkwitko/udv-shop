@@ -1,94 +1,93 @@
-# Identidade visual — Prospera
+# Identidade visual — Prospera · Tangerina
 
-Marca: **Prospera**. Conceito: **Cobre & Porcelana** — dinheiro feito à mão. O carvão
-espresso e o marfim são o produto (ferramenta séria, premium); o **cobre** é o metal da
-moeda: o valor que passa direto de quem compra para quem faz. A tela precisa parecer
-ferramenta cara e acolhedora — não folder, não template de startup, não fintech fria.
-Antes de qualquer tela nova, leia isto.
+Marca: **Prospera**. Conceito: **Tangerina** — clara, colorida e humana (referências do
+usuário: Nubank e Airbnb). A regra que define tudo: **a cor é usada com coragem, em
+bloco grande — cor em detalhe é "corzinha", cor em massa é marca.** A tela precisa
+parecer alegre, confiável e fácil, para gente que resolve a vida pelo WhatsApp.
+
+Escolhida pelo Mauricio em 2026-08-18 na página de propostas
+(https://claude.ai/code/artifact/d5feb2fd-bbc9-4aa5-b4b9-9317b59a9366), colorway T.
 
 ## Regras de ouro
 
-- **Mobile-first**: todo layout nasce em ~390px; `sm:`/`md:` só adicionam. Tap targets
-  ≥ 44px (botão `md` = h-11).
-- **Público leigo**: uma decisão por tela, botão grande com verbo claro ("Pagar com
-  Pix"), passo indicado ("Passo 1 de 2"), status em linguagem de gente ("esperando o
-  banco confirmar"). Nada de jargão técnico na tela.
+- **Mobile-first**: layout nasce em ~390px; `sm:`/`md:` só adicionam. Tap targets ≥ 44px.
+- **Público leigo**: uma decisão por tela, botão grande com verbo claro, passo indicado,
+  status em linguagem de gente. Nada de jargão técnico.
 - **Copy sem "núcleo"**: fala-se de "sua loja", "sua conta", "quem organiza".
 
-## Assinatura: o fio de cobre
+## Assinatura: o bloco tangerina
 
-`.thread` — uma linha-gradiente de cobre que se desenha da esquerda no load
-(`thread-draw`); `.thread-glow` adiciona o brilho de base. Onde usar: hero da landing,
-topo da página da loja, confirmação de pagamento. Nunca em tela utilitária.
+`.bloco` — um painel inteiro da cor (gradiente `#F26527 → #DD4712`, halo de luz branca),
+de onde o conteúdo real "sobe" (card de produto, vitrine). É o hero da landing, o topo
+da página da loja e o fecho de conversão. **A cor do bloco é fixa nos dois temas** — o
+bloco É a marca. Dentro dele: texto branco, botões `variant="inverse"` (branco cheio) e
+`variant="inverse-outline"`; tokens do tema não valem lá dentro.
 
-`.copper-word` — UMA palavra do display em gradiente de cobre por página, nunca mais
-que isso.
+`.halo-top` — brilho suave da marca no topo, para telas de confirmação (pedido pago,
+doação recebida). Festivo sem virar bloco.
 
 ## Paleta
 
 | Token | Claro | Escuro | Papel |
 |---|---|---|---|
-| `--bg` | `#fbfaf8` | `#0f0d0b` | fundo (porcelana / espresso) |
-| `--surface` | `#f3f1ec` | `#161310` | faixa, campo, imagem vazia |
-| `--elevated` | `#ffffff` | `#1d1915` | card |
-| `--ink` | `#1a1713` | `#f2ede4` | texto |
-| `--ink-muted` | `#6b6459` | `#a59c8d` | texto secundário (≥ 4.5:1) |
-| `--brand` | `#a04c22` | `#e0956a` | **cobre**: link, kicker, progresso, foco, detalhe |
-| `--cta` | `#1a1713` | `#f2ede4` | ação primária monocromática invertida |
-| `--accent` | `#8a6d1f` | `#d9b04f` | aviso, pendente (semântica, não marca) |
-| `--danger` | `#b3261e` | `#ff8b7e` | erro |
+| `--bg` | `#FDFCFA` | `#17130F` | fundo |
+| `--surface` | `#F6F4EF` | `#201B15` | faixa, campo |
+| `--elevated` | `#FFFFFF` | `#27211A` | card |
+| `--ink` | `#1C1A17` | `#F4EFE7` | texto |
+| `--brand` | `#E8541E` | `#F0602A` | tangerina: preenchimentos, botão primário, blocos |
+| `--brand-deep` | `#A63D0E` | `#FFA471` | **texto/link na cor** (AA garantido) |
+| `--brand-hover` | `#C9430F` | `#FF7A42` | hover |
+| `--success` | `#2A9D68` | `#4CC38F` | pago, confirmado |
+| `--accent` | `#8A6D1F` | `#D9B04F` | aviso, pendente |
+| `--danger` | `#B3261E` | `#FF8B7E` | erro |
 
-O botão primário NÃO é cobre: é tinta no claro e marfim no escuro (`--cta`/`--cta-ink`),
-como peça de metal polido. O cobre é raro de propósito — é o que faz ele valer.
+**Regra de contraste:** `bg-brand` (vivo) é só para preenchimento com texto branco;
+texto tangerina sobre fundo claro usa SEMPRE `text-brand-deep`. Nunca `text-brand` puro
+em texto corrido.
 
 Regra dos temas (não pode quebrar): toda cor nasce em `:root`;
 `@media (prefers-color-scheme: dark)` redefine só os tokens dentro de
 `:root:not([data-theme="light"])`; `:root[data-theme="dark"]` redefine de novo para o
-botão vencer a preferência do sistema nos dois sentidos. O `themeBootScript` roda inline
-no `<head>`.
+botão vencer a preferência do sistema nos dois sentidos. `themeBootScript` inline no
+`<head>`.
 
 ## Tipografia
 
-- **Bricolage Grotesque Variable** no display (h1–h3, números de destaque) — a voz da
-  marca, peso 620–640, tracking apertado.
-- **Instrument Sans Variable** no corpo e UI.
+- **Gabarito Variable** no display (h1–h3, números, preços de destaque) — redonda,
+  quente, peso 700–800.
+- **Figtree Variable** no corpo e UI.
 - Self-hosted via fontsource; nenhuma chamada ao Google Fonts em runtime.
-- Dinheiro sempre `tabular-nums`, via `money()` — centavos inteiros da API, divididos só
-  na hora de mostrar.
+- Dinheiro sempre `tabular-nums` via `money()` — centavos inteiros da API.
 
 | Classe | Uso |
 |---|---|
-| `text-display` | h1 de landing — até 5rem, peso 640 |
-| `text-title` | h1/h2 de seção |
+| `text-display` | h1 — até 4.6rem, peso 800 |
+| `text-title` | h1/h2 de seção, peso 800 |
 | `text-lede` | parágrafo de abertura |
-| `.kicker` | rótulo acima do título, caixa alta, em cobre |
+| `.kicker` | rótulo acima do título, caixa alta, Gabarito, em `--brand-deep` |
 
 ## Forma
 
-- `--radius: 0.75rem`. Card `radius-lg`, campo `radius-md`, **botão pill**
-  (`rounded-full`), tag `rounded-full`.
-- Elevação é borda; `--shadow-card` só em card destacado e no hover.
-- No escuro, card ganha fio de luz no topo (`--edge`).
-- Fundo do hero: `.grid-field` (malha 1px mascarada) — a única textura do sistema.
-- Imagem que não existe vira campo com brilho da marca, nunca ícone de "sem foto".
+- `--radius: 1rem`. Card `radius-lg` (1rem), bloco `+0.5rem` (24px), campo `radius-md`,
+  **botão pill** (`rounded-full`), ícone em quadrado `rounded-[0.9rem]` colorido cheio.
+- Ícones de feature: quadrado 44px CHEIO de cor (brand/success/ink) com glifo branco.
+- Elevação: borda + `--shadow-card` no hover; no escuro card ganha fio de luz (`--edge`).
+- Inicial da loja vira medalhão redondo tangerina com letra branca.
+- Imagem que não existe vira campo com gradiente quente, nunca ícone de "sem foto".
 
 ## Movimento
 
-- Fio de cobre se desenha no load (`thread-draw`, 1s).
 - Entrada em cascata: `.rise` + `.rise-1..5` (fade + 14px, 550ms).
-- Progresso de campanha preenche da esquerda (`.progress-fill`), em cobre.
+- Progresso de campanha preenche da esquerda (`.progress-fill`), tangerina.
 - Hover de card sobe 2px e ganha sombra; foto de produto escala 3%.
 - Uma curva e uma duração: `--ease`, `--dur: 180ms`. `prefers-reduced-motion` zera tudo.
 
 ## Proibido
 
-- gradiente roxo/azul, blob decorativo, glassmorphism, sombra colorida "plástica"
-- hero centrado com dois botões sem nada em volta que prove o produto
-- grid de cards com ícone lucide gigante como enfeite (ícone aqui é 20px, dentro de um
-  quadrado de 40px, e sempre ao lado de texto que explica)
-- jargão de startup na copy ("turbine", "supercharge", "descomplique", "revolucione")
-- número inventado como prova social
-- cobre em área grande (fundo de seção, botão primário): o cobre é detalhe, não tinta
+- cor da marca em detalhe tímido (a marca aparece em massa ou não aparece)
+- gradiente roxo/azul, glassmorphism, sombra colorida "plástica" fora do botão primário
+- jargão de startup na copy; número inventado como prova social
+- texto `text-brand` vivo sobre fundo claro (usar `text-brand-deep`)
 
 ## Copy
 

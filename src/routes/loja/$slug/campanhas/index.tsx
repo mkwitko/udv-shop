@@ -48,7 +48,7 @@ function CampaignList() {
                   />
                 )}
                 <div className="p-6">
-                  <h2 className="font-display text-xl font-semibold transition-colors duration-(--dur) ease-(--ease) group-hover:text-brand">
+                  <h2 className="font-display text-xl font-semibold transition-colors duration-(--dur) ease-(--ease) group-hover:text-brand-hover">
                     {campaign.title}
                   </h2>
                   <CampaignProgress

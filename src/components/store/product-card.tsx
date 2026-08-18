@@ -38,7 +38,7 @@ export function ProductCard({ product, storeSlug }: { product: Product; storeSlu
           )}
         </div>
 
-        <h3 className="mt-3.5 font-display font-semibold leading-snug transition-colors [transition-duration:var(--dur)] group-hover:text-brand">
+        <h3 className="mt-3.5 font-display font-semibold leading-snug transition-colors [transition-duration:var(--dur)] group-hover:text-brand-hover">
           {product.name}
         </h3>
         <p className="mt-1 text-[0.95rem] text-muted tabular-nums">{money(product.priceCents)}</p>

@@ -88,7 +88,7 @@ export function PixPanel({ brCode, qrCodeImageUrl, expiresAt, onExpired }: PixPa
 
 function StepDot({ n }: { n: number }) {
   return (
-    <span className="mt-0.5 inline-grid h-5 w-5 shrink-0 place-items-center rounded-full bg-brand-soft text-xs font-semibold text-brand">
+    <span className="mt-0.5 inline-grid h-5 w-5 shrink-0 place-items-center rounded-full bg-brand-soft text-xs font-semibold text-brand-deep">
       {n}
     </span>
   );

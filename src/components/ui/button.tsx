@@ -8,18 +8,18 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        // ação primária é monocromática invertida (tinta ⇄ marfim) — o cobre fica
-        // para links, detalhes e a variante brand, usada com parcimônia
+        // ação primária é a tangerina cheia — a cor usada com coragem
         primary:
-          "bg-cta text-cta-ink hover:bg-cta-hover shadow-[inset_0_1px_0_rgb(255_255_255/0.08),0_1px_2px_rgb(0_0_0/0.12)]",
-        brand:
-          "bg-brand text-brand-ink hover:bg-brand-hover shadow-[inset_0_1px_0_rgb(255_255_255/0.14),0_1px_2px_rgb(0_0_0/0.1)]",
+          "bg-brand text-brand-ink hover:bg-brand-hover shadow-[inset_0_1px_0_rgb(255_255_255/0.18),0_2px_8px_-2px_rgb(232_84_30/0.5)]",
+        // para dentro do .bloco (fundo tangerina fixo): branco cheio ou contorno branco
+        inverse: "bg-white text-[#c9430f] hover:bg-[#fff3ec]",
+        "inverse-outline": "border-[1.5px] border-white/60 text-white hover:bg-white/10",
         secondary:
           "bg-elevated text-ink border border-line hover:border-line-strong shadow-[0_1px_2px_rgb(0_0_0/0.05)]",
         outline: "border border-line-strong text-ink hover:bg-surface",
         ghost: "text-muted hover:text-ink hover:bg-surface",
         danger: "bg-danger-soft text-danger border border-danger/30 hover:border-danger/60",
-        link: "text-brand underline underline-offset-4 decoration-1 hover:text-brand-hover",
+        link: "text-brand-deep underline underline-offset-4 decoration-1 hover:text-brand-hover",
       },
       size: {
         sm: "h-9 px-4 text-sm",

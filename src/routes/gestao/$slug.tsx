@@ -71,7 +71,7 @@ function ManageLayout() {
               <Link
                 to="/loja/$slug"
                 params={{ slug }}
-                className="text-sm text-brand underline underline-offset-4"
+                className="text-sm text-brand-deep underline underline-offset-4"
               >
                 ver como cliente
               </Link>

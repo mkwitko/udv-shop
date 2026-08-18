@@ -41,22 +41,29 @@ function StoreCatalog() {
 
   return (
     <>
-      <section className="thread thread-glow relative">
-        <div className="shell py-14 md:py-20">
-          <p className="rise rise-1 kicker">Loja</p>
-          <h1 className="rise rise-2 mt-4 max-w-[18ch] text-title text-balance">{store?.name}</h1>
-          {store?.description && (
-            <p className="rise rise-3 mt-5 max-w-[52ch] text-lede text-muted">
-              {store.description}
+      {/* topo da loja é um bloco tangerina: a vitrine tem a cor da casa */}
+      <section className="shell pt-4 md:pt-8">
+        <div className="bloco px-6 py-10 md:px-12 md:py-14">
+          <div className="relative">
+            <p className="rise rise-1 font-display font-bold text-sm text-white/80 uppercase tracking-wide">
+              Loja
             </p>
-          )}
-          <div className="rise rise-4 mt-7">
-            <Button asChild variant="secondary">
-              <Link to="/loja/$slug/doar" params={{ slug }}>
-                <Heart className="h-4 w-4 text-brand" aria-hidden />
-                Apoiar esta loja
-              </Link>
-            </Button>
+            <h1 className="rise rise-2 mt-3 max-w-[16ch] text-display text-balance">
+              {store?.name}
+            </h1>
+            {store?.description && (
+              <p className="rise rise-3 mt-4 max-w-[52ch] text-lede text-white/90">
+                {store.description}
+              </p>
+            )}
+            <div className="rise rise-4 mt-7">
+              <Button asChild variant="inverse">
+                <Link to="/loja/$slug/doar" params={{ slug }}>
+                  <Heart className="h-4 w-4" aria-hidden />
+                  Apoiar esta loja
+                </Link>
+              </Button>
+            </div>
           </div>
         </div>
       </section>

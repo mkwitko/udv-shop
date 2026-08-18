@@ -48,7 +48,7 @@ function ForgotPasswordPage() {
       title="Recuperar senha"
       subtitle="Mandamos um link para você definir uma senha nova."
       footer={
-        <Link to="/entrar" className="text-brand underline underline-offset-4">
+        <Link to="/entrar" className="text-brand-deep underline underline-offset-4">
           voltar para entrar
         </Link>
       }

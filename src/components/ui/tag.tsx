@@ -8,7 +8,7 @@ const tagVariants = cva(
     variants: {
       tone: {
         neutral: "border-line bg-surface text-muted",
-        brand: "border-brand/30 bg-brand-soft text-brand",
+        brand: "border-brand/30 bg-brand-soft text-brand-deep",
         accent: "border-accent/35 bg-accent/10 text-accent",
         danger: "border-danger/30 bg-danger-soft text-danger",
       },

@@ -2,8 +2,9 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   ArrowRight,
   BadgePercent,
+  Bell,
   Boxes,
-  ClipboardList,
+  Check,
   HeartHandshake,
   Ticket,
   Wallet,
@@ -11,7 +12,6 @@ import {
 import { SiteFooter } from "#/components/site/site-footer";
 import { SiteHeader } from "#/components/site/site-header";
 import { Button } from "#/components/ui/button";
-import { Tag } from "#/components/ui/tag";
 import { listStoresQueryOptions, useListStores } from "#/lib/api/gen/hooks/useListStores";
 import { publicRequest } from "#/lib/api/public";
 import { seo } from "#/lib/seo";
@@ -32,31 +32,37 @@ export const Route = createFileRoute("/")({
 const FEATURES = [
   {
     icon: Boxes,
+    tone: "bg-brand",
     title: "Catálogo que se cuida sozinho",
     body: "Produto com foto, preço, estoque e página própria. Esgotou, some da vitrine sem ninguém precisar lembrar.",
   },
   {
     icon: Wallet,
+    tone: "bg-success",
     title: "Cartão e Pix no mesmo checkout",
     body: "Quem compra escolhe como pagar. O dinheiro vai para a sua conta, não para uma conta central.",
   },
   {
     icon: HeartHandshake,
+    tone: "bg-ink",
     title: "Campanhas e doações recorrentes",
-    body: "Meta de arrecadação com barra de progresso, doação avulsa ou mensal, e a lista de quem doou só para a gestão.",
+    body: "Meta com barra de progresso, doação avulsa ou mensal, e a lista de quem doou só para a gestão.",
   },
   {
     icon: Ticket,
+    tone: "bg-brand",
     title: "Sorteio com número por doação",
-    body: "Cada contribuição vira número. O sorteio roda na plataforma e o resultado sai por e-mail.",
+    body: "Cada contribuição vira número da sorte. O sorteio roda na plataforma e o resultado sai por e-mail.",
   },
   {
-    icon: ClipboardList,
+    icon: Bell,
+    tone: "bg-success",
     title: "Encomenda sem grupo de WhatsApp",
     body: "Produto sob encomenda junta a lista de interessados. Chegou, todo mundo é avisado de uma vez.",
   },
   {
     icon: BadgePercent,
+    tone: "bg-ink",
     title: "Taxa combinada, à vista",
     body: "A parte da plataforma é um percentual declarado do pedido. Sem tarifa escondida no meio do repasse.",
   },
@@ -64,17 +70,17 @@ const FEATURES = [
 
 const STEPS = [
   {
-    n: "01",
+    n: 1,
     title: "Crie a conta e a loja",
-    body: "Nome, endereço da loja e pronto. Você já entra no painel com o catálogo vazio esperando.",
+    body: "Nome, endereço da loja e pronto. Você já entra no painel com o catálogo esperando.",
   },
   {
-    n: "02",
+    n: 2,
     title: "Ligue o recebimento",
-    body: "Conecte sua conta e sua chave Pix seguindo o passo a passo. É o que garante que o valor não passa por terceiros.",
+    body: "Sua chave Pix ou sua conta de cartão, num passo a passo guiado. O valor não passa por terceiros.",
   },
   {
-    n: "03",
+    n: 3,
     title: "Divulgue o link",
     body: "A loja tem endereço próprio, aparece no Google e abre bonito quando alguém manda no grupo.",
   },
@@ -89,95 +95,92 @@ function Landing() {
       <SiteHeader />
 
       <main>
-        {/* Hero: o fio de cobre se desenha na base — assinatura da marca */}
-        <section className="thread thread-glow relative">
-          <div className="grid-field pointer-events-none absolute inset-0" aria-hidden />
-
-          <div className="shell relative pt-16 pb-14 md:pt-28">
-            <div className="mx-auto max-w-3xl text-center">
-              <div className="rise rise-1">
-                <Tag tone="brand" className="mb-6">
-                  Loja, campanhas e sorteios num lugar só
-                </Tag>
+        {/* ── Hero: o bloco tangerina, com a vitrine subindo dele ─────────────── */}
+        <section className="shell pt-4 md:pt-8">
+          <div className="bloco">
+            <div className="relative grid gap-10 px-6 pt-10 md:grid-cols-[1.15fr_0.85fr] md:items-end md:gap-14 md:px-12 md:pt-16">
+              <div className="pb-10 md:pb-16">
+                <h1 className="rise rise-1 text-display">Sua loja no ar hoje.</h1>
+                <p className="rise rise-2 mt-5 max-w-[38ch] text-lede text-white/90">
+                  Venda, receba doações e faça sorteios sem planilha. O dinheiro cai direto na sua
+                  conta.
+                </p>
+                <div className="rise rise-3 mt-8 flex flex-col gap-3 sm:flex-row">
+                  <Button asChild size="lg" variant="inverse" className="w-full sm:w-auto">
+                    <Link to="/criar-conta">
+                      Criar minha loja grátis
+                      <ArrowRight className="h-4 w-4" aria-hidden />
+                    </Link>
+                  </Button>
+                  <Button asChild size="lg" variant="inverse-outline" className="w-full sm:w-auto">
+                    <Link to="/lojas">Ver uma loja aberta</Link>
+                  </Button>
+                </div>
+                <p className="rise rise-3 mt-4 text-sm text-white/75">
+                  Grátis para começar. Só cobramos quando você vende.
+                </p>
               </div>
-              <h1 className="rise rise-2 text-display">
-                Sua loja no ar <span className="copper-word">hoje</span>.
-              </h1>
-              <p className="rise rise-3 mx-auto mt-6 max-w-2xl text-lede text-muted">
-                Venda seus produtos, receba doações e faça sorteios sem planilha e sem complicação.
-                O dinheiro cai direto na sua conta.
-              </p>
-              <div className="rise rise-4 mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
-                <Button asChild size="lg" className="w-full sm:w-auto">
-                  <Link to="/criar-conta">
-                    Criar minha loja grátis
-                    <ArrowRight className="h-4 w-4" aria-hidden />
-                  </Link>
-                </Button>
-                <Button asChild size="lg" variant="secondary" className="w-full sm:w-auto">
-                  <Link to="/lojas">Visitar uma loja aberta</Link>
-                </Button>
-              </div>
-              <p className="rise rise-4 mt-4 text-sm text-muted">
-                Grátis para começar. Só cobramos quando você vende.
-              </p>
-            </div>
 
-            <div className="rise rise-5">
-              <DashboardPreview />
+              <div className="rise rise-4">
+                <StorefrontPreview />
+              </div>
             </div>
           </div>
         </section>
 
-        {/* Recursos */}
-        <section id="recursos" className="shell scroll-mt-20 py-20">
+        {/* ── O que já vem pronto ─────────────────────────────────────────────── */}
+        <section id="recursos" className="shell scroll-mt-20 py-16 md:py-24">
           <p className="kicker">O que já vem pronto</p>
           <h2 className="mt-3 max-w-2xl text-title">
-            Tudo que hoje vive na planilha e no caderninho, funcionando sozinho.
+            Tudo que hoje vive na planilha e no caderninho.
           </h2>
 
-          <ul className="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {FEATURES.map((feature) => (
               <li key={feature.title} className="card card-hover p-6">
-                <span className="inline-grid h-10 w-10 place-items-center rounded-md bg-brand-soft text-brand">
+                <span
+                  className={`inline-grid h-11 w-11 place-items-center rounded-[0.9rem] text-white ${feature.tone}`}
+                >
                   <feature.icon className="h-5 w-5" aria-hidden />
                 </span>
-                <h3 className="mt-5 font-display text-[1.05rem] font-semibold">{feature.title}</h3>
-                <p className="mt-2 text-[0.95rem] leading-relaxed text-muted">{feature.body}</p>
+                <h3 className="mt-4 font-display text-[1.1rem] font-bold">{feature.title}</h3>
+                <p className="mt-1.5 text-[0.95rem] leading-relaxed text-muted">{feature.body}</p>
               </li>
             ))}
           </ul>
         </section>
 
-        {/* Como funciona */}
-        <section id="como-funciona" className="scroll-mt-20 border-y border-line bg-surface">
-          <div className="shell py-20">
+        {/* ── Como funciona ───────────────────────────────────────────────────── */}
+        <section id="como-funciona" className="scroll-mt-20 bg-surface">
+          <div className="shell py-16 md:py-24">
             <p className="kicker">Como funciona</p>
-            <h2 className="mt-3 max-w-2xl text-title">Três passos, uma tarde.</h2>
+            <h2 className="mt-3 max-w-xl text-title">Três passos, uma tarde.</h2>
 
-            <ol className="mt-12 grid gap-8 md:grid-cols-3">
+            <ol className="mt-10 grid gap-4 md:grid-cols-3">
               {STEPS.map((step) => (
-                <li key={step.n} className="border-line border-t pt-6 md:border-t-2">
-                  <p className="font-display text-sm font-semibold text-brand">{step.n}</p>
-                  <h3 className="mt-3 font-display text-lg font-semibold">{step.title}</h3>
-                  <p className="mt-2 text-[0.95rem] leading-relaxed text-muted">{step.body}</p>
+                <li key={step.n} className="card p-6">
+                  <span className="inline-grid h-9 w-9 place-items-center rounded-full bg-brand font-display font-bold text-white">
+                    {step.n}
+                  </span>
+                  <h3 className="mt-4 font-display text-lg font-bold">{step.title}</h3>
+                  <p className="mt-1.5 text-[0.95rem] leading-relaxed text-muted">{step.body}</p>
                 </li>
               ))}
             </ol>
 
-            <div className="mt-12 flex flex-wrap gap-3">
-              <Button asChild>
+            <div className="mt-10 flex flex-col gap-3 sm:flex-row">
+              <Button asChild size="lg" className="w-full sm:w-auto">
                 <Link to="/criar-conta">Começar agora</Link>
               </Button>
-              <Button asChild variant="ghost">
+              <Button asChild size="lg" variant="ghost" className="w-full sm:w-auto">
                 <Link to="/entrar">Já tenho conta</Link>
               </Button>
             </div>
           </div>
         </section>
 
-        {/* Para quem compra */}
-        <section className="shell py-20">
+        {/* ── Lojas abertas ───────────────────────────────────────────────────── */}
+        <section className="shell py-16 md:py-24">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
               <p className="kicker">Para quem compra</p>
@@ -185,7 +188,7 @@ function Landing() {
             </div>
             <Link
               to="/lojas"
-              className="inline-flex items-center gap-1.5 text-sm text-brand hover:text-brand-hover"
+              className="inline-flex items-center gap-1.5 font-medium text-brand-deep text-sm hover:text-brand-hover"
             >
               ver todas <ArrowRight className="h-3.5 w-3.5" aria-hidden />
             </Link>
@@ -194,31 +197,31 @@ function Landing() {
           {stores.length === 0 ? (
             <p className="mt-8 text-muted">
               Nenhuma loja aberta ainda. Quer ser a primeira?{" "}
-              <Link to="/criar-conta" className="text-brand underline underline-offset-4">
+              <Link to="/criar-conta" className="text-brand-deep underline underline-offset-4">
                 crie a loja
               </Link>
               .
             </p>
           ) : (
-            <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {stores.map((store) => (
                 <li key={store.id}>
                   <Link
                     to="/loja/$slug"
                     params={{ slug: store.slug }}
-                    className="card card-hover group block p-6"
+                    className="card card-hover group flex h-full items-start gap-4 p-5"
                   >
-                    <h3 className="font-display text-lg font-semibold group-hover:text-brand">
-                      {store.name}
-                    </h3>
-                    {store.description && (
-                      <p className="mt-2 line-clamp-2 text-[0.95rem] text-muted">
-                        {store.description}
-                      </p>
-                    )}
-                    <p className="mt-4 inline-flex items-center gap-1.5 text-sm text-brand">
-                      visitar loja <ArrowRight className="h-3.5 w-3.5" aria-hidden />
-                    </p>
+                    <span className="inline-grid h-12 w-12 shrink-0 place-items-center rounded-full bg-brand font-display text-xl font-bold text-white">
+                      {store.name.charAt(0)}
+                    </span>
+                    <span className="min-w-0">
+                      <h3 className="font-display text-lg font-bold group-hover:text-brand-deep">
+                        {store.name}
+                      </h3>
+                      {store.description && (
+                        <p className="mt-1 line-clamp-2 text-sm text-muted">{store.description}</p>
+                      )}
+                    </span>
                   </Link>
                 </li>
               ))}
@@ -226,22 +229,21 @@ function Landing() {
           )}
         </section>
 
-        {/* CTA final */}
-        <section className="shell pb-24">
-          <div className="card relative overflow-hidden px-6 py-14 text-center md:px-16">
-            <div className="glow-field pointer-events-none absolute inset-0" aria-hidden />
+        {/* ── Fecho: outro bloco, mais curto ──────────────────────────────────── */}
+        <section className="shell pb-4 md:pb-8">
+          <div className="bloco px-6 py-14 text-center md:py-20">
             <div className="relative">
               <h2 className="mx-auto max-w-2xl text-title">
                 Você vende melhor do que organiza. A gente resolve a segunda parte.
               </h2>
-              <div className="mt-8 flex flex-wrap justify-center gap-3">
-                <Button asChild size="lg">
+              <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+                <Button asChild size="lg" variant="inverse" className="w-full sm:w-auto">
                   <Link to="/criar-conta">
-                    Criar minha loja
+                    Criar minha loja grátis
                     <ArrowRight className="h-4 w-4" aria-hidden />
                   </Link>
                 </Button>
-                <Button asChild size="lg" variant="secondary">
+                <Button asChild size="lg" variant="inverse-outline" className="w-full sm:w-auto">
                   <Link to="/entrar">Entrar</Link>
                 </Button>
               </div>
@@ -255,54 +257,29 @@ function Landing() {
   );
 }
 
-/** Prévia do painel desenhada em HTML — nada de screenshot que envelhece na primeira mudança. */
-function DashboardPreview() {
+/**
+ * A vitrine que sobe do bloco: um produto como quem compra vê. Ilustrativa,
+ * desenhada em HTML — nada de screenshot que envelhece na primeira mudança.
+ */
+function StorefrontPreview() {
   return (
-    <div className="relative mx-auto mt-16 max-w-4xl">
-      <div className="card overflow-hidden shadow-[var(--shadow-card)]">
-        <div className="flex items-center gap-2 border-b border-line bg-surface px-4 py-3">
-          <span className="h-2.5 w-2.5 rounded-full bg-line-strong" />
-          <span className="h-2.5 w-2.5 rounded-full bg-line-strong" />
-          <span className="h-2.5 w-2.5 rounded-full bg-line-strong" />
-          <p className="ml-3 text-xs text-muted">prospera.app/gestao/nucleo-demo</p>
-        </div>
-
-        <div className="grid gap-4 p-5 sm:grid-cols-3">
-          {[
-            { label: "Vendas do mês", value: "R$ 4.280", trend: "+18%" },
-            { label: "Campanha da obra", value: "62%", trend: "R$ 12.4k de 20k" },
-            { label: "Encomendas na fila", value: "9", trend: "3 novas hoje" },
-          ].map((stat) => (
-            <div key={stat.label} className="rounded-md border border-line bg-surface p-4">
-              <p className="text-xs text-muted">{stat.label}</p>
-              <p className="mt-1.5 font-display text-2xl font-semibold tracking-tight">
-                {stat.value}
-              </p>
-              <p className="mt-1 text-xs text-brand">{stat.trend}</p>
-            </div>
-          ))}
-        </div>
-
-        <div className="border-t border-line px-5 py-4">
-          <p className="kicker mb-3">Últimos pedidos</p>
-          <ul className="grid gap-2.5">
-            {[
-              { who: "Ana R.", what: "Camiseta bordada · 2un", value: "R$ 178,00", tone: "brand" },
-              { who: "Doação mensal", what: "Campanha reforma", value: "R$ 50,00", tone: "accent" },
-              { who: "Carlos M.", what: "Mel 500ml", value: "R$ 42,00", tone: "neutral" },
-            ].map((row) => (
-              <li key={row.who} className="flex items-center justify-between gap-4 text-sm">
-                <span className="flex min-w-0 items-center gap-2.5">
-                  <Tag tone={row.tone as "brand" | "accent" | "neutral"}>pago</Tag>
-                  <span className="truncate text-ink">{row.who}</span>
-                  <span className="hidden truncate text-muted sm:inline">{row.what}</span>
-                </span>
-                <span className="shrink-0 font-medium tabular-nums">{row.value}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
+    <div className="mx-auto w-full max-w-sm rounded-t-[1.25rem] bg-elevated p-5 text-ink shadow-[0_-18px_50px_-30px_rgb(0_0_0/0.45)]">
+      <div className="relative aspect-[16/10] overflow-hidden rounded-[0.9rem] bg-[linear-gradient(140deg,#f7b98d,#b45f31)]">
+        <span className="absolute bottom-2.5 left-3 rounded-full bg-white/90 px-2.5 py-0.5 font-medium text-[#8a4a20] text-xs">
+          foto do produto
+        </span>
       </div>
+      <p className="mt-4 font-display text-lg font-bold">Caneca Esperança</p>
+      <div className="mt-1 flex items-center justify-between gap-3">
+        <p className="font-display text-xl font-bold tabular-nums">R$ 45,00</p>
+        <span className="rounded-full bg-brand px-4 py-2 font-semibold text-sm text-white">
+          Comprar
+        </span>
+      </div>
+      <p className="mt-2 flex items-center gap-1.5 text-muted text-sm">
+        <Check className="h-3.5 w-3.5 text-success" aria-hidden />
+        Pix na hora ou cartão
+      </p>
     </div>
   );
 }

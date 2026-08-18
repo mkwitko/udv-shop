@@ -16,7 +16,7 @@ export function AuthShell({
 }) {
   return (
     <div className="relative flex min-h-dvh flex-col">
-      <div className="glow-field pointer-events-none absolute inset-x-0 top-0 h-96" aria-hidden />
+      <div className="halo-top pointer-events-none absolute inset-x-0 top-0 h-96" aria-hidden />
 
       <header className="shell relative flex h-16 items-center justify-between">
         <Link

@@ -84,7 +84,7 @@ function ProductPage() {
         </Link>
 
         <h1 className="mt-6 text-title text-balance">{product.name}</h1>
-        <p className="mt-4 font-display text-3xl text-brand">{money(product.priceCents)}</p>
+        <p className="mt-4 font-display text-3xl text-brand-deep">{money(product.priceCents)}</p>
 
         <div className="mt-4 flex gap-2">
           {onDemand && <Tag tone="brand">Sob encomenda</Tag>}
@@ -152,7 +152,7 @@ function InterestCta({ slug, produto }: { slug: string; produto: string }) {
   if (state === "done") {
     return (
       <div className="rounded-lg border border-brand/30 bg-brand-soft p-4">
-        <p className="flex items-center gap-2 font-medium text-brand">
+        <p className="flex items-center gap-2 font-medium text-brand-deep">
           <Check className="h-5 w-5" aria-hidden />
           Pronto, você está na lista!
         </p>

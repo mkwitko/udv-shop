@@ -42,7 +42,7 @@ export function PayChoice({
         <span className="block font-medium">{title}</span>
         <span className="block text-sm text-muted">{detail}</span>
       </span>
-      {checked && <Check className="ml-auto h-5 w-5 shrink-0 text-brand" aria-hidden />}
+      {checked && <Check className="ml-auto h-5 w-5 shrink-0 text-brand-deep" aria-hidden />}
     </label>
   );
 }

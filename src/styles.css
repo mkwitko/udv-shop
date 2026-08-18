@@ -1,102 +1,95 @@
 @import "tailwindcss";
-@import "@fontsource-variable/bricolage-grotesque";
-@import "@fontsource-variable/instrument-sans";
+@import "@fontsource-variable/gabarito";
+@import "@fontsource-variable/figtree";
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   Identidade "Cobre & Porcelana": carvão espresso, marfim e cobre — dinheiro
-   feito à mão, não fintech fria. Tokens nascem em :root (tema claro); o escuro
-   entra por prefers-color-scheme e é forçado por [data-theme]. Os dois blocos
-   existem sempre — cor definida só dentro de media query some quando o usuário
-   troca no botão.
+   Identidade "Tangerina": clara, colorida e humana (referências Nubank/Airbnb).
+   UMA cor de marca, usada com coragem — em bloco grande, não em detalhe.
+   Tokens nascem em :root (tema claro); o escuro entra por prefers-color-scheme
+   e é forçado por [data-theme]. Os dois blocos existem sempre — cor definida só
+   dentro de media query some quando o usuário troca no botão.
    ───────────────────────────────────────────────────────────────────────────── */
 :root {
-  --bg: #fbfaf8;
-  --surface: #f3f1ec;
+  --bg: #fdfcfa;
+  --surface: #f6f4ef;
   --elevated: #ffffff;
-  --ink: #1a1713;
-  --ink-muted: #6b6459;
-  --line: #e7e3da;
-  --line-strong: #d2ccbf;
+  --ink: #1c1a17;
+  --ink-muted: #6f6a62;
+  --line: #eae7e0;
+  --line-strong: #d9d4c9;
 
-  /* cobre: o único acento da marca — link, progresso, foco, detalhe */
-  --brand: #a04c22;
-  --brand-hover: #8a421e;
+  /* tangerina: viva nos preenchimentos; a versão deep é a que pode virar texto */
+  --brand: #e8541e;
+  --brand-hover: #c9430f;
+  --brand-deep: #a63d0e;
   --brand-ink: #ffffff;
-  --brand-soft: #f6ebe2;
+  --brand-soft: #fdeee6;
 
-  /* ação primária é monocromática invertida: tinta no claro, marfim no escuro */
-  --cta: #1a1713;
-  --cta-ink: #fbfaf8;
-  --cta-hover: #2c2820;
-
+  --success: #2a9d68;
+  --success-soft: #e6f5ed;
   --accent: #8a6d1f;
   --danger: #b3261e;
   --danger-soft: #fdf1f0;
 
-  --glow: color-mix(in oklab, var(--brand) 13%, transparent);
-  --grid-line: color-mix(in oklab, var(--ink) 6%, transparent);
+  --glow: color-mix(in oklab, var(--brand) 12%, transparent);
   --edge: transparent; /* fio de luz no topo do card — só existe no escuro */
 
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
   --dur: 180ms;
-  --radius: 0.75rem;
-  --shadow-card: 0 1px 2px rgb(26 23 19 / 0.05), 0 10px 30px -14px rgb(26 23 19 / 0.14);
+  --radius: 1rem;
+  --shadow-card: 0 1px 2px rgb(28 26 23 / 0.05), 0 12px 32px -16px rgb(28 26 23 / 0.16);
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #0f0d0b;
-    --surface: #161310;
-    --elevated: #1d1915;
-    --ink: #f2ede4;
-    --ink-muted: #a59c8d;
-    --line: #2a251e;
-    --line-strong: #3d362b;
+    --bg: #17130f;
+    --surface: #201b15;
+    --elevated: #27211a;
+    --ink: #f4efe7;
+    --ink-muted: #a89f92;
+    --line: #342d24;
+    --line-strong: #463d30;
 
-    --brand: #e0956a;
-    --brand-hover: #eaa87f;
-    --brand-ink: #23130a;
-    --brand-soft: #2c1d11;
+    --brand: #f0602a;
+    --brand-hover: #ff7a42;
+    --brand-deep: #ffa471;
+    --brand-ink: #ffffff;
+    --brand-soft: #3a2214;
 
-    --cta: #f2ede4;
-    --cta-ink: #16130f;
-    --cta-hover: #ffffff;
-
+    --success: #4cc38f;
+    --success-soft: #14301f;
     --accent: #d9b04f;
     --danger: #ff8b7e;
     --danger-soft: #2a1310;
 
-    --glow: color-mix(in oklab, var(--brand) 15%, transparent);
-    --grid-line: color-mix(in oklab, var(--ink) 7%, transparent);
+    --glow: color-mix(in oklab, var(--brand) 16%, transparent);
     --edge: rgb(255 255 255 / 0.05);
     --shadow-card: 0 1px 2px rgb(0 0 0 / 0.45), 0 18px 44px -26px rgb(0 0 0 / 0.85);
   }
 }
 
 :root[data-theme="dark"] {
-  --bg: #0f0d0b;
-  --surface: #161310;
-  --elevated: #1d1915;
-  --ink: #f2ede4;
-  --ink-muted: #a59c8d;
-  --line: #2a251e;
-  --line-strong: #3d362b;
+  --bg: #17130f;
+  --surface: #201b15;
+  --elevated: #27211a;
+  --ink: #f4efe7;
+  --ink-muted: #a89f92;
+  --line: #342d24;
+  --line-strong: #463d30;
 
-  --brand: #e0956a;
-  --brand-hover: #eaa87f;
-  --brand-ink: #23130a;
-  --brand-soft: #2c1d11;
+  --brand: #f0602a;
+  --brand-hover: #ff7a42;
+  --brand-deep: #ffa471;
+  --brand-ink: #ffffff;
+  --brand-soft: #3a2214;
 
-  --cta: #f2ede4;
-  --cta-ink: #16130f;
-  --cta-hover: #ffffff;
-
+  --success: #4cc38f;
+  --success-soft: #14301f;
   --accent: #d9b04f;
   --danger: #ff8b7e;
   --danger-soft: #2a1310;
 
-  --glow: color-mix(in oklab, var(--brand) 15%, transparent);
-  --grid-line: color-mix(in oklab, var(--ink) 7%, transparent);
+  --glow: color-mix(in oklab, var(--brand) 16%, transparent);
   --edge: rgb(255 255 255 / 0.05);
   --shadow-card: 0 1px 2px rgb(0 0 0 / 0.45), 0 18px 44px -26px rgb(0 0 0 / 0.85);
 }
@@ -111,11 +104,11 @@
   --color-line-strong: var(--line-strong);
   --color-brand: var(--brand);
   --color-brand-hover: var(--brand-hover);
+  --color-brand-deep: var(--brand-deep);
   --color-brand-ink: var(--brand-ink);
   --color-brand-soft: var(--brand-soft);
-  --color-cta: var(--cta);
-  --color-cta-ink: var(--cta-ink);
-  --color-cta-hover: var(--cta-hover);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
   --color-accent: var(--accent);
   --color-danger: var(--danger);
   --color-danger-soft: var(--danger-soft);
@@ -127,8 +120,8 @@
   --color-card-foreground: var(--ink);
   --color-popover: var(--elevated);
   --color-popover-foreground: var(--ink);
-  --color-primary: var(--cta);
-  --color-primary-foreground: var(--cta-ink);
+  --color-primary: var(--brand);
+  --color-primary-foreground: var(--brand-ink);
   --color-secondary: var(--surface);
   --color-secondary-foreground: var(--ink);
   --color-muted-foreground: var(--ink-muted);
@@ -137,24 +130,24 @@
   --color-ring: var(--brand);
   --color-destructive: var(--danger);
 
-  --font-sans: "Instrument Sans Variable", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Bricolage Grotesque Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Figtree Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Gabarito Variable", ui-sans-serif, system-ui, sans-serif;
 
-  --text-display: clamp(2.8rem, 1.4rem + 5.2vw, 5rem);
-  --text-display--line-height: 0.98;
-  --text-display--letter-spacing: -0.03em;
-  --text-display--font-weight: 640;
-  --text-title: clamp(1.9rem, 1.3rem + 2.2vw, 2.9rem);
-  --text-title--line-height: 1.06;
+  --text-display: clamp(2.6rem, 1.3rem + 4.8vw, 4.6rem);
+  --text-display--line-height: 1;
+  --text-display--letter-spacing: -0.025em;
+  --text-display--font-weight: 800;
+  --text-title: clamp(1.9rem, 1.3rem + 2.2vw, 2.8rem);
+  --text-title--line-height: 1.08;
   --text-title--letter-spacing: -0.02em;
-  --text-title--font-weight: 620;
+  --text-title--font-weight: 800;
   --text-lede: clamp(1.05rem, 0.98rem + 0.4vw, 1.25rem);
   --text-lede--line-height: 1.6;
 
-  --radius-sm: calc(var(--radius) - 0.375rem);
-  --radius-md: var(--radius);
-  --radius-lg: calc(var(--radius) + 0.25rem);
-  --radius-xl: calc(var(--radius) + 0.75rem);
+  --radius-sm: calc(var(--radius) - 0.5rem);
+  --radius-md: calc(var(--radius) - 0.25rem);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 0.5rem);
 
   --ease-brand: var(--ease);
 }
@@ -192,7 +185,7 @@
   }
 
   ::selection {
-    background: color-mix(in oklab, var(--brand) 28%, transparent);
+    background: color-mix(in oklab, var(--brand) 26%, transparent);
   }
 
   :focus-visible {
@@ -225,60 +218,44 @@
     }
   }
 
-  /* Malha fina do hero — a única textura do sistema. */
-  .grid-field {
-    background-image:
-      linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
-      linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
-    background-size: 3.5rem 3.5rem;
-    mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 20%, transparent 75%);
-  }
-
-  .glow-field {
-    background: radial-gradient(ellipse 60% 50% at 50% -10%, var(--glow), transparent 70%);
-  }
-
   /* ───────────────────────────────────────────────────────────────────────────
-     Assinatura da marca: o fio de cobre. Uma linha-gradiente que se desenha no
-     load e marca os momentos de valor — hero, topo da loja, confirmação de
-     pagamento. Nunca em tela utilitária.
+     Assinatura da marca: o bloco tangerina. Um painel inteiro da cor, com halo
+     de luz, de onde o conteúdo real "sobe". É o hero da landing, o topo da loja
+     e o fecho de conversão. A cor é fixa nos dois temas — o bloco É a marca.
+     Dentro dele, texto branco e botões .btn-inverse; tokens do tema não valem lá.
      ─────────────────────────────────────────────────────────────────────────── */
-  .thread {
+  .bloco {
+    position: relative;
+    overflow: hidden;
+    border-radius: calc(var(--radius) + 0.5rem);
+    background: linear-gradient(150deg, #f26527, #dd4712);
+    color: #ffffff;
+  }
+
+  .bloco::before {
+    content: "";
+    position: absolute;
+    width: 34rem;
+    height: 34rem;
+    right: -12rem;
+    top: -14rem;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgb(255 255 255 / 0.2), transparent 65%);
+    pointer-events: none;
+  }
+
+  /* Halo suave de topo para telas de confirmação — festivo sem virar bloco. */
+  .halo-top {
     position: relative;
   }
 
-  .thread::after {
+  .halo-top::before {
     content: "";
     position: absolute;
-    inset: auto 0 0 0;
-    height: 1px;
-    background: linear-gradient(
-      to right,
-      transparent 8%,
-      color-mix(in oklab, var(--brand) 85%, transparent) 50%,
-      transparent 92%
-    );
-    transform-origin: left;
-    animation: thread-draw 1s var(--ease) both;
+    inset: 0 0 auto 0;
+    height: min(50vw, 18rem);
+    background: radial-gradient(ellipse 55% 90% at 50% 0%, var(--glow), transparent 70%);
     pointer-events: none;
-  }
-
-  .thread-glow::before {
-    content: "";
-    position: absolute;
-    inset: auto 0 0 0;
-    height: min(40vw, 16rem);
-    background: radial-gradient(ellipse 46% 90% at 50% 100%, var(--glow), transparent 70%);
-    animation: glow-in 1.2s var(--ease) both;
-    pointer-events: none;
-  }
-
-  /* Palavra em cobre no display: usar em UMA palavra por página, não mais. */
-  .copper-word {
-    background: linear-gradient(100deg, var(--brand) 20%, var(--brand-hover) 80%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
   }
 
   /* Entrada suave em cascata: aplicar .rise + .rise-1..5 nos filhos do hero. */
@@ -292,7 +269,7 @@
   .rise-4 { animation-delay: 300ms; }
   .rise-5 { animation-delay: 380ms; }
 
-  /* Barra de progresso de campanha: cobre, preenche da esquerda ao montar. */
+  /* Barra de progresso de campanha: tangerina, preenche da esquerda ao montar. */
   .progress-fill {
     transform-origin: left;
     animation: progress-in 0.9s var(--ease) both;
@@ -333,11 +310,12 @@
   }
 
   .kicker {
-    font-size: 0.78rem;
-    font-weight: 600;
-    letter-spacing: 0.09em;
+    font-family: var(--font-display);
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: var(--brand);
+    color: var(--brand-deep);
   }
 
   /* Usada tanto como divisor solto quanto como topo de seção: precisa ser borda, não
@@ -355,26 +333,6 @@
   to {
     opacity: 1;
     transform: translateY(0);
-  }
-}
-
-@keyframes thread-draw {
-  from {
-    transform: scaleX(0);
-    opacity: 0;
-  }
-  to {
-    transform: scaleX(1);
-    opacity: 1;
-  }
-}
-
-@keyframes glow-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
   }
 }
 

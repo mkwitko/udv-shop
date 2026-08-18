@@ -159,7 +159,7 @@ function StoreRow({ store }: { store: ListMyStores200["items"][number] }) {
 function EmptyStores() {
   return (
     <div className="card mt-6 grid place-items-center px-6 py-16 text-center">
-      <span className="inline-grid h-12 w-12 place-items-center rounded-lg bg-brand-soft text-brand">
+      <span className="inline-grid h-12 w-12 place-items-center rounded-lg bg-brand-soft text-brand-deep">
         <Store className="h-6 w-6" aria-hidden />
       </span>
       <h3 className="mt-5 font-display text-lg font-semibold">Nenhuma loja ainda</h3>

@@ -36,7 +36,7 @@ function Stores() {
                 params={{ slug: store.slug }}
                 className="group grid gap-2 py-6 md:grid-cols-12 md:items-baseline"
               >
-                <h2 className="font-display text-2xl md:col-span-5 transition-colors duration-(--dur) ease-(--ease) group-hover:text-brand">
+                <h2 className="font-display text-2xl md:col-span-5 transition-colors duration-(--dur) ease-(--ease) group-hover:text-brand-hover">
                   {store.name}
                 </h2>
                 <p className="text-muted md:col-span-7">{store.description ?? ""}</p>
