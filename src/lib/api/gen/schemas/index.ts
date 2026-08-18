@@ -28,6 +28,7 @@ export { listCampaigns200Schema, listCampaignsPathParamsSchema, listCampaignsQue
 export { listMyDonations200Schema, listMyDonationsQueryParamsSchema, listMyDonationsQueryResponseSchema } from "./listMyDonationsSchema.ts";
 export { listMyInterests200Schema, listMyInterestsQueryParamsSchema, listMyInterestsQueryResponseSchema } from "./listMyInterestsSchema.ts";
 export { listMyOrders200Schema, listMyOrdersQueryParamsSchema, listMyOrdersQueryResponseSchema } from "./listMyOrdersSchema.ts";
+export { listMyStores200Schema, listMyStoresQueryResponseSchema } from "./listMyStoresSchema.ts";
 export { listProducts200Schema, listProductsPathParamsSchema, listProductsQueryParamsSchema, listProductsQueryResponseSchema } from "./listProductsSchema.ts";
 export { listRaffleEntries200Schema, listRaffleEntriesPathParamsSchema, listRaffleEntriesQueryParamsSchema, listRaffleEntriesQueryResponseSchema } from "./listRaffleEntriesSchema.ts";
 export { listStoreDonations200Schema, listStoreDonationsPathParamsSchema, listStoreDonationsQueryParamsSchema, listStoreDonationsQueryResponseSchema } from "./listStoreDonationsSchema.ts";

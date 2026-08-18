@@ -9,10 +9,14 @@ TanStack Start (React 19) + Vite, servido no Cloudflare Workers. Consome a
 src/
   routes/              rotas file-based (inclui server routes: sitemap.xml, robots.txt)
   components/
-    site/              cabeçalho e rodapé
+    auth/              guarda de rota privada
+    site/              cabeçalho, rodapé, shell das telas de autenticação
     store/             blocos de loja (card de produto)
-    ui/                base funcional (button, tag) — shadcn re-tematizado
+    ui/                base funcional (button, input, tag, tema) — shadcn re-tematizado
   lib/
+    auth/              contexto de sessão (login, registro, refresh, logout)
+    theme.ts           preferência clara/escura + script anti-flash
+    slug.ts            sugestão de endereço de loja a partir do nome
     api/
       gen/             GERADO pelo Kubb — não editar à mão
       fetch-client.ts  cliente HTTP único (base URL, token, erros)
@@ -54,6 +58,24 @@ persistência é o cookie httpOnly de refresh que a API grava em `/auth`. Qualqu
 limpa o token em memória. Se o front for servido de outro registrable domain que a API, a
 API precisa subir com `COOKIE_CROSS_SITE=true`.
 
+`SessionProvider` (`lib/auth/session.tsx`) monta na shell e, no cliente, troca o cookie
+de refresh por um access token novo. Ele só tenta a troca se `localStorage` tiver a pista
+`udv-session` — visitante que nunca logou não gasta um 401 por página. A pista **não
+autentica nada**: quem autentica é o cookie httpOnly.
+
+Rotas privadas (`/conta`, `/nova-loja`) usam `<RequireSession>`, que é guarda de
+cliente. Não dá para checar no `beforeLoad`: o token está na memória do navegador e o
+servidor de SSR não o enxerga. Enquanto a sessão é restaurada a rota mostra esqueleto;
+anônimo é mandado para `/entrar?redirect=…`, e o `redirect` só aceita caminho interno
+(`/algo`, nunca `//outro-site`).
+
+## Tema
+
+Claro e escuro com botão no cabeçalho, tokens em `styles.css`, preferência em
+`localStorage` (`udv-theme`). `themeBootScript` roda inline no `<head>` antes da primeira
+pintura — sem ele, quem escolheu escuro vê um flash branco a cada carregamento. Regras de
+cor em [DESIGN.md](./DESIGN.md).
+
 ## SEO
 
 - `seo()` monta title/description/og/twitter/canonical por rota SSR
@@ -64,5 +86,6 @@ API precisa subir com `COOKIE_CROSS_SITE=true`.
 
 ## Ainda não existe
 
-Checkout, doação, autenticação de tela, `/gestao/:slug`, `/conta` e `/plataforma` — são
-os planos 8 e 9 da spec. Os botões de comprar e doar já estão nas telas, desabilitados.
+Checkout, doação, `/gestao/:slug` e `/plataforma` — planos 8 e 9 da spec. Os botões de
+comprar, doar e "Gerenciar" já estão nas telas, desabilitados. `/conta` lista as lojas do
+usuário via `GET /me/stores`, mas não edita nada ainda.

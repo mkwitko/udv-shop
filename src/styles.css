@@ -1,194 +1,176 @@
-/* Sistema visual do udv-shop — ver docs/DESIGN.md e §9 da spec.
-   Regras que este arquivo existe para cumprir: nada de Inter/Poppins, nada de gradiente
-   roxo/azul, nada de glassmorphism. Tipografia com serifa humanista, paleta terra/verde
-   profundo sobre off-white, textura de papel em vez de sombra plástica, uma curva e uma
-   duração de animação para o app inteiro. */
-@import "@fontsource-variable/fraunces";
-@import "@fontsource-variable/archivo";
 @import "tailwindcss";
-@plugin '@tailwindcss/typography';
+@import "@fontsource-variable/archivo";
 
-@custom-variant dark (&:is(.dark *));
-
+/* ─────────────────────────────────────────────────────────────────────────────
+   Tokens. Claro é o padrão em :root; escuro entra por prefers-color-scheme e é
+   forçado por [data-theme]. Os dois blocos existem sempre — cor definida só
+   dentro de media query some quando o usuário troca no botão.
+   ───────────────────────────────────────────────────────────────────────────── */
 :root {
-  /* --- paleta base --- */
-  --paper: #f6f1e7;
-  --paper-deep: #ece4d4;
-  --paper-raised: #fbf8f2;
-  --ink: #1e1a16;
-  --ink-soft: #5c5347;
-  --clay: #a34527;
-  --clay-deep: #7e3319;
-  --moss: #22453a;
-  --moss-soft: #3d6555;
-  --ocre: #b8801f;
-  --line: rgba(30, 26, 22, 0.14);
-  --line-strong: rgba(30, 26, 22, 0.26);
+  --bg: #ffffff;
+  --surface: #f6f7f7;
+  --elevated: #ffffff;
+  --ink: #0a0f0d;
+  --ink-muted: #56635e;
+  --line: #e3e7e5;
+  --line-strong: #cbd3cf;
 
-  /* --- movimento: uma curva, uma duração --- */
+  --brand: #0d7a5f;
+  --brand-hover: #0a6650;
+  --brand-ink: #ffffff;
+  --brand-soft: #e8f4f0;
+  --accent: #b7791f;
+  --danger: #b42318;
+  --danger-soft: #fef3f2;
+
+  --glow: color-mix(in oklab, var(--brand) 14%, transparent);
+  --grid-line: color-mix(in oklab, var(--ink) 6%, transparent);
+
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
-  --dur: 220ms;
-
-  /* --- tokens shadcn, remapeados para a paleta acima --- */
-  --background: var(--paper);
-  --foreground: var(--ink);
-  --card: var(--paper-raised);
-  --card-foreground: var(--ink);
-  --popover: var(--paper-raised);
-  --popover-foreground: var(--ink);
-  --primary: var(--clay);
-  --primary-foreground: #fdf9f3;
-  --secondary: var(--moss);
-  --secondary-foreground: #f2f6f2;
-  --muted: var(--paper-deep);
-  --muted-foreground: var(--ink-soft);
-  --accent: var(--paper-deep);
-  --accent-foreground: var(--moss);
-  --destructive: #9a2b1e;
-  --destructive-foreground: #fdf9f3;
-  --border: var(--line);
-  --input: var(--line-strong);
-  --ring: var(--clay);
-  --radius: 0.25rem;
+  --dur: 180ms;
+  --radius: 0.625rem;
+  --shadow-card: 0 1px 2px rgb(10 15 13 / 0.04), 0 8px 24px -12px rgb(10 15 13 / 0.12);
 }
 
-.dark {
-  --paper: #17130f;
-  --paper-deep: #211b16;
-  --paper-raised: #221c17;
-  --ink: #f0e9dc;
-  --ink-soft: #b3a795;
-  --clay: #dd7a52;
-  --clay-deep: #f0a184;
-  --moss: #8fc0a9;
-  --moss-soft: #6f9d87;
-  --ocre: #d8a648;
-  --line: rgba(240, 233, 220, 0.16);
-  --line-strong: rgba(240, 233, 220, 0.3);
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #070a09;
+    --surface: #0d1211;
+    --elevated: #121917;
+    --ink: #e9efec;
+    --ink-muted: #93a29c;
+    --line: #1c2622;
+    --line-strong: #2a3733;
 
-  --background: var(--paper);
-  --foreground: var(--ink);
-  --card: var(--paper-raised);
-  --card-foreground: var(--ink);
-  --popover: var(--paper-raised);
-  --popover-foreground: var(--ink);
-  --primary: var(--clay);
-  --primary-foreground: #1b1310;
-  --secondary: var(--moss);
-  --secondary-foreground: #12211b;
-  --muted: var(--paper-deep);
-  --muted-foreground: var(--ink-soft);
-  --accent: var(--paper-deep);
-  --accent-foreground: var(--moss);
-  --destructive: #e07a6a;
-  --destructive-foreground: #1b1310;
-  --border: var(--line);
-  --input: var(--line-strong);
-  --ring: var(--clay);
+    --brand: #2ed3a3;
+    --brand-hover: #4fdcb3;
+    --brand-ink: #04120d;
+    --brand-soft: #0f2c24;
+    --accent: #e0a63a;
+    --danger: #ff8b7e;
+    --danger-soft: #24100e;
+
+    --glow: color-mix(in oklab, var(--brand) 18%, transparent);
+    --grid-line: color-mix(in oklab, var(--ink) 8%, transparent);
+    --shadow-card: 0 1px 2px rgb(0 0 0 / 0.4), 0 16px 40px -24px rgb(0 0 0 / 0.8);
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: #070a09;
+  --surface: #0d1211;
+  --elevated: #121917;
+  --ink: #e9efec;
+  --ink-muted: #93a29c;
+  --line: #1c2622;
+  --line-strong: #2a3733;
+
+  --brand: #2ed3a3;
+  --brand-hover: #4fdcb3;
+  --brand-ink: #04120d;
+  --brand-soft: #0f2c24;
+  --accent: #e0a63a;
+  --danger: #ff8b7e;
+  --danger-soft: #24100e;
+
+  --glow: color-mix(in oklab, var(--brand) 18%, transparent);
+  --grid-line: color-mix(in oklab, var(--ink) 8%, transparent);
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.4), 0 16px 40px -24px rgb(0 0 0 / 0.8);
 }
 
 @theme inline {
-  --font-sans: "Archivo Variable", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Fraunces Variable", Georgia, "Times New Roman", serif;
-
-  --color-paper: var(--paper);
-  --color-paper-deep: var(--paper-deep);
-  --color-paper-raised: var(--paper-raised);
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-elevated: var(--elevated);
   --color-ink: var(--ink);
-  --color-ink-soft: var(--ink-soft);
-  --color-clay: var(--clay);
-  --color-clay-deep: var(--clay-deep);
-  --color-moss: var(--moss);
-  --color-moss-soft: var(--moss-soft);
-  --color-ocre: var(--ocre);
-
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--ink-muted);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-ink: var(--brand-ink);
+  --color-brand-soft: var(--brand-soft);
   --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
 
-  --radius-sm: calc(var(--radius) - 1px);
+  /* shadcn herda os mesmos tokens: componente instalado depois já nasce no tema */
+  --color-background: var(--bg);
+  --color-foreground: var(--ink);
+  --color-card: var(--elevated);
+  --color-card-foreground: var(--ink);
+  --color-popover: var(--elevated);
+  --color-popover-foreground: var(--ink);
+  --color-primary: var(--brand);
+  --color-primary-foreground: var(--brand-ink);
+  --color-secondary: var(--surface);
+  --color-secondary-foreground: var(--ink);
+  --color-muted-foreground: var(--ink-muted);
+  --color-border: var(--line);
+  --color-input: var(--line);
+  --color-ring: var(--brand);
+  --color-destructive: var(--danger);
+
+  --font-sans: "Archivo Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Archivo Variable", ui-sans-serif, system-ui, sans-serif;
+
+  --text-display: clamp(2.6rem, 1.4rem + 4.6vw, 4.5rem);
+  --text-display--line-height: 1.02;
+  --text-display--letter-spacing: -0.035em;
+  --text-display--font-weight: 620;
+  --text-title: clamp(1.9rem, 1.3rem + 2.2vw, 2.75rem);
+  --text-title--line-height: 1.1;
+  --text-title--letter-spacing: -0.025em;
+  --text-title--font-weight: 600;
+  --text-lede: clamp(1.05rem, 0.98rem + 0.4vw, 1.25rem);
+  --text-lede--line-height: 1.6;
+
+  --radius-sm: calc(var(--radius) - 0.25rem);
   --radius-md: var(--radius);
-  --radius-lg: calc(var(--radius) + 2px);
-  --radius-xl: calc(var(--radius) + 6px);
+  --radius-lg: calc(var(--radius) + 0.375rem);
+  --radius-xl: calc(var(--radius) + 0.875rem);
 
-  /* escala tipográfica marcada: o salto entre corpo e título é parte da identidade */
-  --text-display: clamp(2.75rem, 1.6rem + 4.6vw, 5.25rem);
-  --text-display--line-height: 0.98;
-  --text-title: clamp(1.9rem, 1.2rem + 2.4vw, 3rem);
-  --text-title--line-height: 1.08;
-  --text-lede: clamp(1.125rem, 1rem + 0.6vw, 1.4rem);
-  --text-lede--line-height: 1.5;
+  --ease-brand: var(--ease);
 }
 
 @layer base {
   * {
-    border-color: var(--border);
+    border-color: var(--line);
   }
 
   html {
     scroll-behavior: smooth;
+    color-scheme: light;
+  }
+
+  :root[data-theme="dark"] html,
+  html:has(:root[data-theme="dark"]) {
+    color-scheme: dark;
   }
 
   body {
-    margin: 0;
-    min-height: 100dvh;
-    background-color: var(--background);
-    color: var(--foreground);
+    background-color: var(--bg);
+    color: var(--ink);
     font-family: var(--font-sans);
     font-synthesis-weight: none;
+    text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
-  }
-
-  /* Grão de papel: ruído fino, não sombra plástica. */
-  body::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-    pointer-events: none;
-    opacity: 0.4;
-    mix-blend-mode: multiply;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.16'/%3E%3C/svg%3E");
-  }
-
-  .dark body::before {
-    mix-blend-mode: screen;
-    opacity: 0.22;
   }
 
   h1,
   h2,
-  h3,
-  .font-display {
+  h3 {
     font-family: var(--font-display);
-    font-variation-settings: "SOFT" 30, "WONK" 1;
-    font-weight: 600;
-    letter-spacing: -0.015em;
+    letter-spacing: -0.025em;
+    text-wrap: balance;
   }
 
   ::selection {
-    background: var(--ocre);
-    color: var(--ink);
+    background: color-mix(in oklab, var(--brand) 26%, transparent);
   }
 
   :focus-visible {
-    outline: 2px solid var(--ring);
+    outline: 2px solid var(--brand);
     outline-offset: 2px;
   }
 
@@ -196,32 +178,68 @@
     *,
     *::before,
     *::after {
-      animation-duration: 1ms !important;
-      transition-duration: 1ms !important;
+      animation-duration: 0.001ms !important;
+      transition-duration: 0.001ms !important;
       scroll-behavior: auto !important;
     }
   }
 }
 
 @layer components {
-  /* Régua editorial: colunas assimétricas em vez de container centrado padrão. */
   .shell {
-    width: min(78rem, 100% - 2.5rem);
+    width: 100%;
+    max-width: 76rem;
     margin-inline: auto;
-    position: relative;
-    z-index: 1;
+    padding-inline: 1.25rem;
   }
 
-  .rule {
-    border-top: 1px solid var(--line);
+  @media (min-width: 768px) {
+    .shell {
+      padding-inline: 2rem;
+    }
+  }
+
+  /* Malha do hero: substitui o blob decorativo. Some antes de virar ruído. */
+  .grid-field {
+    background-image:
+      linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+    background-size: 3.5rem 3.5rem;
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 20%, transparent 75%);
+  }
+
+  .glow-field {
+    background: radial-gradient(ellipse 60% 50% at 50% -10%, var(--glow), transparent 70%);
+  }
+
+  .card {
+    background-color: var(--elevated);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+  }
+
+  .card-hover {
+    transition:
+      border-color var(--dur) var(--ease),
+      transform var(--dur) var(--ease);
+  }
+
+  .card-hover:hover {
+    border-color: var(--line-strong);
+    transform: translateY(-2px);
   }
 
   .kicker {
-    font-family: var(--font-sans);
-    font-size: 0.75rem;
+    font-size: 0.78rem;
     font-weight: 600;
-    letter-spacing: 0.18em;
+    letter-spacing: 0.09em;
     text-transform: uppercase;
-    color: var(--moss-soft);
+    color: var(--ink-muted);
+  }
+
+  /* Usada tanto como divisor solto quanto como topo de seção: precisa ser borda, não
+     altura. Com `height: 1px` a seção achata e o conteúdo escapa por baixo do rodapé. */
+  .rule {
+    border-top: 1px solid var(--line);
   }
 }

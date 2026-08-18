@@ -1,62 +1,80 @@
 # Identidade visual
 
-Regra de ouro: **nada aqui pode parecer template**. A §9 da spec lista as proibições e
-esta é a tradução delas em tokens. Antes de qualquer tela nova, leia isto.
+Produto de software vendido para quem organiza um núcleo. A tela precisa parecer
+ferramenta confiável — não folder de igreja, não template de startup. Antes de qualquer
+tela nova, leia isto.
 
 ## Proibido
 
-- Inter, Poppins ou a fonte default do sistema como tipografia principal
 - gradiente roxo/azul, blob decorativo, glassmorphism, sombra colorida "plástica"
-- grid de cards com ícone lucide cru como enfeite
-- hero centrado com dois botões clichê
-- jargão de startup na copy ("turbine", "supercharge", "descomplique")
+- hero centrado com dois botões sem nada em volta que prove o produto
+- grid de cards com ícone lucide gigante como enfeite (ícone aqui é 20px, dentro de um
+  quadrado de 40px, e sempre ao lado de texto que explica)
+- jargão de startup na copy ("turbine", "supercharge", "descomplique", "revolucione")
+- número inventado como prova social (nada de "+500 núcleos" enquanto não houver 500)
 
-## Tipografia
+## Tema claro e escuro
 
-| Papel | Fonte | Onde |
-|---|---|---|
-| Títulos | **Fraunces Variable** (serifa humanista, eixos SOFT/WONK) | `h1`–`h3`, `.font-display` |
-| Interface e corpo | **Archivo Variable** | resto |
+Os dois existem e o usuário escolhe. A regra que não pode quebrar:
 
-Ambas são self-hosted (`@fontsource-variable/*`) — nenhuma chamada ao Google Fonts em
-runtime. A escala é marcada de propósito: `text-display` (até 5.25rem) salta do corpo,
-`text-title` e `text-lede` ficam entre os dois.
+- toda cor nasce em `:root` (paleta clara)
+- `@media (prefers-color-scheme: dark)` redefine **só** os tokens, dentro de
+  `:root:not([data-theme="light"])`
+- `:root[data-theme="dark"]` redefine os mesmos tokens de novo, para o botão vencer a
+  preferência do sistema nos dois sentidos
+
+Cor definida apenas dentro da media query some quando alguém troca no botão. O
+`themeBootScript` roda inline no `<head>`: sem ele a página escura pisca branca antes de
+hidratar.
 
 ## Paleta
 
-Terra e verde profundo sobre off-white. Os tokens vivem em `src/styles.css` e os tokens
-do shadcn (`--primary`, `--muted`, …) são **remapeados** para eles — por isso um
-componente shadcn instalado depois já nasce no tema certo.
+| Token | Claro | Escuro | Papel |
+|---|---|---|---|
+| `--bg` | `#ffffff` | `#070a09` | fundo da página |
+| `--surface` | `#f6f7f7` | `#0d1211` | faixa, campo de formulário, imagem vazia |
+| `--elevated` | `#ffffff` | `#121917` | card |
+| `--ink` | `#0a0f0d` | `#e9efec` | texto |
+| `--ink-muted` | `#56635e` | `#93a29c` | texto secundário (≥ 4.5:1 nos dois temas) |
+| `--line` | `#e3e7e5` | `#1c2622` | borda padrão |
+| `--brand` | `#0d7a5f` | `#2ed3a3` | ação primária, link, progresso |
+| `--accent` | `#b7791f` | `#e0a63a` | aviso, estado pendente |
+| `--danger` | `#b42318` | `#ff8b7e` | erro |
 
-| Token | Claro | Papel |
-|---|---|---|
-| `--paper` | `#f6f1e7` | fundo |
-| `--paper-deep` | `#ece4d4` | superfície, imagem sem foto |
-| `--ink` | `#1e1a16` | texto (15:1 sobre paper) |
-| `--ink-soft` | `#5c5347` | texto secundário (≥ 6:1) |
-| `--clay` | `#a34527` | ação primária, preço |
-| `--moss` | `#22453a` | ação secundária, progresso |
-| `--ocre` | `#b8801f` | numeral, destaque — **nunca** como texto pequeno sobre paper |
+O verde clareia no escuro porque `#0d7a5f` sobre `#070a09` não passa em contraste. Os
+tokens do shadcn (`--primary`, `--muted`, `--border`, …) são remapeados para estes, então
+componente instalado depois já nasce no tema certo.
 
-Modo escuro inverte papel e tinta e clareia clay/moss para manter contraste AA.
+## Tipografia
 
-## Textura e forma
+**Archivo Variable** em tudo, self-hosted (`@fontsource-variable/archivo`) — nenhuma
+chamada ao Google Fonts em runtime. O peso e o tracking é que separam papel:
 
-- Grão de papel em `body::before` (SVG `feTurbulence`, `mix-blend-mode: multiply`). É a
-  única "decoração" do sistema — no lugar de sombra.
-- Raio de canto quase reto (`--radius: 0.25rem`). Nada de pílula.
-- Separação por régua (`.rule`, 1px) em vez de card com sombra.
-- Layout editorial: `.shell` com 12 colunas e blocos assimétricos (o texto do hero começa
-  na coluna 6, não no centro).
+| Classe | Uso |
+|---|---|
+| `text-display` | h1 de landing — até 4.5rem, `letter-spacing: -0.035em`, peso 620 |
+| `text-title` | h1/h2 de seção |
+| `text-lede` | parágrafo de abertura |
+| `.kicker` | rótulo acima do título, caixa alta, 0.78rem |
+
+## Forma e textura
+
+- `--radius: 0.625rem`. Card `radius-lg`, botão e campo `radius-md`, tag `rounded-full`.
+- Elevação é borda, não sombra. `--shadow-card` só entra em card destacado (prévia do
+  painel, caixa de login).
+- Fundo do hero: `.grid-field` (malha 1px com máscara radial) + `.glow-field` (brilho da
+  marca). É a única decoração do sistema — no lugar do blob.
+- Imagem que não existe vira campo de cor da marca, nunca ícone de "sem foto".
 
 ## Movimento
 
-Uma curva e uma duração para o app inteiro: `--ease: cubic-bezier(0.2,0.7,0.2,1)` e
-`--dur: 220ms`. Micro-interação só onde comunica estado (hover de link, escala leve da
-foto do produto). `prefers-reduced-motion` zera tudo.
+Uma curva e uma duração: `--ease: cubic-bezier(0.2,0.7,0.2,1)`, `--dur: 180ms`.
+Micro-interação só onde comunica estado — hover de card sobe 2px e escurece a borda,
+foto de produto escala 3%. `prefers-reduced-motion` zera tudo.
 
 ## Copy
 
-Calorosa e direta, em português do Brasil, sem religiosidade explícita e sem gíria. "A
-lojinha do seu núcleo, aberta o ano inteiro" é o tom. Preço sempre formatado por
-`money()` — centavos inteiros vindo da API, divididos só na hora de mostrar.
+Direta, em português do Brasil, sem religiosidade explícita e sem gíria. Fala do que a
+ferramenta faz e do que custa: "o valor cai direto na conta do núcleo" vale mais que
+"gestão inteligente". Preço sempre por `money()` — centavos inteiros vindos da API,
+divididos só na hora de mostrar.

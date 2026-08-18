@@ -28,7 +28,7 @@ function Stores() {
         <p className="kicker">Diretório</p>
         <h1 className="mt-4 text-title">Lojas abertas</h1>
 
-        <ul className="mt-12 divide-y divide-[var(--line)] border-y border-[var(--line)]">
+        <ul className="mt-12 divide-y divide-line border-y border-line">
           {stores.map((store) => (
             <li key={store.id}>
               <Link
@@ -36,15 +36,15 @@ function Stores() {
                 params={{ slug: store.slug }}
                 className="group grid gap-2 py-6 md:grid-cols-12 md:items-baseline"
               >
-                <h2 className="font-display text-2xl md:col-span-5 transition-colors duration-(--dur) ease-(--ease) group-hover:text-clay">
+                <h2 className="font-display text-2xl md:col-span-5 transition-colors duration-(--dur) ease-(--ease) group-hover:text-brand">
                   {store.name}
                 </h2>
-                <p className="text-ink-soft md:col-span-7">{store.description ?? ""}</p>
+                <p className="text-muted md:col-span-7">{store.description ?? ""}</p>
               </Link>
             </li>
           ))}
         </ul>
-        {stores.length === 0 && <p className="mt-8 text-ink-soft">Nenhuma loja aberta ainda.</p>}
+        {stores.length === 0 && <p className="mt-8 text-muted">Nenhuma loja aberta ainda.</p>}
       </main>
       <SiteFooter />
     </>

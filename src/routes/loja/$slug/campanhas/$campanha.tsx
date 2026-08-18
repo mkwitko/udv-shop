@@ -40,33 +40,33 @@ function CampaignPage() {
             <img
               src={campaign.coverImageUrl}
               alt=""
-              className="aspect-16/9 w-full bg-paper-deep object-cover"
+              className="aspect-16/9 w-full bg-surface object-cover"
             />
           )}
           <h1 className="mt-8 text-title text-balance">{campaign.title}</h1>
           {campaign.story && (
-            <div className="mt-6 max-w-[62ch] whitespace-pre-line text-lede text-ink-soft">
+            <div className="mt-6 max-w-[62ch] whitespace-pre-line text-lede text-muted">
               {campaign.story}
             </div>
           )}
         </div>
 
         <aside className="md:col-span-5 md:pt-4">
-          <div className="border border-[var(--line)] p-6">
+          <div className="border border-line p-6">
             <CampaignProgress
               raisedCents={campaign.raisedCents}
               goalCents={campaign.goalCents}
               donationCount={campaign.donationCount}
             />
             <div className="mt-6 flex flex-wrap gap-2">
-              <Tag tone="moss">Doação única</Tag>
-              {monthly && <Tag tone="ocre">Mensal</Tag>}
+              <Tag tone="brand">Doação única</Tag>
+              {monthly && <Tag tone="accent">Mensal</Tag>}
             </div>
             {/* fluxo de doação entra no plano 8 */}
             <Button className="mt-6 w-full" size="lg" disabled>
               Doar
             </Button>
-            <p className="mt-3 text-sm text-ink-soft">
+            <p className="mt-3 text-sm text-muted">
               O valor vai direto para a conta do núcleo {campaign.store.name}.
             </p>
           </div>

@@ -29,32 +29,34 @@ function CampaignList() {
       <h1 className="mt-4 text-title">Campanhas</h1>
 
       {campaigns.length === 0 ? (
-        <p className="mt-8 text-ink-soft">Nenhuma campanha aberta agora.</p>
+        <p className="mt-8 text-muted">Nenhuma campanha aberta agora.</p>
       ) : (
-        <ul className="mt-12 grid gap-x-8 gap-y-12 md:grid-cols-2">
+        <ul className="mt-10 grid gap-4 md:grid-cols-2">
           {campaigns.map((campaign) => (
             <li key={campaign.id}>
               <Link
                 to="/loja/$slug/campanhas/$campanha"
                 params={{ slug, campanha: campaign.slug }}
-                className="group block"
+                className="card card-hover group block overflow-hidden"
               >
                 {campaign.coverImageUrl && (
                   <img
                     src={campaign.coverImageUrl}
                     alt=""
                     loading="lazy"
-                    className="aspect-16/9 w-full bg-paper-deep object-cover"
+                    className="aspect-16/9 w-full bg-surface object-cover"
                   />
                 )}
-                <h2 className="mt-5 font-display text-2xl transition-colors duration-(--dur) ease-(--ease) group-hover:text-clay">
-                  {campaign.title}
-                </h2>
-                <CampaignProgress
-                  raisedCents={campaign.raisedCents}
-                  goalCents={campaign.goalCents}
-                  donationCount={campaign.donationCount}
-                />
+                <div className="p-6">
+                  <h2 className="font-display text-xl font-semibold transition-colors duration-(--dur) ease-(--ease) group-hover:text-brand">
+                    {campaign.title}
+                  </h2>
+                  <CampaignProgress
+                    raisedCents={campaign.raisedCents}
+                    goalCents={campaign.goalCents}
+                    donationCount={campaign.donationCount}
+                  />
+                </div>
               </Link>
             </li>
           ))}
@@ -77,11 +79,11 @@ export function CampaignProgress({
   return (
     <div className="mt-4">
       {pct !== null && (
-        <div className="h-1 w-full bg-paper-deep">
-          <div className="h-full bg-moss" style={{ width: `${pct}%` }} />
+        <div className="h-1.5 w-full overflow-hidden rounded-full bg-surface">
+          <div className="h-full rounded-full bg-brand" style={{ width: `${pct}%` }} />
         </div>
       )}
-      <p className="mt-3 text-sm text-ink-soft">
+      <p className="mt-3 text-sm text-muted">
         <span className="text-ink">{money(raisedCents)}</span>
         {goalCents ? ` de ${money(goalCents)}` : " arrecadados"} ·{" "}
         {donationCount === 1 ? "1 doação" : `${donationCount} doações`}

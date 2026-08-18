@@ -3,14 +3,14 @@ import type * as React from "react";
 import { cn } from "#/lib/utils";
 
 const tagVariants = cva(
-  "inline-flex items-center gap-1.5 border px-2.5 py-1 text-xs font-medium tracking-wide",
+  "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium",
   {
     variants: {
       tone: {
-        neutral: "border-[var(--line)] text-ink-soft",
-        moss: "border-moss/30 bg-moss/10 text-moss",
-        clay: "border-clay/30 bg-clay/10 text-clay",
-        ocre: "border-ocre/40 bg-ocre/12 text-[color-mix(in_oklab,var(--ocre)_75%,var(--ink))]",
+        neutral: "border-line bg-surface text-muted",
+        brand: "border-brand/30 bg-brand-soft text-brand",
+        accent: "border-accent/35 bg-accent/10 text-accent",
+        danger: "border-danger/30 bg-danger-soft text-danger",
       },
     },
     defaultVariants: { tone: "neutral" },

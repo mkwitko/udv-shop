@@ -43,16 +43,14 @@ function StoreCatalog() {
         <p className="kicker">Loja do núcleo</p>
         <h1 className="mt-4 max-w-[18ch] text-title text-balance">{store?.name}</h1>
         {store?.description && (
-          <p className="mt-5 max-w-[52ch] text-lede text-ink-soft">{store.description}</p>
+          <p className="mt-5 max-w-[52ch] text-lede text-muted">{store.description}</p>
         )}
       </section>
 
       <section className="rule">
         <div className="shell py-14">
           {products.length === 0 ? (
-            <p className="text-ink-soft">
-              Esta loja ainda não publicou produtos. Vale voltar depois.
-            </p>
+            <p className="text-muted">Esta loja ainda não publicou produtos. Vale voltar depois.</p>
           ) : (
             <ul className="grid grid-cols-2 gap-x-6 gap-y-12 md:grid-cols-3 lg:grid-cols-4">
               {products.map((product) => (

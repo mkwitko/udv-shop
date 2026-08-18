@@ -17,7 +17,7 @@ export function ProductCard({ product, storeSlug }: { product: Product; storeSlu
         params={{ slug: storeSlug, produto: product.slug }}
         className="block"
       >
-        <div className="relative aspect-4/5 overflow-hidden bg-paper-deep">
+        <div className="relative aspect-4/5 overflow-hidden rounded-lg border border-line bg-surface transition-colors [transition-duration:var(--dur)] group-hover:border-line-strong">
           {cover ? (
             <img
               src={cover}
@@ -26,20 +26,22 @@ export function ProductCard({ product, storeSlug }: { product: Product; storeSlu
               className="h-full w-full object-cover transition-transform duration-(--dur) ease-(--ease) group-hover:scale-[1.03]"
             />
           ) : (
-            // sem foto ainda: campo de papel, não ícone decorativo
-            <div className="h-full w-full bg-[radial-gradient(circle_at_30%_25%,color-mix(in_oklab,var(--ocre)_18%,transparent),transparent_60%)]" />
+            // sem foto ainda: campo de cor da marca, não ícone decorativo
+            <div className="h-full w-full bg-[radial-gradient(circle_at_30%_25%,var(--glow),transparent_65%)]" />
           )}
           {(onDemand || soldOut) && (
             <div className="absolute top-3 left-3">
-              <Tag tone={soldOut ? "neutral" : "moss"}>
+              <Tag tone={soldOut ? "neutral" : "brand"}>
                 {soldOut ? "Esgotado" : "Sob encomenda"}
               </Tag>
             </div>
           )}
         </div>
 
-        <h3 className="mt-4 font-display text-lg leading-snug">{product.name}</h3>
-        <p className="mt-1 text-ink-soft">{money(product.priceCents)}</p>
+        <h3 className="mt-3.5 font-display font-semibold leading-snug transition-colors [transition-duration:var(--dur)] group-hover:text-brand">
+          {product.name}
+        </h3>
+        <p className="mt-1 text-[0.95rem] text-muted tabular-nums">{money(product.priceCents)}</p>
       </Link>
     </article>
   );

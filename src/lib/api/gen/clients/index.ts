@@ -28,6 +28,7 @@ export { listCampaigns } from "./listCampaigns.ts";
 export { listMyDonations } from "./listMyDonations.ts";
 export { listMyInterests } from "./listMyInterests.ts";
 export { listMyOrders } from "./listMyOrders.ts";
+export { listMyStores } from "./listMyStores.ts";
 export { listProducts } from "./listProducts.ts";
 export { listRaffleEntries } from "./listRaffleEntries.ts";
 export { listStoreDonations } from "./listStoreDonations.ts";

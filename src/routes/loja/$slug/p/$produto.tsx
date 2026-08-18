@@ -59,12 +59,12 @@ function ProductPage() {
                 key={url}
                 src={url}
                 alt={product.name}
-                className="w-full bg-paper-deep object-cover"
+                className="w-full bg-surface object-cover"
               />
             ))}
           </div>
         ) : (
-          <div className="aspect-4/5 w-full bg-paper-deep" />
+          <div className="aspect-4/5 w-full bg-surface" />
         )}
       </div>
 
@@ -72,22 +72,22 @@ function ProductPage() {
         <Link
           to="/loja/$slug"
           params={{ slug }}
-          className="text-sm text-ink-soft underline underline-offset-4"
+          className="text-sm text-muted underline underline-offset-4"
         >
           voltar para a loja
         </Link>
 
         <h1 className="mt-6 text-title text-balance">{product.name}</h1>
-        <p className="mt-4 font-display text-3xl text-clay">{money(product.priceCents)}</p>
+        <p className="mt-4 font-display text-3xl text-brand">{money(product.priceCents)}</p>
 
         <div className="mt-4 flex gap-2">
-          {onDemand && <Tag tone="moss">Sob encomenda</Tag>}
+          {onDemand && <Tag tone="brand">Sob encomenda</Tag>}
           {soldOut && <Tag>Esgotado no momento</Tag>}
           {!onDemand && product.stock > 0 && <Tag tone="neutral">{product.stock} disponíveis</Tag>}
         </div>
 
         {product.description && (
-          <p className="mt-7 whitespace-pre-line text-ink-soft">{product.description}</p>
+          <p className="mt-7 whitespace-pre-line text-muted">{product.description}</p>
         )}
 
         <div className="mt-9">
@@ -95,7 +95,7 @@ function ProductPage() {
           <Button size="lg" disabled>
             {onDemand ? "Avise quando chegar" : "Comprar"}
           </Button>
-          <p className="mt-3 text-sm text-ink-soft">Pagamento no cartão ou Pix, em breve.</p>
+          <p className="mt-3 text-sm text-muted">Pagamento no cartão ou Pix, em breve.</p>
         </div>
       </div>
     </article>

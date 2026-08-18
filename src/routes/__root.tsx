@@ -3,6 +3,8 @@ import type { QueryClient } from "@tanstack/react-query";
 import { createRootRouteWithContext, HeadContent, Scripts } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import TanStackQueryDevtools from "../integrations/tanstack-query/devtools";
+import { SessionProvider } from "../lib/auth/session";
+import { themeBootScript } from "../lib/theme";
 import appCss from "../styles.css?url";
 
 interface RouterContext {
@@ -14,15 +16,19 @@ export const Route = createRootRouteWithContext<RouterContext>()({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { name: "theme-color", content: "#f6f1e7" },
-      { title: "Lojinha dos Núcleos" },
+      { name: "theme-color", content: "#ffffff", media: "(prefers-color-scheme: light)" },
+      { name: "theme-color", content: "#070a09", media: "(prefers-color-scheme: dark)" },
+      { title: "lojinha — a loja do seu núcleo, no ar em minutos" },
       {
         name: "description",
         content:
-          "Cada núcleo com sua lojinha: produtos feitos por perto, campanhas e doações, tudo no mesmo lugar.",
+          "Plataforma de loja, campanhas, doações e sorteios para núcleos. Pix e cartão, repasse direto para a conta do núcleo.",
       },
     ],
-    links: [{ rel: "stylesheet", href: appCss }],
+    links: [
+      { rel: "stylesheet", href: appCss },
+      { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
+    ],
   }),
   shellComponent: RootDocument,
 });
@@ -32,9 +38,12 @@ function RootDocument({ children }: { children: React.ReactNode }) {
     <html lang="pt-BR">
       <head>
         <HeadContent />
+        {/* antes da primeira pintura: sem isto a página escura pisca branca ao carregar */}
+        {/** biome-ignore lint/security/noDangerouslySetInnerHtml: script inline de tema, constante do próprio bundle */}
+        <script dangerouslySetInnerHTML={{ __html: themeBootScript }} />
       </head>
       <body>
-        {children}
+        <SessionProvider>{children}</SessionProvider>
         {import.meta.env.DEV && (
           <TanStackDevtools
             config={{ position: "bottom-right" }}

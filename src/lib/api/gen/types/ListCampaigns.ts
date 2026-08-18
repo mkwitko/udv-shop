@@ -44,14 +44,14 @@ export const itemsAcceptedTypesEnum = {
 
 export type ItemsAcceptedTypesEnumKey = (typeof itemsAcceptedTypesEnum)[keyof typeof itemsAcceptedTypesEnum];
 
-export const itemsStatusEnum2 = {
+export const itemsStatusEnum3 = {
     draft: "draft",
     active: "active",
     paused: "paused",
     finished: "finished"
 } as const;
 
-export type ItemsStatusEnum2Key = (typeof itemsStatusEnum2)[keyof typeof itemsStatusEnum2];
+export type ItemsStatusEnum3Key = (typeof itemsStatusEnum3)[keyof typeof itemsStatusEnum3];
 
 /**
  * @description Default Response
@@ -123,7 +123,7 @@ export type ListCampaigns200 = {
         /**
          * @type string
         */
-        status: ItemsStatusEnum2Key;
+        status: ItemsStatusEnum3Key;
         /**
          * @type string
         */
