@@ -276,6 +276,56 @@
     animation-delay: 200ms;
   }
 
+  /* Chips que flutuam sobre a colagem do hero — vida, não decoração. */
+  .float {
+    animation: floaty 5s ease-in-out infinite;
+  }
+
+  .float-late {
+    animation: floaty 6s ease-in-out infinite;
+    animation-delay: 1.4s;
+  }
+
+  /* Faixa que corre no pé do hero. Conteúdo duplicado no markup; anda metade. */
+  .marquee {
+    overflow: hidden;
+  }
+
+  .marquee-track {
+    display: flex;
+    width: max-content;
+    animation: marquee 32s linear infinite;
+  }
+
+  /* Carrossel com paradas: telefone por telefone, loja por loja. */
+  .snap-row {
+    display: flex;
+    gap: 1rem;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 0.5rem;
+  }
+
+  .snap-row::-webkit-scrollbar {
+    display: none;
+  }
+
+  .snap-row > * {
+    scroll-snap-align: center;
+    flex-shrink: 0;
+  }
+
+  /* Moldura de telefone para os passos — o produto mostrado onde ele vive. */
+  .phone {
+    width: 16.5rem;
+    border: 6px solid var(--ink);
+    border-radius: 2.2rem;
+    background: var(--bg);
+    overflow: hidden;
+  }
+
   .card {
     background-color: var(--elevated);
     border: 1px solid var(--line);
@@ -342,5 +392,21 @@
   }
   to {
     transform: scaleX(1);
+  }
+}
+
+@keyframes floaty {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes marquee {
+  to {
+    transform: translateX(-50%);
   }
 }
