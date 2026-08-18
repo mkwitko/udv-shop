@@ -65,12 +65,20 @@ function AccountPage() {
 
       <main className="shell py-14">
         <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <p className="kicker">Minha conta</p>
-            <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight">
-              Olá, {user?.name?.split(" ")[0]}
-            </h1>
-            <p className="mt-1 text-muted">{user?.email}</p>
+          <div className="flex items-center gap-4">
+            <span
+              className="inline-grid h-14 w-14 shrink-0 place-items-center rounded-full bg-brand font-bold font-display text-white text-xl"
+              aria-hidden
+            >
+              {user?.name?.charAt(0).toUpperCase()}
+            </span>
+            <div>
+              <p className="kicker">Minha conta</p>
+              <h1 className="mt-1 font-display text-3xl font-semibold tracking-tight">
+                Olá, {user?.name?.split(" ")[0]}
+              </h1>
+              <p className="mt-1 text-muted">{user?.email}</p>
+            </div>
           </div>
           <Button
             variant="ghost"
@@ -132,13 +140,21 @@ function StoreRow({ store }: { store: ListMyStores200["items"][number] }) {
 
   return (
     <li className="card card-hover flex flex-wrap items-center justify-between gap-4 p-5">
-      <div className="min-w-0">
-        <div className="flex flex-wrap items-center gap-2.5">
-          <h3 className="font-display text-lg font-semibold">{store.name}</h3>
-          <Tag tone={status?.tone}>{status?.text}</Tag>
-          <Tag>{ROLE_LABEL[store.role] ?? store.role}</Tag>
+      <div className="flex min-w-0 items-center gap-4">
+        <span
+          className="inline-grid h-12 w-12 shrink-0 place-items-center rounded-[0.9rem] bg-brand-soft font-bold font-display text-brand-deep text-lg"
+          aria-hidden
+        >
+          {store.name.charAt(0).toUpperCase()}
+        </span>
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <h3 className="font-display text-lg font-semibold">{store.name}</h3>
+            <Tag tone={status?.tone}>{status?.text}</Tag>
+            <Tag>{ROLE_LABEL[store.role] ?? store.role}</Tag>
+          </div>
+          <p className="mt-1 truncate text-sm text-muted">/loja/{store.slug}</p>
         </div>
-        <p className="mt-1 truncate text-sm text-muted">/loja/{store.slug}</p>
       </div>
 
       <div className="flex items-center gap-2">
@@ -188,10 +204,23 @@ const ORDER_STATUS: Record<
   refunded: { text: "Reembolsado", tone: "neutral" },
 };
 
-function SectionShell({ title, children }: { title: string; children: React.ReactNode }) {
+function SectionShell({
+  title,
+  count,
+  children,
+}: {
+  title: string;
+  count?: number;
+  children: React.ReactNode;
+}) {
   return (
     <section className="mt-12">
-      <h2 className="font-display text-xl font-semibold tracking-tight">{title}</h2>
+      <h2 className="flex items-baseline gap-2 font-display text-xl font-semibold tracking-tight">
+        {title}
+        {count !== undefined && (
+          <span className="font-sans font-normal text-muted text-sm tabular-nums">({count})</span>
+        )}
+      </h2>
       {children}
     </section>
   );
@@ -203,7 +232,7 @@ function MyOrders() {
   if (!isPending && orders.length === 0) return null;
 
   return (
-    <SectionShell title="Meus pedidos">
+    <SectionShell title="Meus pedidos" count={isPending ? undefined : orders.length}>
       {isPending ? (
         <div className="mt-6 h-24 animate-pulse rounded-lg bg-surface" />
       ) : (
@@ -264,7 +293,7 @@ function MyDonations() {
   }
 
   return (
-    <SectionShell title="Minhas doações">
+    <SectionShell title="Minhas doações" count={isPending ? undefined : donations.length}>
       {error && <p className="mt-4 text-sm text-danger">{error}</p>}
       {isPending ? (
         <div className="mt-6 h-24 animate-pulse rounded-lg bg-surface" />
@@ -350,7 +379,7 @@ function MyInterests() {
   }
 
   return (
-    <SectionShell title="Minhas encomendas">
+    <SectionShell title="Minhas encomendas" count={isPending ? undefined : interests.length}>
       {isPending ? (
         <div className="mt-6 h-24 animate-pulse rounded-lg bg-surface" />
       ) : (

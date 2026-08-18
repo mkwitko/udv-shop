@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { GlyphCoracao } from "#/components/ui/glyphs";
 import { Tag } from "#/components/ui/tag";
 import { useListStoreDonations } from "#/lib/api/gen/hooks/useListStoreDonations";
 import { longDate, money } from "#/lib/format";
@@ -11,60 +12,99 @@ function DonationsAdmin() {
   const { slug } = Route.useParams();
   const { data, isPending } = useListStoreDonations(slug, { limit: 50 });
   const donations = data?.items ?? [];
-  const totalCents = donations
-    .filter((donation) => donation.status === "paid")
-    .reduce((sum, donation) => sum + donation.amountCents, 0);
+  const paid = donations.filter((donation) => donation.status === "paid");
+  const totalCents = paid.reduce((sum, donation) => sum + donation.amountCents, 0);
+  const monthlyActive = donations.filter(
+    (donation) => donation.type === "monthly" && donation.subscriptionActive,
+  ).length;
 
   return (
     <div>
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <h2 className="font-display text-lg font-semibold tracking-tight">Doações</h2>
-        {donations.length > 0 && (
-          <p className="text-sm text-muted tabular-nums">
-            {money(totalCents)} recebidos nas últimas {donations.length}
-          </p>
-        )}
-      </div>
+      <h2 className="font-display text-lg font-semibold tracking-tight">Doações</h2>
+      <p className="mt-1 text-sm text-muted">
+        Cada apoio que chegou pela sua loja ou por uma campanha, com a mensagem de quem doou.
+      </p>
 
       {isPending ? (
         <div className="mt-6 h-32 animate-pulse rounded-lg bg-surface" />
       ) : donations.length === 0 ? (
-        <p className="card mt-6 px-6 py-12 text-center text-muted">
-          Nenhuma doação ainda. Crie uma campanha e compartilhe — o botão de doar já está na página
-          da loja.
-        </p>
+        <div className="card mt-6 px-6 py-14 text-center">
+          <h3 className="font-display text-lg font-semibold">Nenhuma doação ainda</h3>
+          <p className="mx-auto mt-2 max-w-sm text-muted">
+            Crie uma campanha e compartilhe — o botão de doar já está na página da loja.
+          </p>
+        </div>
       ) : (
-        <ul className="mt-6 grid gap-2.5">
-          {donations.map((donation) => (
-            <li
-              key={donation.id}
-              className="card flex flex-wrap items-center justify-between gap-3 p-4"
-            >
-              <div className="min-w-0">
-                <p className="flex flex-wrap items-center gap-2 text-sm">
-                  <span className="font-medium">
-                    {donation.anonymous ? "Doação anônima" : (donation.donor?.name ?? "Doação")}
+        <>
+          <div className="mt-5 grid gap-3 sm:grid-cols-3">
+            <StatCard label="Recebido" value={money(totalCents)} />
+            <StatCard
+              label="Doações confirmadas"
+              value={String(paid.length)}
+              hint={
+                donations.length > paid.length
+                  ? `${donations.length - paid.length} aguardando pagamento`
+                  : undefined
+              }
+            />
+            <StatCard label="Mensais ativas" value={String(monthlyActive)} />
+          </div>
+
+          <ul className="mt-4 grid gap-2.5">
+            {donations.map((donation) => {
+              const name = donation.anonymous
+                ? "Doação anônima"
+                : (donation.donor?.name ?? "Doação");
+              return (
+                <li key={donation.id} className="card flex flex-wrap items-center gap-4 p-4">
+                  <span className="inline-grid h-11 w-11 shrink-0 place-items-center rounded-full bg-plum/15 font-bold font-display text-plum">
+                    {donation.anonymous ? (
+                      <GlyphCoracao className="h-5 w-5" />
+                    ) : (
+                      name.charAt(0).toUpperCase()
+                    )}
                   </span>
-                  {donation.type === "monthly" && (
-                    <Tag tone={donation.subscriptionActive ? "brand" : "neutral"}>
-                      mensal{donation.subscriptionActive ? "" : " (cancelada)"}
-                    </Tag>
-                  )}
-                  {donation.campaign && <Tag>{donation.campaign.title}</Tag>}
-                </p>
-                {donation.message && (
-                  <p className="mt-1 text-sm text-muted">“{donation.message}”</p>
-                )}
-                <p className="mt-1 text-xs text-muted">{longDate(donation.createdAt)}</p>
-              </div>
-              <p className="font-display font-semibold tabular-nums">
-                {money(donation.amountCents)}
-                {donation.type === "monthly" && <span className="text-sm text-muted">/mês</span>}
-              </p>
-            </li>
-          ))}
-        </ul>
+                  <div className="min-w-0 flex-1">
+                    <p className="flex flex-wrap items-center gap-2 text-sm">
+                      <span className="font-medium">{name}</span>
+                      {donation.type === "monthly" && (
+                        <Tag tone={donation.subscriptionActive ? "brand" : "neutral"}>
+                          mensal{donation.subscriptionActive ? "" : " (cancelada)"}
+                        </Tag>
+                      )}
+                      {donation.status === "pending_payment" && (
+                        <Tag tone="accent">aguardando pagamento</Tag>
+                      )}
+                      {donation.status === "failed" && <Tag tone="neutral">não concluída</Tag>}
+                      {donation.campaign && <Tag>{donation.campaign.title}</Tag>}
+                    </p>
+                    {donation.message && (
+                      <p className="mt-1 text-sm text-muted">“{donation.message}”</p>
+                    )}
+                    <p className="mt-1 text-xs text-muted">{longDate(donation.createdAt)}</p>
+                  </div>
+                  <p className="font-display font-semibold tabular-nums">
+                    {money(donation.amountCents)}
+                    {donation.type === "monthly" && (
+                      <span className="text-sm text-muted">/mês</span>
+                    )}
+                  </p>
+                </li>
+              );
+            })}
+          </ul>
+        </>
       )}
+    </div>
+  );
+}
+
+function StatCard({ label, value, hint }: { label: string; value: string; hint?: string }) {
+  return (
+    <div className="card p-4">
+      <p className="text-muted text-sm">{label}</p>
+      <p className="mt-1 font-bold font-display text-2xl tabular-nums tracking-tight">{value}</p>
+      {hint && <p className="mt-0.5 text-muted text-xs">{hint}</p>}
     </div>
   );
 }
