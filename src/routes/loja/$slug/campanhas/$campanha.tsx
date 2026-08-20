@@ -3,7 +3,9 @@ import { Button } from "#/components/ui/button";
 import { ShareButton } from "#/components/ui/share-button";
 import { Tag } from "#/components/ui/tag";
 import { getCampaignQueryOptions, useGetCampaign } from "#/lib/api/gen/hooks/useGetCampaign";
+import { useGetRaffle } from "#/lib/api/gen/hooks/useGetRaffle";
 import { publicRequest } from "#/lib/api/public";
+import { money } from "#/lib/format";
 import { seo } from "#/lib/seo";
 import { CampaignProgress } from "./index";
 
@@ -25,6 +27,56 @@ export const Route = createFileRoute("/loja/$slug/campanhas/$campanha")({
   },
   component: CampaignPage,
 });
+
+/**
+ * Prêmios do sorteio na vitrine. 404 quando a campanha não tem sorteio — daí `retry: false`
+ * e o bloco simplesmente não aparece.
+ */
+function RafflePrizes({ slug, campanha }: { slug: string; campanha: string }) {
+  const { data: raffle } = useGetRaffle(slug, campanha, {
+    client: publicRequest,
+    query: { retry: false },
+  });
+  if (!raffle) return null;
+
+  return (
+    <section className="mt-10">
+      <h2 className="font-display font-semibold text-lg tracking-tight">
+        {raffle.status === "drawn" ? "Prêmios sorteados" : "Prêmios do sorteio"}
+      </h2>
+      <p className="mt-2 text-muted text-sm tabular-nums">
+        1 número da sorte a cada {money(raffle.centsPerNumber)} doados · {raffle.totalParticipants}{" "}
+        participando
+      </p>
+      <ul className="mt-6 grid gap-4 sm:grid-cols-2">
+        {raffle.prizes.map((prize) => (
+          <li key={prize.position} className="card overflow-hidden">
+            {prize.imageUrls[0] ? (
+              <img
+                src={prize.imageUrls[0]}
+                alt=""
+                className="aspect-4/3 w-full bg-surface object-cover"
+              />
+            ) : null}
+            <div className="grid gap-2 p-4">
+              <div className="flex flex-wrap items-center gap-2">
+                <Tag tone="neutral">{prize.position}º prêmio</Tag>
+                {prize.winner && <Tag tone="brand">número {prize.winner.number}</Tag>}
+              </div>
+              <p className="font-display font-semibold">{prize.title}</p>
+              {prize.description && (
+                <p className="whitespace-pre-line text-muted text-sm">{prize.description}</p>
+              )}
+              {prize.winner && (
+                <p className="text-muted text-sm">Ganhou: {prize.winner.participant}</p>
+              )}
+            </div>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
 
 function CampaignPage() {
   const { slug, campanha } = Route.useParams();
@@ -50,6 +102,8 @@ function CampaignPage() {
               {campaign.story}
             </div>
           )}
+
+          <RafflePrizes slug={slug} campanha={campanha} />
         </div>
 
         <aside className="md:col-span-5 md:pt-4">

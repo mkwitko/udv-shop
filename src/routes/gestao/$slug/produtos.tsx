@@ -1,20 +1,22 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
-import { ImagePlus, Pencil, Plus, RotateCcw, X } from "lucide-react";
-import { useRef, useState } from "react";
+import { Archive, Pencil, Plus, RotateCcw } from "lucide-react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { AiDescription } from "#/components/store/ai-text";
 import { Button } from "#/components/ui/button";
 import { ConfirmDialog } from "#/components/ui/confirm";
 import { EmptyState } from "#/components/ui/empty-state";
 import { Field, FormError, Input, Select, Textarea } from "#/components/ui/field";
+import { ImagePicker, type PickedImage } from "#/components/ui/image-picker";
+import { MoneyInput } from "#/components/ui/money-input";
 import { SkeletonRows } from "#/components/ui/skeleton";
 import { Tag } from "#/components/ui/tag";
 import { useToast } from "#/components/ui/toast";
 import { errorMessage } from "#/lib/api/error-message";
 import { archiveProduct } from "#/lib/api/gen/clients/archiveProduct";
 import { createProduct } from "#/lib/api/gen/clients/createProduct";
-import { presignUpload } from "#/lib/api/gen/clients/presignUpload";
 import { restoreProduct } from "#/lib/api/gen/clients/restoreProduct";
 import { updateProduct } from "#/lib/api/gen/clients/updateProduct";
 import { useGetConnectStatus } from "#/lib/api/gen/hooks/useGetConnectStatus";
@@ -23,7 +25,7 @@ import { listProductsQueryKey, useListProducts } from "#/lib/api/gen/hooks/useLi
 import { useListSuppliers } from "#/lib/api/gen/hooks/useListSuppliers";
 import type { ListProducts200 } from "#/lib/api/gen/types/ListProducts";
 import { money } from "#/lib/format";
-import { parseAmount } from "#/lib/pay/amount";
+import { maskAmountInput, parseAmount } from "#/lib/pay/amount";
 import {
   formatPercentFromBps,
   payoutBreakdown,
@@ -204,9 +206,11 @@ function ProductsAdmin() {
 /** Volta do formato da API para o que a pessoa digitou: centavos ou porcentagem. */
 function payoutValueToInput(payout: Product["payout"]): string {
   if (!payout) return "";
+  // valor fixo já entra mascarado — o campo é MoneyInput e um "45,90" cru ficaria
+  // fora do formato que a máscara escreve.
   return payout.kind === "percent_bps"
     ? String(payout.value / 100).replace(".", ",")
-    : (payout.value / 100).toFixed(2).replace(".", ",");
+    : maskAmountInput(String(payout.value));
 }
 
 function ProductThumb({ product }: { product: Product }) {
@@ -227,9 +231,6 @@ function ProductThumb({ product }: { product: Product }) {
   );
 }
 
-const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/avif"] as const;
-type AcceptedType = (typeof ACCEPTED_TYPES)[number];
-
 function ProductForm({
   slug,
   product,
@@ -242,13 +243,11 @@ function ProductForm({
   onCancel: () => void;
 }) {
   const [formError, setFormError] = useState<string | null>(null);
-  const [images, setImages] = useState<Array<{ key: string; url: string }>>(
+  const [images, setImages] = useState<PickedImage[]>(
     product ? product.images.map((key, i) => ({ key, url: product.imageUrls[i] ?? "" })) : [],
   );
   const [uploading, setUploading] = useState(false);
   const [archiving, setArchiving] = useState(false);
-  const [dragOver, setDragOver] = useState(false);
-  const dragDepth = useRef(0);
 
   // repasse é acordo comercial da loja: quem é equipe não vê nem edita
   const { data: stores } = useListMyStores();
@@ -265,13 +264,14 @@ function ProductForm({
     register,
     handleSubmit,
     watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<ProductForm>({
     resolver: zodResolver(ProductSchema),
     defaultValues: product
       ? {
           name: product.name,
-          price: (product.priceCents / 100).toFixed(2).replace(".", ","),
+          price: maskAmountInput(String(product.priceCents)),
           description: product.description ?? undefined,
           stock: String(product.stock),
           onDemand: product.availability === "on_demand",
@@ -309,51 +309,11 @@ function ProductForm({
       ? payoutBreakdown(priceCents, payoutCents, feeBps)
       : null;
 
-  async function pickImage(file: File) {
-    if (!ACCEPTED_TYPES.includes(file.type as AcceptedType)) {
-      setFormError("Use uma foto em JPG, PNG, WebP ou AVIF.");
-      return;
-    }
-    setUploading(true);
-    setFormError(null);
-    try {
-      const presigned = await presignUpload({
-        storeSlug: slug,
-        contentType: file.type as AcceptedType,
-      });
-      const response = await fetch(presigned.uploadUrl, {
-        method: "PUT",
-        headers: { "Content-Type": file.type },
-        body: file,
-      });
-      if (!response.ok) throw new Error("upload_failed");
-      setImages((current) => [...current, { key: presigned.key, url: presigned.publicUrl }]);
-      return true;
-    } catch (error) {
-      setFormError(
-        error instanceof Error && error.message === "upload_failed"
-          ? "A foto não subiu. Tente de novo."
-          : errorMessage(error),
-      );
-    } finally {
-      setUploading(false);
-    }
-    return false;
-  }
-
-  async function addFiles(files: FileList | File[]) {
-    // uma por vez para manter a ordem; um erro interrompe as seguintes
-    for (const file of Array.from(files)) {
-      const ok = await pickImage(file);
-      if (!ok) break;
-    }
-  }
-
   async function submit(values: ProductForm) {
     setFormError(null);
     const priceCents = parseAmount(values.price);
     if (priceCents === null || priceCents <= 0) {
-      setFormError("Preço inválido. Escreva como no dia a dia: 45 ou 45,90.");
+      setFormError("Coloque um preço maior que zero.");
       return;
     }
     // o acordo de repasse vai inteiro ou não vai: limpar é mandar null nos três campos
@@ -446,10 +406,10 @@ function ProductForm({
             <Field
               label="Preço"
               htmlFor="price"
-              hint="Escreva como no dia a dia: 45 ou 45,90"
+              hint="Digite só os números: 4590 fica R$ 45,90"
               error={errors.price?.message}
             >
-              <Input id="price" inputMode="decimal" placeholder="R$ 0,00" {...register("price")} />
+              <MoneyInput id="price" {...register("price")} />
             </Field>
           </div>
 
@@ -465,6 +425,15 @@ function ProductForm({
               {...register("description")}
             />
           </Field>
+
+          <AiDescription
+            slug={slug}
+            name={watch("name") ?? ""}
+            description={watch("description") ?? ""}
+            onApply={(text) =>
+              setValue("description", text, { shouldDirty: true, shouldValidate: true })
+            }
+          />
         </section>
 
         <section className="grid gap-5">
@@ -479,7 +448,9 @@ function ProductForm({
             <span>
               <span className="font-medium text-ink">Feito sob encomenda</span>
               <span className="block text-muted">
-                Sem estoque: quem quiser entra numa lista e é avisado quando chegar.
+                Você faz depois do pedido: não tem botão de comprar, quem quiser entra na fila e
+                você combina um por um. Produto com estoque 0 também aceita a fila — a diferença é
+                que ele volta a vender sozinho quando você repõe.
               </span>
             </span>
           </label>
@@ -543,12 +514,17 @@ function ProductForm({
                           : "Quanto do preço é da pessoa, de 0 a 100"
                       }
                     >
-                      <Input
-                        id="payoutValue"
-                        inputMode="decimal"
-                        placeholder={payoutMode === "fixed" ? "R$ 0,00" : "50"}
-                        {...register("payoutValue")}
-                      />
+                      {/* percentual não é dinheiro: máscara de R$ só no modo fixo */}
+                      {payoutMode === "fixed" ? (
+                        <MoneyInput id="payoutValue" {...register("payoutValue")} />
+                      ) : (
+                        <Input
+                          id="payoutValue"
+                          inputMode="decimal"
+                          placeholder="50"
+                          {...register("payoutValue")}
+                        />
+                      )}
                     </Field>
                   </div>
                 )}
@@ -563,12 +539,17 @@ function ProductForm({
                       <dt className="text-muted">Repasse do parceiro</dt>
                       <dd className="font-medium">{money(breakdown.payoutCents)}</dd>
                     </div>
-                    <div className="flex items-baseline justify-between gap-4">
-                      <dt className="text-muted">
-                        Taxa da plataforma ({formatPercentFromBps(feeBps)})
-                      </dt>
-                      <dd className="font-medium">{money(breakdown.feeCents)}</dd>
-                    </div>
+                    {/* linha só existe quando a loja realmente paga comissão: com fee
+                        zero (o normal hoje) ela era uma linha de R$ 0,00 pedindo
+                        explicação */}
+                    {feeBps > 0 && (
+                      <div className="flex items-baseline justify-between gap-4">
+                        <dt className="text-muted">
+                          Taxa da plataforma ({formatPercentFromBps(feeBps)})
+                        </dt>
+                        <dd className="font-medium">{money(breakdown.feeCents)}</dd>
+                      </div>
+                    )}
                     <div className="flex items-baseline justify-between gap-4 border-line border-t pt-2">
                       <dt className="font-medium text-ink">Fica com a loja</dt>
                       <dd
@@ -594,73 +575,13 @@ function ProductForm({
         <section className="grid gap-3">
           <h3 className="kicker">Fotos</h3>
 
-          {images.length > 0 && (
-            <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6">
-              {images.map((image) => (
-                <span key={image.key} className="relative">
-                  <img
-                    src={image.url}
-                    alt=""
-                    className="aspect-square w-full rounded-[0.9rem] border border-line bg-surface object-cover"
-                  />
-                  <button
-                    type="button"
-                    aria-label="Remover foto"
-                    onClick={() =>
-                      setImages((current) =>
-                        current.filter((candidate) => candidate.key !== image.key),
-                      )
-                    }
-                    className="-top-2 -right-2 absolute inline-grid h-7 w-7 place-items-center rounded-full border border-line bg-elevated text-muted shadow-sm hover:text-danger"
-                  >
-                    <X className="h-3.5 w-3.5" aria-hidden />
-                  </button>
-                </span>
-              ))}
-            </div>
-          )}
-
-          <label
-            onDragEnter={(event) => {
-              event.preventDefault();
-              dragDepth.current += 1;
-              setDragOver(true);
-            }}
-            onDragOver={(event) => event.preventDefault()}
-            onDragLeave={() => {
-              dragDepth.current = Math.max(0, dragDepth.current - 1);
-              if (dragDepth.current === 0) setDragOver(false);
-            }}
-            onDrop={(event) => {
-              event.preventDefault();
-              dragDepth.current = 0;
-              setDragOver(false);
-              if (!uploading && event.dataTransfer.files.length > 0) {
-                void addFiles(event.dataTransfer.files);
-              }
-            }}
-            className={`flex cursor-pointer flex-col items-center justify-center gap-1.5 rounded-[1rem] border-2 border-dashed px-4 py-8 text-center transition-colors [transition-duration:var(--dur)] ${
-              dragOver ? "border-brand bg-brand-soft/60" : "border-line hover:border-line-strong"
-            }`}
-          >
-            <ImagePlus className="h-6 w-6 text-muted" aria-hidden />
-            <span className="font-medium text-ink text-sm">
-              {uploading ? "Enviando foto…" : "Arraste as fotos aqui"}
-            </span>
-            <span className="text-muted text-xs">ou toque para escolher · JPG, PNG, WebP</span>
-            <input
-              type="file"
-              multiple
-              accept={ACCEPTED_TYPES.join(",")}
-              className="sr-only"
-              disabled={uploading}
-              onChange={(event) => {
-                const files = event.target.files;
-                if (files && files.length > 0) void addFiles(Array.from(files));
-                event.target.value = "";
-              }}
-            />
-          </label>
+          <ImagePicker
+            storeSlug={slug}
+            images={images}
+            onChange={setImages}
+            onUploadingChange={setUploading}
+            onError={setFormError}
+          />
         </section>
 
         <FormError>{formError}</FormError>
@@ -670,14 +591,26 @@ function ProductForm({
         </Button>
 
         {product && (
-          <button
-            type="button"
-            onClick={() => setConfirmArchive(true)}
-            disabled={archiving}
-            className="justify-self-start text-muted text-sm underline underline-offset-4 hover:text-danger"
-          >
-            {archiving ? "Tirando do ar…" : "Arquivar produto"}
-          </button>
+          // link sublinhado escondia uma ação que muda a vitrine; virou botão com o
+          // efeito escrito ao lado, e continua longe do "Salvar" para não ser clique torto
+          <div className="rule mt-2 grid gap-2 pt-5">
+            <h3 className="kicker">Tirar do ar</h3>
+            <p className="max-w-[52ch] text-muted text-sm">
+              Arquivar remove o produto da vitrine na hora e ele para de receber compras. Nada é
+              apagado: pedidos, fotos e histórico ficam salvos e você pode restaurar quando quiser.
+            </p>
+            <Button
+              type="button"
+              variant="danger"
+              size="sm"
+              className="justify-self-start"
+              onClick={() => setConfirmArchive(true)}
+              disabled={archiving}
+            >
+              <Archive className="h-4 w-4" aria-hidden />
+              {archiving ? "Tirando do ar…" : "Arquivar produto"}
+            </Button>
+          </div>
         )}
 
         <ConfirmDialog
