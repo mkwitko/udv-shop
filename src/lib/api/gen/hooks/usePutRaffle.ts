@@ -9,28 +9,28 @@ import type { UseMutationOptions, UseMutationResult, QueryClient } from "@tansta
 import { putRaffle } from "../clients/putRaffle.ts";
 import { mutationOptions, useMutation } from "@tanstack/react-query";
 
-export const putRaffleMutationKey = () => [{ url: '/stores/:slug/campaigns/:campaignSlug/raffle' }] as const
+export const putRaffleMutationKey = () => [{ url: '/stores/:slug/campaigns/:campaignSlug/raffles/:sequence' }] as const
 
 export type PutRaffleMutationKey = ReturnType<typeof putRaffleMutationKey>
 
 export function putRaffleMutationOptions<TContext = unknown>(config: Partial<RequestConfig<PutRaffleMutationRequest>> & { client?: Client } = {}) {
 
         const mutationKey = putRaffleMutationKey()
-        return mutationOptions<PutRaffleMutationResponse, ResponseErrorConfig<Error>, {slug: PutRafflePathParams["slug"], campaignSlug: PutRafflePathParams["campaignSlug"], data: PutRaffleMutationRequest}, TContext>({
+        return mutationOptions<PutRaffleMutationResponse, ResponseErrorConfig<Error>, {slug: PutRafflePathParams["slug"], campaignSlug: PutRafflePathParams["campaignSlug"], sequence: PutRafflePathParams["sequence"], data: PutRaffleMutationRequest}, TContext>({
           mutationKey,
-          mutationFn: async({ slug, campaignSlug, data }) => {
-            return putRaffle(slug, campaignSlug, data, config)
+          mutationFn: async({ slug, campaignSlug, sequence, data }) => {
+            return putRaffle(slug, campaignSlug, sequence, data, config)
           },
         })
 
 }
 
 /**
- * {@link /stores/:slug/campaigns/:campaignSlug/raffle}
+ * {@link /stores/:slug/campaigns/:campaignSlug/raffles/:sequence}
  */
 export function usePutRaffle<TContext>(options: 
 {
-  mutation?: UseMutationOptions<PutRaffleMutationResponse, ResponseErrorConfig<Error>, {slug: PutRafflePathParams["slug"], campaignSlug: PutRafflePathParams["campaignSlug"], data: PutRaffleMutationRequest}, TContext> & { client?: QueryClient },
+  mutation?: UseMutationOptions<PutRaffleMutationResponse, ResponseErrorConfig<Error>, {slug: PutRafflePathParams["slug"], campaignSlug: PutRafflePathParams["campaignSlug"], sequence: PutRafflePathParams["sequence"], data: PutRaffleMutationRequest}, TContext> & { client?: QueryClient },
   client?: Partial<RequestConfig<PutRaffleMutationRequest>> & { client?: Client },
 }
  = {}) {
@@ -39,13 +39,13 @@ export function usePutRaffle<TContext>(options:
           const { client: queryClient, ...mutationOptions } = mutation;
           const mutationKey = mutationOptions.mutationKey ?? putRaffleMutationKey()
 
-          const baseOptions = putRaffleMutationOptions(config) as UseMutationOptions<PutRaffleMutationResponse, ResponseErrorConfig<Error>, {slug: PutRafflePathParams["slug"], campaignSlug: PutRafflePathParams["campaignSlug"], data: PutRaffleMutationRequest}, TContext>
+          const baseOptions = putRaffleMutationOptions(config) as UseMutationOptions<PutRaffleMutationResponse, ResponseErrorConfig<Error>, {slug: PutRafflePathParams["slug"], campaignSlug: PutRafflePathParams["campaignSlug"], sequence: PutRafflePathParams["sequence"], data: PutRaffleMutationRequest}, TContext>
           
 
-          return useMutation<PutRaffleMutationResponse, ResponseErrorConfig<Error>, {slug: PutRafflePathParams["slug"], campaignSlug: PutRafflePathParams["campaignSlug"], data: PutRaffleMutationRequest}, TContext>({
+          return useMutation<PutRaffleMutationResponse, ResponseErrorConfig<Error>, {slug: PutRafflePathParams["slug"], campaignSlug: PutRafflePathParams["campaignSlug"], sequence: PutRafflePathParams["sequence"], data: PutRaffleMutationRequest}, TContext>({
             ...baseOptions,
             mutationKey,
             ...mutationOptions,
-          }, queryClient) as UseMutationResult<PutRaffleMutationResponse, ResponseErrorConfig<Error>, {slug: PutRafflePathParams["slug"], campaignSlug: PutRafflePathParams["campaignSlug"], data: PutRaffleMutationRequest}, TContext>
+          }, queryClient) as UseMutationResult<PutRaffleMutationResponse, ResponseErrorConfig<Error>, {slug: PutRafflePathParams["slug"], campaignSlug: PutRafflePathParams["campaignSlug"], sequence: PutRafflePathParams["sequence"], data: PutRaffleMutationRequest}, TContext>
       
 }

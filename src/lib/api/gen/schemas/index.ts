@@ -10,6 +10,7 @@ export { createCampaign201Schema, createCampaignMutationRequestSchema, createCam
 export { createDonation201Schema, createDonationMutationRequestSchema, createDonationMutationResponseSchema } from "./createDonationSchema.ts";
 export { createInterest201Schema, createInterestMutationRequestSchema, createInterestMutationResponseSchema } from "./createInterestSchema.ts";
 export { createProduct201Schema, createProductMutationRequestSchema, createProductMutationResponseSchema, createProductPathParamsSchema } from "./createProductSchema.ts";
+export { createRaffle201Schema, createRaffleMutationRequestSchema, createRaffleMutationResponseSchema, createRafflePathParamsSchema } from "./createRaffleSchema.ts";
 export { createSettlement201Schema, createSettlementMutationRequestSchema, createSettlementMutationResponseSchema, createSettlementPathParamsSchema } from "./createSettlementSchema.ts";
 export { createStore201Schema, createStoreMutationRequestSchema, createStoreMutationResponseSchema } from "./createStoreSchema.ts";
 export { createStripeAccountLink201Schema, createStripeAccountLinkMutationResponseSchema, createStripeAccountLinkPathParamsSchema } from "./createStripeAccountLinkSchema.ts";
@@ -42,6 +43,7 @@ export { listMyStores200Schema, listMyStoresQueryResponseSchema } from "./listMy
 export { listPayouts200Schema, listPayoutsPathParamsSchema, listPayoutsQueryResponseSchema } from "./listPayoutsSchema.ts";
 export { listProducts200Schema, listProductsPathParamsSchema, listProductsQueryParamsSchema, listProductsQueryResponseSchema } from "./listProductsSchema.ts";
 export { listRaffleEntries200Schema, listRaffleEntriesPathParamsSchema, listRaffleEntriesQueryParamsSchema, listRaffleEntriesQueryResponseSchema } from "./listRaffleEntriesSchema.ts";
+export { listRaffles200Schema, listRafflesPathParamsSchema, listRafflesQueryResponseSchema } from "./listRafflesSchema.ts";
 export { listStoreDonations200Schema, listStoreDonationsPathParamsSchema, listStoreDonationsQueryParamsSchema, listStoreDonationsQueryResponseSchema } from "./listStoreDonationsSchema.ts";
 export { listStoreInterests200Schema, listStoreInterestsPathParamsSchema, listStoreInterestsQueryParamsSchema, listStoreInterestsQueryResponseSchema } from "./listStoreInterestsSchema.ts";
 export { listStoreOrders200Schema, listStoreOrdersPathParamsSchema, listStoreOrdersQueryParamsSchema, listStoreOrdersQueryResponseSchema } from "./listStoreOrdersSchema.ts";

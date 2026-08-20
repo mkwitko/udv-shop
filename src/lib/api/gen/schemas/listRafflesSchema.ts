@@ -3,19 +3,19 @@
 * Do not edit manually.
 */
 
-import type { GetRaffle200, GetRafflePathParams, GetRaffleQueryResponse } from "../types/GetRaffle.ts";
+import type { ListRaffles200, ListRafflesPathParams, ListRafflesQueryResponse } from "../types/ListRaffles.ts";
 import { z } from "zod/v4";
 
-export const getRafflePathParamsSchema = z.object({
+export const listRafflesPathParamsSchema = z.object({
     "slug": z.string(),
-"campaignSlug": z.string(),
-"sequence": z.coerce.number().int().min(1).max(9007199254740991)
-    }) as unknown as z.ZodType<GetRafflePathParams>
+"campaignSlug": z.string()
+    }) as unknown as z.ZodType<ListRafflesPathParams>
 
 /**
  * @description Default Response
  */
-export const getRaffle200Schema = z.object({
+export const listRaffles200Schema = z.object({
+    "items": z.array(z.object({
     "campaignSlug": z.string(),
 "sequence": z.int().min(-9007199254740991).max(9007199254740991),
 "title": z.string(),
@@ -40,6 +40,7 @@ export const getRaffle200Schema = z.object({
 "participant": z.string()
     }))
     }))
-    }) as unknown as z.ZodType<GetRaffle200>
+    }))
+    }) as unknown as z.ZodType<ListRaffles200>
 
-export const getRaffleQueryResponseSchema = z.lazy(() => getRaffle200Schema) as unknown as z.ZodType<GetRaffleQueryResponse>
+export const listRafflesQueryResponseSchema = z.lazy(() => listRaffles200Schema) as unknown as z.ZodType<ListRafflesQueryResponse>

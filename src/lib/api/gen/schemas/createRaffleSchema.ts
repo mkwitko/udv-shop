@@ -3,19 +3,18 @@
 * Do not edit manually.
 */
 
-import type { PutRaffle200, PutRaffleMutationRequest, PutRaffleMutationResponse, PutRafflePathParams } from "../types/PutRaffle.ts";
+import type { CreateRaffle201, CreateRaffleMutationRequest, CreateRaffleMutationResponse, CreateRafflePathParams } from "../types/CreateRaffle.ts";
 import { z } from "zod/v4";
 
-export const putRafflePathParamsSchema = z.object({
+export const createRafflePathParamsSchema = z.object({
     "slug": z.string(),
-"campaignSlug": z.string(),
-"sequence": z.coerce.number().int().min(1).max(9007199254740991)
-    }) as unknown as z.ZodType<PutRafflePathParams>
+"campaignSlug": z.string()
+    }) as unknown as z.ZodType<CreateRafflePathParams>
 
 /**
  * @description Default Response
  */
-export const putRaffle200Schema = z.object({
+export const createRaffle201Schema = z.object({
     "campaignSlug": z.string(),
 "sequence": z.int().min(-9007199254740991).max(9007199254740991),
 "title": z.string(),
@@ -40,9 +39,9 @@ export const putRaffle200Schema = z.object({
 "participant": z.string()
     }))
     }))
-    }) as unknown as z.ZodType<PutRaffle200>
+    }) as unknown as z.ZodType<CreateRaffle201>
 
-export const putRaffleMutationRequestSchema = z.object({
+export const createRaffleMutationRequestSchema = z.object({
     "title": z.string().min(2).max(160),
 "centsPerNumber": z.int().min(100).max(10000000),
 "startsAt": z.optional(z.iso.datetime()),
@@ -54,6 +53,6 @@ export const putRaffleMutationRequestSchema = z.object({
 "description": z.optional(z.string().max(2000)),
 "images": z.optional(z.array(z.string().max(300).regex(/^stores\/.*/)).max(6))
     })).min(1).max(20)
-    }) as unknown as z.ZodType<PutRaffleMutationRequest>
+    }) as unknown as z.ZodType<CreateRaffleMutationRequest>
 
-export const putRaffleMutationResponseSchema = z.lazy(() => putRaffle200Schema) as unknown as z.ZodType<PutRaffleMutationResponse>
+export const createRaffleMutationResponseSchema = z.lazy(() => createRaffle201Schema) as unknown as z.ZodType<CreateRaffleMutationResponse>

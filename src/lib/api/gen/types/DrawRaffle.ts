@@ -13,6 +13,12 @@ export type DrawRafflePathParams = {
      * @type string
     */
     campaignSlug: string;
+    /**
+     * @minLength 1
+     * @maxLength 9007199254740991
+     * @type integer
+    */
+    sequence: number;
 };
 
 /**

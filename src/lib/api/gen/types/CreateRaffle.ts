@@ -4,7 +4,7 @@
 */
 
 
-export type GetRafflePathParams = {
+export type CreateRafflePathParams = {
     /**
      * @type string
     */
@@ -13,26 +13,20 @@ export type GetRafflePathParams = {
      * @type string
     */
     campaignSlug: string;
-    /**
-     * @minLength 1
-     * @maxLength 9007199254740991
-     * @type integer
-    */
-    sequence: number;
 };
 
-export const getRaffle200StatusEnum = {
+export const createRaffle201StatusEnum = {
     open: "open",
     drawn: "drawn",
     cancelled: "cancelled"
 } as const;
 
-export type GetRaffle200StatusEnumKey = (typeof getRaffle200StatusEnum)[keyof typeof getRaffle200StatusEnum];
+export type CreateRaffle201StatusEnumKey = (typeof createRaffle201StatusEnum)[keyof typeof createRaffle201StatusEnum];
 
 /**
  * @description Default Response
 */
-export type GetRaffle200 = {
+export type CreateRaffle201 = {
     /**
      * @type string
     */
@@ -68,7 +62,7 @@ export type GetRaffle200 = {
     /**
      * @type string
     */
-    status: GetRaffle200StatusEnumKey;
+    status: CreateRaffle201StatusEnumKey;
     /**
      * @type string
     */
@@ -137,10 +131,64 @@ export type GetRaffle200 = {
     }[];
 };
 
-export type GetRaffleQueryResponse = GetRaffle200;
+export type CreateRaffleMutationRequest = {
+    /**
+     * @minLength 2
+     * @maxLength 160
+     * @type string
+    */
+    title: string;
+    /**
+     * @minLength 100
+     * @maxLength 10000000
+     * @type integer
+    */
+    centsPerNumber: number;
+    /**
+     * @type string | undefined, date-time
+    */
+    startsAt?: string;
+    /**
+     * @type string, date-time
+    */
+    endsAt?: string | null;
+    /**
+     * @type string, date-time
+    */
+    drawAt?: string | null;
+    /**
+     * @type array
+    */
+    prizes: {
+        /**
+         * @minLength 1
+         * @maxLength 9007199254740991
+         * @type integer
+        */
+        position: number;
+        /**
+         * @minLength 2
+         * @maxLength 200
+         * @type string
+        */
+        title: string;
+        /**
+         * @maxLength 2000
+         * @type string | undefined
+        */
+        description?: string;
+        /**
+         * @type array | undefined
+        */
+        images?: string[];
+    }[];
+};
 
-export type GetRaffleQuery = {
-    Response: GetRaffle200;
-    PathParams: GetRafflePathParams;
+export type CreateRaffleMutationResponse = CreateRaffle201;
+
+export type CreateRaffleMutation = {
+    Response: CreateRaffle201;
+    Request: CreateRaffleMutationRequest;
+    PathParams: CreateRafflePathParams;
     Errors: any;
 };

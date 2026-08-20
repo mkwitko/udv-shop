@@ -1,10 +1,11 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
-import { Pencil, Plus, Ticket, Trash2 } from "lucide-react";
+import { Pencil, Plus, Ticket } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { AiCampaignStory, AiPrizeDescription } from "#/components/store/ai-text";
+import { AiCampaignStory } from "#/components/store/ai-text";
+import { RaffleFields } from "#/components/store/raffle-fields";
 import { Button } from "#/components/ui/button";
 import { ConfirmDialog } from "#/components/ui/confirm";
 import { EmptyState } from "#/components/ui/empty-state";
@@ -16,18 +17,23 @@ import { Tag } from "#/components/ui/tag";
 import { useToast } from "#/components/ui/toast";
 import { errorMessage } from "#/lib/api/error-message";
 import { createCampaign } from "#/lib/api/gen/clients/createCampaign";
+import { createRaffle } from "#/lib/api/gen/clients/createRaffle";
 import { drawRaffle } from "#/lib/api/gen/clients/drawRaffle";
 import { putRaffle } from "#/lib/api/gen/clients/putRaffle";
 import { updateCampaignStatus } from "#/lib/api/gen/clients/updateCampaignStatus";
-import { useGetRaffle } from "#/lib/api/gen/hooks/useGetRaffle";
 import { listCampaignsQueryKey, useListCampaigns } from "#/lib/api/gen/hooks/useListCampaigns";
+import { useListRaffles } from "#/lib/api/gen/hooks/useListRaffles";
 import type { ListCampaigns200 } from "#/lib/api/gen/types/ListCampaigns";
+import type { ListRaffles200 } from "#/lib/api/gen/types/ListRaffles";
 import { money, percent } from "#/lib/format";
 import { maskAmountInput, parseAmount } from "#/lib/pay/amount";
 import {
   buildPrizes,
+  dayEndIso,
+  dayStartIso,
   emptyPrize,
-  PRIZE_MAX_IMAGES,
+  isoEndToLocalDate,
+  isoToLocalDate,
   type PrizeDraft,
   RAFFLE_MIN_CENTS_PER_NUMBER,
 } from "#/lib/raffle";
@@ -57,184 +63,6 @@ const STATUS_META: Record<string, { label: string; tone: "brand" | "accent" | "n
 // `all` porque campanha nasce rascunho: sem isso a tela de gestão não mostrava a
 // campanha que a pessoa acabou de criar — só apareceria depois de publicada.
 const LIST_QUERY = { limit: 50, all: "true" } as const;
-
-function PrizeFields({
-  slug,
-  campaignTitle,
-  prizes,
-  onChange,
-  onUploadingChange,
-  onError,
-}: {
-  slug: string;
-  campaignTitle?: string;
-  prizes: PrizeDraft[];
-  onChange: (prizes: PrizeDraft[]) => void;
-  onUploadingChange: (uploading: boolean) => void;
-  onError: (message: string | null) => void;
-}) {
-  function patch(id: string, next: Partial<PrizeDraft>) {
-    onChange(prizes.map((prize) => (prize.id === id ? { ...prize, ...next } : prize)));
-  }
-
-  function move(index: number, delta: number) {
-    const target = index + delta;
-    if (target < 0 || target >= prizes.length) return;
-    const reordered = [...prizes];
-    const [moved] = reordered.splice(index, 1);
-    if (moved) reordered.splice(target, 0, moved);
-    onChange(reordered);
-  }
-
-  return (
-    <div className="grid gap-4">
-      {prizes.map((prize, index) => (
-        <div
-          key={prize.id}
-          className="grid gap-4 rounded-[1rem] border border-line bg-elevated p-4"
-        >
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className="kicker">{index + 1}º prêmio</span>
-            <div className="flex items-center gap-1">
-              <Button
-                type="button"
-                size="sm"
-                variant="ghost"
-                aria-label="Subir prêmio"
-                disabled={index === 0}
-                onClick={() => move(index, -1)}
-              >
-                ↑
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                variant="ghost"
-                aria-label="Descer prêmio"
-                disabled={index === prizes.length - 1}
-                onClick={() => move(index, 1)}
-              >
-                ↓
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                variant="ghost"
-                aria-label="Remover prêmio"
-                onClick={() => onChange(prizes.filter((candidate) => candidate.id !== prize.id))}
-              >
-                <Trash2 className="h-4 w-4" aria-hidden />
-              </Button>
-            </div>
-          </div>
-
-          <Field label="O que é" htmlFor={`prize-title-${prize.id}`} error={undefined}>
-            <Input
-              id={`prize-title-${prize.id}`}
-              placeholder="Cesta de produtos"
-              value={prize.title}
-              onChange={(event) => patch(prize.id, { title: event.target.value })}
-            />
-          </Field>
-
-          <Field
-            label="Descrição (opcional)"
-            htmlFor={`prize-desc-${prize.id}`}
-            hint="Diga o que vem junto e o tamanho — quem sabe o que vai ganhar participa mais."
-            error={undefined}
-          >
-            <Textarea
-              id={`prize-desc-${prize.id}`}
-              rows={2}
-              value={prize.description}
-              onChange={(event) => patch(prize.id, { description: event.target.value })}
-            />
-          </Field>
-
-          <AiPrizeDescription
-            slug={slug}
-            prizeTitle={prize.title}
-            campaignTitle={campaignTitle}
-            description={prize.description}
-            onApply={(text) => patch(prize.id, { description: text })}
-          />
-
-          <div className="grid gap-2">
-            <span className="font-medium text-sm">Fotos</span>
-            <ImagePicker
-              storeSlug={slug}
-              images={prize.images}
-              onChange={(images) => patch(prize.id, { images })}
-              max={PRIZE_MAX_IMAGES}
-              onUploadingChange={onUploadingChange}
-              onError={onError}
-              label="Arraste a foto do prêmio"
-            />
-          </div>
-        </div>
-      ))}
-
-      <Button
-        type="button"
-        size="sm"
-        variant="secondary"
-        onClick={() => onChange([...prizes, emptyPrize()])}
-      >
-        <Plus className="h-4 w-4" aria-hidden />
-        Adicionar prêmio
-      </Button>
-    </div>
-  );
-}
-
-/** Valor do número + prêmios. Mesmo bloco na criação da campanha e na edição do sorteio. */
-function RaffleFields({
-  slug,
-  idPrefix,
-  campaignTitle,
-  centsPerNumberInput,
-  onCentsPerNumberChange,
-  prizes,
-  onPrizesChange,
-  onUploadingChange,
-  onError,
-}: {
-  slug: string;
-  idPrefix: string;
-  campaignTitle?: string;
-  centsPerNumberInput: string;
-  onCentsPerNumberChange: (value: string) => void;
-  prizes: PrizeDraft[];
-  onPrizesChange: (prizes: PrizeDraft[]) => void;
-  onUploadingChange: (uploading: boolean) => void;
-  onError: (message: string | null) => void;
-}) {
-  return (
-    <div className="grid gap-5">
-      <Field
-        label="Quanto custa um número da sorte?"
-        htmlFor={`per-${idPrefix}`}
-        hint="A R$ 10 por número, quem doa R$ 50 recebe 5 números."
-        error={undefined}
-      >
-        <MoneyInput
-          id={`per-${idPrefix}`}
-          value={centsPerNumberInput}
-          onChange={(event) => onCentsPerNumberChange(event.target.value)}
-        />
-      </Field>
-
-      <PrizeFields
-        slug={slug}
-        campaignTitle={campaignTitle}
-        prizes={prizes}
-        onChange={onPrizesChange}
-        onUploadingChange={onUploadingChange}
-        onError={onError}
-      />
-    </div>
-  );
-}
 
 function CampaignsAdmin() {
   const { slug } = Route.useParams();
@@ -414,62 +242,90 @@ function RafflePanel({
   campaignTitle: string;
 }) {
   const { queryClient } = useRouter().options.context;
-  const {
-    data: raffle,
-    isPending,
-    refetch,
-  } = useGetRaffle(slug, campaignSlug, {
+  const { data, isPending, refetch } = useListRaffles(slug, campaignSlug, {
     query: { retry: false },
   });
-  const [error, setError] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
-  const [uploading, setUploading] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const raffles = data?.items ?? [];
+
+  async function refresh() {
+    await refetch();
+    await queryClient.invalidateQueries();
+  }
+
+  if (isPending) return <Skeleton className="mt-4 h-16" />;
+
+  return (
+    <div className="mt-4 grid gap-3 rounded-lg border border-line bg-surface p-4">
+      {raffles.length === 0 && !creating && (
+        <p className="text-sm text-muted">
+          Esta campanha ainda não tem sorteio. Cada doação vira números da sorte no sorteio da
+          janela em que ela foi paga — campanha longa pode ter um por mês.
+        </p>
+      )}
+
+      {raffles.map((raffle) => (
+        <RaffleCard
+          key={raffle.sequence}
+          slug={slug}
+          campaignSlug={campaignSlug}
+          campaignTitle={campaignTitle}
+          raffle={raffle}
+          onChanged={refresh}
+        />
+      ))}
+
+      {creating ? (
+        <RaffleForm
+          slug={slug}
+          campaignSlug={campaignSlug}
+          campaignTitle={campaignTitle}
+          raffle={null}
+          onDone={async () => {
+            await refresh();
+            setCreating(false);
+          }}
+          onCancel={() => setCreating(false)}
+        />
+      ) : (
+        <Button size="sm" variant="secondary" onClick={() => setCreating(true)}>
+          <Plus className="h-4 w-4" aria-hidden />
+          {raffles.length === 0 ? "Ligar sorteio" : "Novo sorteio"}
+        </Button>
+      )}
+    </div>
+  );
+}
+
+type Raffle = ListRaffles200["items"][number];
+
+/** "ago 01 – set 01" ou "desde ago 01" quando não tem fim. */
+function raffleWindowLabel(raffle: Raffle): string {
+  const fmt = (iso: string) =>
+    new Date(iso).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" });
+  // O fim guardado é exclusivo (meia-noite do dia seguinte): mostrar o último dia incluído
+  // é o que bate com o que a pessoa digitou.
+  return raffle.endsAt
+    ? `${fmt(raffle.startsAt)} – ${fmt(dayStartIso(isoEndToLocalDate(raffle.endsAt)))}`
+    : `desde ${fmt(raffle.startsAt)}`;
+}
+
+function RaffleCard({
+  slug,
+  campaignSlug,
+  campaignTitle,
+  raffle,
+  onChanged,
+}: {
+  slug: string;
+  campaignSlug: string;
+  campaignTitle: string;
+  raffle: Raffle;
+  onChanged: () => Promise<void>;
+}) {
   const [editing, setEditing] = useState(false);
-  const [centsPerNumberInput, setCentsPerNumberInput] = useState(maskAmountInput("1000"));
-  const [prizes, setPrizes] = useState<PrizeDraft[]>([emptyPrize()]);
-
-  /** Abre a edição com o que está no ar: sem isso, salvar apagaria fotos e descrições. */
-  function startEditing() {
-    if (raffle) {
-      setCentsPerNumberInput(maskAmountInput(String(raffle.centsPerNumber)));
-      setPrizes(
-        raffle.prizes.map((prize, index) => ({
-          id: `prize-current-${index}`,
-          title: prize.title,
-          description: prize.description ?? "",
-          images: prize.images.map((key, i) => ({ key, url: prize.imageUrls[i] ?? "" })),
-        })),
-      );
-    }
-    setError(null);
-    setEditing(true);
-  }
-
-  async function save() {
-    const per = parseAmount(centsPerNumberInput);
-    if (per === null || per < RAFFLE_MIN_CENTS_PER_NUMBER) {
-      setError("Diga quanto custa um número: no mínimo R$ 1,00.");
-      return;
-    }
-    const built = buildPrizes(prizes);
-    if ("error" in built) {
-      setError(built.error);
-      return;
-    }
-    setBusy(true);
-    setError(null);
-    try {
-      await putRaffle(slug, campaignSlug, { centsPerNumber: per, prizes: built.prizes });
-      await refetch();
-      await queryClient.invalidateQueries();
-      setEditing(false);
-    } catch (cause) {
-      setError(errorMessage(cause));
-    } finally {
-      setBusy(false);
-    }
-  }
-
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [confirmDraw, setConfirmDraw] = useState(false);
 
   async function draw() {
@@ -477,8 +333,8 @@ function RafflePanel({
     setBusy(true);
     setError(null);
     try {
-      await drawRaffle(slug, campaignSlug);
-      await refetch();
+      await drawRaffle(slug, campaignSlug, raffle.sequence);
+      await onChanged();
     } catch (cause) {
       setError(errorMessage(cause));
     } finally {
@@ -486,55 +342,40 @@ function RafflePanel({
     }
   }
 
-  if (isPending) return <Skeleton className="mt-4 h-16" />;
-
-  if (!raffle || editing) {
+  if (editing) {
     return (
-      <div className="mt-4 rounded-lg border border-line bg-surface p-4">
-        <p className="text-sm text-muted">
-          {raffle
-            ? "Mude o valor do número e os prêmios. O que está aqui é o que a vitrine mostra."
-            : "Esta campanha ainda não tem sorteio. Cada doação vira números da sorte — defina o valor de um número e os prêmios."}
-        </p>
-        <div className="mt-4 grid gap-5">
-          <RaffleFields
-            slug={slug}
-            idPrefix={campaignSlug}
-            campaignTitle={campaignTitle}
-            centsPerNumberInput={centsPerNumberInput}
-            onCentsPerNumberChange={setCentsPerNumberInput}
-            prizes={prizes}
-            onPrizesChange={setPrizes}
-            onUploadingChange={setUploading}
-            onError={setError}
-          />
-          <FormError>{error}</FormError>
-          <div className="flex flex-wrap gap-2">
-            <Button size="sm" disabled={busy || uploading} onClick={save}>
-              {raffle ? "Salvar sorteio" : "Ligar sorteio"}
-            </Button>
-            {raffle && (
-              <Button size="sm" variant="ghost" disabled={busy} onClick={() => setEditing(false)}>
-                Cancelar
-              </Button>
-            )}
-          </div>
-        </div>
-      </div>
+      <RaffleForm
+        slug={slug}
+        campaignSlug={campaignSlug}
+        campaignTitle={campaignTitle}
+        raffle={raffle}
+        onDone={async () => {
+          await onChanged();
+          setEditing(false);
+        }}
+        onCancel={() => setEditing(false)}
+      />
     );
   }
 
   return (
-    <div className="mt-4 rounded-lg border border-line bg-surface p-4">
-      <p className="text-sm">
-        <span className="font-medium">
-          Sorteio {raffle.status === "drawn" ? "realizado" : "no ar"}
-        </span>{" "}
-        <span className="text-muted tabular-nums">
-          · 1 número a cada {money(raffle.centsPerNumber)} · {raffle.totalEntries} números com{" "}
-          {raffle.totalParticipants} participantes
-        </span>
+    <div className="rounded-[1rem] border border-line bg-elevated p-4">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="kicker">{raffle.sequence}º sorteio</span>
+          <h4 className="font-display font-semibold">{raffle.title}</h4>
+          <Tag tone={raffle.status === "drawn" ? "neutral" : "brand"}>
+            {raffle.status === "drawn" ? "realizado" : "no ar"}
+          </Tag>
+        </div>
+        <p className="text-muted text-sm tabular-nums">{raffleWindowLabel(raffle)}</p>
+      </div>
+
+      <p className="mt-2 text-muted text-sm tabular-nums">
+        1 número a cada {money(raffle.centsPerNumber)} · {raffle.totalEntries} números com{" "}
+        {raffle.totalParticipants} participantes
       </p>
+
       <ul className="mt-3 grid gap-3 text-sm">
         {raffle.prizes.map((prize) => (
           <li key={prize.position} className="flex gap-3">
@@ -556,18 +397,21 @@ function RafflePanel({
           </li>
         ))}
       </ul>
+
       <FormError>{error}</FormError>
+
       {raffle.status === "open" && (
         <div className="mt-3 flex flex-wrap gap-2">
           <Button size="sm" disabled={busy} onClick={() => setConfirmDraw(true)}>
             Sortear
           </Button>
-          <Button size="sm" variant="secondary" disabled={busy} onClick={startEditing}>
+          <Button size="sm" variant="secondary" disabled={busy} onClick={() => setEditing(true)}>
             <Pencil className="h-4 w-4" aria-hidden />
-            Editar sorteio
+            Editar
           </Button>
         </div>
       )}
+
       {raffle.seed && (
         <p className="mt-3 break-all text-muted text-xs">
           Código de auditoria: {raffle.seed} · algoritmo {raffle.algorithm}
@@ -592,6 +436,112 @@ function RafflePanel({
   );
 }
 
+function RaffleForm({
+  slug,
+  campaignSlug,
+  campaignTitle,
+  raffle,
+  onDone,
+  onCancel,
+}: {
+  slug: string;
+  campaignSlug: string;
+  campaignTitle: string;
+  raffle: Raffle | null;
+  onDone: () => Promise<void>;
+  onCancel: () => void;
+}) {
+  const [title, setTitle] = useState(raffle?.title ?? "");
+  const [startDate, setStartDate] = useState(isoToLocalDate(raffle?.startsAt));
+  const [endDate, setEndDate] = useState(isoEndToLocalDate(raffle?.endsAt));
+  const [centsPerNumberInput, setCentsPerNumberInput] = useState(
+    maskAmountInput(String(raffle?.centsPerNumber ?? 1000)),
+  );
+  const [prizes, setPrizes] = useState<PrizeDraft[]>(
+    raffle
+      ? raffle.prizes.map((prize, index) => ({
+          id: `prize-current-${index}`,
+          title: prize.title,
+          description: prize.description ?? "",
+          images: prize.images.map((key, i) => ({ key, url: prize.imageUrls[i] ?? "" })),
+        }))
+      : [emptyPrize()],
+  );
+  const [busy, setBusy] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function save() {
+    if (title.trim().length < 2) {
+      setError("Dê um nome ao sorteio: por exemplo, “Sorteio de setembro”.");
+      return;
+    }
+    const per = parseAmount(centsPerNumberInput);
+    if (per === null || per < RAFFLE_MIN_CENTS_PER_NUMBER) {
+      setError("Diga quanto custa um número: no mínimo R$ 1,00.");
+      return;
+    }
+    if (startDate && endDate && dayEndIso(endDate) <= dayStartIso(startDate)) {
+      setError("O fim da janela tem de ser depois do início.");
+      return;
+    }
+    const built = buildPrizes(prizes);
+    if ("error" in built) {
+      setError(built.error);
+      return;
+    }
+    const payload = {
+      title: title.trim(),
+      centsPerNumber: per,
+      ...(startDate && { startsAt: dayStartIso(startDate) }),
+      endsAt: endDate ? dayEndIso(endDate) : null,
+      prizes: built.prizes,
+    };
+    setBusy(true);
+    setError(null);
+    try {
+      if (raffle) await putRaffle(slug, campaignSlug, raffle.sequence, payload);
+      else await createRaffle(slug, campaignSlug, payload);
+      await onDone();
+    } catch (cause) {
+      setError(errorMessage(cause));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="grid gap-5 rounded-[1rem] border border-line bg-elevated p-4">
+      <RaffleFields
+        slug={slug}
+        idPrefix={raffle ? `s${raffle.sequence}` : "novo"}
+        campaignTitle={campaignTitle}
+        title={title}
+        onTitleChange={setTitle}
+        startDate={startDate}
+        onStartDateChange={setStartDate}
+        endDate={endDate}
+        onEndDateChange={setEndDate}
+        centsPerNumberInput={centsPerNumberInput}
+        onCentsPerNumberChange={setCentsPerNumberInput}
+        prizes={prizes}
+        onPrizesChange={setPrizes}
+        onUploadingChange={setUploading}
+        onError={setError}
+      />
+      <FormError>{error}</FormError>
+      <div className="flex flex-wrap gap-2">
+        <Button size="sm" disabled={busy || uploading} onClick={save}>
+          {raffle ? "Salvar sorteio" : "Ligar sorteio"}
+        </Button>
+        <Button size="sm" variant="ghost" disabled={busy} onClick={onCancel}>
+          Cancelar
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 function CampaignCreate({
   slug,
   onDone,
@@ -605,6 +555,9 @@ function CampaignCreate({
   const [cover, setCover] = useState<PickedImage[]>([]);
   const [uploading, setUploading] = useState(false);
   const [raffleOn, setRaffleOn] = useState(false);
+  const [raffleTitle, setRaffleTitle] = useState("");
+  const [raffleStart, setRaffleStart] = useState("");
+  const [raffleEnd, setRaffleEnd] = useState("");
   const [centsPerNumberInput, setCentsPerNumberInput] = useState(maskAmountInput("1000"));
   const [prizes, setPrizes] = useState<PrizeDraft[]>([emptyPrize()]);
   const {
@@ -633,12 +586,23 @@ function CampaignCreate({
         setFormError("No sorteio, diga quanto custa um número: no mínimo R$ 1,00.");
         return;
       }
+      if (raffleStart && raffleEnd && dayEndIso(raffleEnd) <= dayStartIso(raffleStart)) {
+        setFormError("No sorteio, o fim da janela tem de ser depois do início.");
+        return;
+      }
       const built = buildPrizes(prizes);
       if ("error" in built) {
         setFormError(built.error);
         return;
       }
-      raffle = { centsPerNumber: per, prizes: built.prizes };
+      raffle = {
+        // Sem nome digitado o sorteio ainda precisa de um: é o que aparece na vitrine.
+        title: raffleTitle.trim() || "Sorteio",
+        centsPerNumber: per,
+        ...(raffleStart && { startsAt: dayStartIso(raffleStart) }),
+        endsAt: raffleEnd ? dayEndIso(raffleEnd) : null,
+        prizes: built.prizes,
+      };
     }
 
     try {
@@ -747,6 +711,12 @@ function CampaignCreate({
               slug={slug}
               idPrefix="nova-campanha"
               campaignTitle={watch("title") ?? ""}
+              title={raffleTitle}
+              onTitleChange={setRaffleTitle}
+              startDate={raffleStart}
+              onStartDateChange={setRaffleStart}
+              endDate={raffleEnd}
+              onEndDateChange={setRaffleEnd}
               centsPerNumberInput={centsPerNumberInput}
               onCentsPerNumberChange={setCentsPerNumberInput}
               prizes={prizes}

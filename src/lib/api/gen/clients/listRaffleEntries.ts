@@ -7,19 +7,19 @@ import fetch from "../../fetch-client.ts";
 import type { Client, RequestConfig, ResponseErrorConfig } from "../../fetch-client.ts";
 import type { ListRaffleEntriesQueryResponse, ListRaffleEntriesPathParams, ListRaffleEntriesQueryParams } from "../types/ListRaffleEntries.ts";
 
-function getListRaffleEntriesUrl(slug: ListRaffleEntriesPathParams["slug"], campaignSlug: ListRaffleEntriesPathParams["campaignSlug"]) {
-  const res = { method: 'GET', url: `/stores/${slug}/campaigns/${campaignSlug}/raffle/entries` as const }
+function getListRaffleEntriesUrl(slug: ListRaffleEntriesPathParams["slug"], campaignSlug: ListRaffleEntriesPathParams["campaignSlug"], sequence: ListRaffleEntriesPathParams["sequence"]) {
+  const res = { method: 'GET', url: `/stores/${slug}/campaigns/${campaignSlug}/raffles/${sequence}/entries` as const }
   return res
 }
 
 /**
- * {@link /stores/:slug/campaigns/:campaignSlug/raffle/entries}
+ * {@link /stores/:slug/campaigns/:campaignSlug/raffles/:sequence/entries}
  */
-export async function listRaffleEntries(slug: ListRaffleEntriesPathParams["slug"], campaignSlug: ListRaffleEntriesPathParams["campaignSlug"], params?: ListRaffleEntriesQueryParams, config: Partial<RequestConfig> & { client?: Client } = {}) {
+export async function listRaffleEntries(slug: ListRaffleEntriesPathParams["slug"], campaignSlug: ListRaffleEntriesPathParams["campaignSlug"], sequence: ListRaffleEntriesPathParams["sequence"], params?: ListRaffleEntriesQueryParams, config: Partial<RequestConfig> & { client?: Client } = {}) {
   const { client: request = fetch, ...requestConfig } = config
 
 
 
-  const res = await request<ListRaffleEntriesQueryResponse, ResponseErrorConfig<Error>, unknown>({ method : "GET", url : getListRaffleEntriesUrl(slug, campaignSlug).url.toString(), params, ... requestConfig })
+  const res = await request<ListRaffleEntriesQueryResponse, ResponseErrorConfig<Error>, unknown>({ method : "GET", url : getListRaffleEntriesUrl(slug, campaignSlug, sequence).url.toString(), params, ... requestConfig })
   return res.data
 }

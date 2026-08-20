@@ -7,19 +7,19 @@ import fetch from "../../fetch-client.ts";
 import type { Client, RequestConfig, ResponseErrorConfig } from "../../fetch-client.ts";
 import type { DrawRaffleMutationResponse, DrawRafflePathParams } from "../types/DrawRaffle.ts";
 
-function getDrawRaffleUrl(slug: DrawRafflePathParams["slug"], campaignSlug: DrawRafflePathParams["campaignSlug"]) {
-  const res = { method: 'POST', url: `/stores/${slug}/campaigns/${campaignSlug}/raffle/draw` as const }
+function getDrawRaffleUrl(slug: DrawRafflePathParams["slug"], campaignSlug: DrawRafflePathParams["campaignSlug"], sequence: DrawRafflePathParams["sequence"]) {
+  const res = { method: 'POST', url: `/stores/${slug}/campaigns/${campaignSlug}/raffles/${sequence}/draw` as const }
   return res
 }
 
 /**
- * {@link /stores/:slug/campaigns/:campaignSlug/raffle/draw}
+ * {@link /stores/:slug/campaigns/:campaignSlug/raffles/:sequence/draw}
  */
-export async function drawRaffle(slug: DrawRafflePathParams["slug"], campaignSlug: DrawRafflePathParams["campaignSlug"], config: Partial<RequestConfig> & { client?: Client } = {}) {
+export async function drawRaffle(slug: DrawRafflePathParams["slug"], campaignSlug: DrawRafflePathParams["campaignSlug"], sequence: DrawRafflePathParams["sequence"], config: Partial<RequestConfig> & { client?: Client } = {}) {
   const { client: request = fetch, ...requestConfig } = config
 
 
 
-  const res = await request<DrawRaffleMutationResponse, ResponseErrorConfig<Error>, unknown>({ method : "POST", url : getDrawRaffleUrl(slug, campaignSlug).url.toString(), ... requestConfig })
+  const res = await request<DrawRaffleMutationResponse, ResponseErrorConfig<Error>, unknown>({ method : "POST", url : getDrawRaffleUrl(slug, campaignSlug, sequence).url.toString(), ... requestConfig })
   return res.data
 }

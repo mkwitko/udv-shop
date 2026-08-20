@@ -42,7 +42,10 @@ export const createCampaignMutationRequestSchema = z.object({
 "acceptedTypes": z.optional(z.enum(["one_time", "monthly", "both"]).default("both")),
 "endsAt": z.optional(z.iso.datetime()),
 "raffle": z.optional(z.object({
-    "centsPerNumber": z.int().min(100).max(10000000),
+    "title": z.string().min(2).max(160),
+"centsPerNumber": z.int().min(100).max(10000000),
+"startsAt": z.optional(z.iso.datetime()),
+"endsAt": z.iso.datetime().nullish(),
 "drawAt": z.iso.datetime().nullish(),
 "prizes": z.array(z.object({
     "position": z.int().min(1).max(9007199254740991),

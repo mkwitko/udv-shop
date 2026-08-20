@@ -7,19 +7,19 @@ import fetch from "../../fetch-client.ts";
 import type { Client, RequestConfig, ResponseErrorConfig } from "../../fetch-client.ts";
 import type { GetRaffleQueryResponse, GetRafflePathParams } from "../types/GetRaffle.ts";
 
-function getGetRaffleUrl(slug: GetRafflePathParams["slug"], campaignSlug: GetRafflePathParams["campaignSlug"]) {
-  const res = { method: 'GET', url: `/stores/${slug}/campaigns/${campaignSlug}/raffle` as const }
+function getGetRaffleUrl(slug: GetRafflePathParams["slug"], campaignSlug: GetRafflePathParams["campaignSlug"], sequence: GetRafflePathParams["sequence"]) {
+  const res = { method: 'GET', url: `/stores/${slug}/campaigns/${campaignSlug}/raffles/${sequence}` as const }
   return res
 }
 
 /**
- * {@link /stores/:slug/campaigns/:campaignSlug/raffle}
+ * {@link /stores/:slug/campaigns/:campaignSlug/raffles/:sequence}
  */
-export async function getRaffle(slug: GetRafflePathParams["slug"], campaignSlug: GetRafflePathParams["campaignSlug"], config: Partial<RequestConfig> & { client?: Client } = {}) {
+export async function getRaffle(slug: GetRafflePathParams["slug"], campaignSlug: GetRafflePathParams["campaignSlug"], sequence: GetRafflePathParams["sequence"], config: Partial<RequestConfig> & { client?: Client } = {}) {
   const { client: request = fetch, ...requestConfig } = config
 
 
 
-  const res = await request<GetRaffleQueryResponse, ResponseErrorConfig<Error>, unknown>({ method : "GET", url : getGetRaffleUrl(slug, campaignSlug).url.toString(), ... requestConfig })
+  const res = await request<GetRaffleQueryResponse, ResponseErrorConfig<Error>, unknown>({ method : "GET", url : getGetRaffleUrl(slug, campaignSlug, sequence).url.toString(), ... requestConfig })
   return res.data
 }

@@ -3,7 +3,7 @@ import { Button } from "#/components/ui/button";
 import { ShareButton } from "#/components/ui/share-button";
 import { Tag } from "#/components/ui/tag";
 import { getCampaignQueryOptions, useGetCampaign } from "#/lib/api/gen/hooks/useGetCampaign";
-import { useGetRaffle } from "#/lib/api/gen/hooks/useGetRaffle";
+import { useListRaffles } from "#/lib/api/gen/hooks/useListRaffles";
 import { publicRequest } from "#/lib/api/public";
 import { money } from "#/lib/format";
 import { seo } from "#/lib/seo";
@@ -29,52 +29,63 @@ export const Route = createFileRoute("/loja/$slug/campanhas/$campanha")({
 });
 
 /**
- * Prêmios do sorteio na vitrine. 404 quando a campanha não tem sorteio — daí `retry: false`
- * e o bloco simplesmente não aparece.
+ * Prêmios dos sorteios da campanha. Campanha longa tem um sorteio por período, então é um
+ * bloco por sorteio. Lista vazia (ou 404 de campanha sem sorteio) faz a seção desaparecer
+ * em vez de mostrar título sem conteúdo.
  */
 function RafflePrizes({ slug, campanha }: { slug: string; campanha: string }) {
-  const { data: raffle } = useGetRaffle(slug, campanha, {
+  const { data } = useListRaffles(slug, campanha, {
     client: publicRequest,
     query: { retry: false },
   });
-  if (!raffle) return null;
+  const raffles = data?.items ?? [];
+  if (raffles.length === 0) return null;
 
   return (
-    <section className="mt-10">
-      <h2 className="font-display font-semibold text-lg tracking-tight">
-        {raffle.status === "drawn" ? "Prêmios sorteados" : "Prêmios do sorteio"}
-      </h2>
-      <p className="mt-2 text-muted text-sm tabular-nums">
-        1 número da sorte a cada {money(raffle.centsPerNumber)} doados · {raffle.totalParticipants}{" "}
-        participando
-      </p>
-      <ul className="mt-6 grid gap-4 sm:grid-cols-2">
-        {raffle.prizes.map((prize) => (
-          <li key={prize.position} className="card overflow-hidden">
-            {prize.imageUrls[0] ? (
-              <img
-                src={prize.imageUrls[0]}
-                alt=""
-                className="aspect-4/3 w-full bg-surface object-cover"
-              />
-            ) : null}
-            <div className="grid gap-2 p-4">
-              <div className="flex flex-wrap items-center gap-2">
-                <Tag tone="neutral">{prize.position}º prêmio</Tag>
-                {prize.winner && <Tag tone="brand">número {prize.winner.number}</Tag>}
-              </div>
-              <p className="font-display font-semibold">{prize.title}</p>
-              {prize.description && (
-                <p className="whitespace-pre-line text-muted text-sm">{prize.description}</p>
-              )}
-              {prize.winner && (
-                <p className="text-muted text-sm">Ganhou: {prize.winner.participant}</p>
-              )}
-            </div>
-          </li>
-        ))}
-      </ul>
-    </section>
+    <div className="mt-10 grid gap-10">
+      {raffles.map((raffle) => (
+        <section key={raffle.sequence}>
+          <h2 className="font-display font-semibold text-lg tracking-tight">
+            {raffle.title}
+            {raffle.status === "drawn" && (
+              <span className="ml-2 align-middle">
+                <Tag tone="neutral">realizado</Tag>
+              </span>
+            )}
+          </h2>
+          <p className="mt-2 text-muted text-sm tabular-nums">
+            1 número da sorte a cada {money(raffle.centsPerNumber)} doados ·{" "}
+            {raffle.totalParticipants} participando
+          </p>
+          <ul className="mt-6 grid gap-4 sm:grid-cols-2">
+            {raffle.prizes.map((prize) => (
+              <li key={prize.position} className="card overflow-hidden">
+                {prize.imageUrls[0] ? (
+                  <img
+                    src={prize.imageUrls[0]}
+                    alt=""
+                    className="aspect-4/3 w-full bg-surface object-cover"
+                  />
+                ) : null}
+                <div className="grid gap-2 p-4">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Tag tone="neutral">{prize.position}º prêmio</Tag>
+                    {prize.winner && <Tag tone="brand">número {prize.winner.number}</Tag>}
+                  </div>
+                  <p className="font-display font-semibold">{prize.title}</p>
+                  {prize.description && (
+                    <p className="whitespace-pre-line text-muted text-sm">{prize.description}</p>
+                  )}
+                  {prize.winner && (
+                    <p className="text-muted text-sm">Ganhou: {prize.winner.participant}</p>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
+    </div>
   );
 }
 

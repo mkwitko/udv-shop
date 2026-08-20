@@ -13,6 +13,12 @@ export type PutRafflePathParams = {
      * @type string
     */
     campaignSlug: string;
+    /**
+     * @minLength 1
+     * @maxLength 9007199254740991
+     * @type integer
+    */
+    sequence: number;
 };
 
 export const putRaffle200StatusEnum = {
@@ -31,6 +37,24 @@ export type PutRaffle200 = {
      * @type string
     */
     campaignSlug: string;
+    /**
+     * @minLength -9007199254740991
+     * @maxLength 9007199254740991
+     * @type integer
+    */
+    sequence: number;
+    /**
+     * @type string
+    */
+    title: string;
+    /**
+     * @type string
+    */
+    startsAt: string;
+    /**
+     * @type string
+    */
+    endsAt: string | null;
     /**
      * @minLength -9007199254740991
      * @maxLength 9007199254740991
@@ -115,11 +139,25 @@ export type PutRaffle200 = {
 
 export type PutRaffleMutationRequest = {
     /**
+     * @minLength 2
+     * @maxLength 160
+     * @type string
+    */
+    title: string;
+    /**
      * @minLength 100
      * @maxLength 10000000
      * @type integer
     */
     centsPerNumber: number;
+    /**
+     * @type string | undefined, date-time
+    */
+    startsAt?: string;
+    /**
+     * @type string, date-time
+    */
+    endsAt?: string | null;
     /**
      * @type string, date-time
     */

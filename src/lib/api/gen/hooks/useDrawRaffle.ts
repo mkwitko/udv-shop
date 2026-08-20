@@ -9,28 +9,28 @@ import type { UseMutationOptions, UseMutationResult, QueryClient } from "@tansta
 import { drawRaffle } from "../clients/drawRaffle.ts";
 import { mutationOptions, useMutation } from "@tanstack/react-query";
 
-export const drawRaffleMutationKey = () => [{ url: '/stores/:slug/campaigns/:campaignSlug/raffle/draw' }] as const
+export const drawRaffleMutationKey = () => [{ url: '/stores/:slug/campaigns/:campaignSlug/raffles/:sequence/draw' }] as const
 
 export type DrawRaffleMutationKey = ReturnType<typeof drawRaffleMutationKey>
 
 export function drawRaffleMutationOptions<TContext = unknown>(config: Partial<RequestConfig> & { client?: Client } = {}) {
 
         const mutationKey = drawRaffleMutationKey()
-        return mutationOptions<DrawRaffleMutationResponse, ResponseErrorConfig<Error>, {slug: DrawRafflePathParams["slug"], campaignSlug: DrawRafflePathParams["campaignSlug"]}, TContext>({
+        return mutationOptions<DrawRaffleMutationResponse, ResponseErrorConfig<Error>, {slug: DrawRafflePathParams["slug"], campaignSlug: DrawRafflePathParams["campaignSlug"], sequence: DrawRafflePathParams["sequence"]}, TContext>({
           mutationKey,
-          mutationFn: async({ slug, campaignSlug }) => {
-            return drawRaffle(slug, campaignSlug, config)
+          mutationFn: async({ slug, campaignSlug, sequence }) => {
+            return drawRaffle(slug, campaignSlug, sequence, config)
           },
         })
 
 }
 
 /**
- * {@link /stores/:slug/campaigns/:campaignSlug/raffle/draw}
+ * {@link /stores/:slug/campaigns/:campaignSlug/raffles/:sequence/draw}
  */
 export function useDrawRaffle<TContext>(options: 
 {
-  mutation?: UseMutationOptions<DrawRaffleMutationResponse, ResponseErrorConfig<Error>, {slug: DrawRafflePathParams["slug"], campaignSlug: DrawRafflePathParams["campaignSlug"]}, TContext> & { client?: QueryClient },
+  mutation?: UseMutationOptions<DrawRaffleMutationResponse, ResponseErrorConfig<Error>, {slug: DrawRafflePathParams["slug"], campaignSlug: DrawRafflePathParams["campaignSlug"], sequence: DrawRafflePathParams["sequence"]}, TContext> & { client?: QueryClient },
   client?: Partial<RequestConfig> & { client?: Client },
 }
  = {}) {
@@ -39,13 +39,13 @@ export function useDrawRaffle<TContext>(options:
           const { client: queryClient, ...mutationOptions } = mutation;
           const mutationKey = mutationOptions.mutationKey ?? drawRaffleMutationKey()
 
-          const baseOptions = drawRaffleMutationOptions(config) as UseMutationOptions<DrawRaffleMutationResponse, ResponseErrorConfig<Error>, {slug: DrawRafflePathParams["slug"], campaignSlug: DrawRafflePathParams["campaignSlug"]}, TContext>
+          const baseOptions = drawRaffleMutationOptions(config) as UseMutationOptions<DrawRaffleMutationResponse, ResponseErrorConfig<Error>, {slug: DrawRafflePathParams["slug"], campaignSlug: DrawRafflePathParams["campaignSlug"], sequence: DrawRafflePathParams["sequence"]}, TContext>
           
 
-          return useMutation<DrawRaffleMutationResponse, ResponseErrorConfig<Error>, {slug: DrawRafflePathParams["slug"], campaignSlug: DrawRafflePathParams["campaignSlug"]}, TContext>({
+          return useMutation<DrawRaffleMutationResponse, ResponseErrorConfig<Error>, {slug: DrawRafflePathParams["slug"], campaignSlug: DrawRafflePathParams["campaignSlug"], sequence: DrawRafflePathParams["sequence"]}, TContext>({
             ...baseOptions,
             mutationKey,
             ...mutationOptions,
-          }, queryClient) as UseMutationResult<DrawRaffleMutationResponse, ResponseErrorConfig<Error>, {slug: DrawRafflePathParams["slug"], campaignSlug: DrawRafflePathParams["campaignSlug"]}, TContext>
+          }, queryClient) as UseMutationResult<DrawRaffleMutationResponse, ResponseErrorConfig<Error>, {slug: DrawRafflePathParams["slug"], campaignSlug: DrawRafflePathParams["campaignSlug"], sequence: DrawRafflePathParams["sequence"]}, TContext>
       
 }

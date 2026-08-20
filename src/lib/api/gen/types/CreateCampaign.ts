@@ -157,11 +157,25 @@ export type CreateCampaignMutationRequest = {
     */
     raffle?: {
         /**
+         * @minLength 2
+         * @maxLength 160
+         * @type string
+        */
+        title: string;
+        /**
          * @minLength 100
          * @maxLength 10000000
          * @type integer
         */
         centsPerNumber: number;
+        /**
+         * @type string | undefined, date-time
+        */
+        startsAt?: string;
+        /**
+         * @type string, date-time
+        */
+        endsAt?: string | null;
         /**
          * @type string, date-time
         */

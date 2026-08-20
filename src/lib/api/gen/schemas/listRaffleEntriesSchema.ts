@@ -8,7 +8,8 @@ import { z } from "zod/v4";
 
 export const listRaffleEntriesPathParamsSchema = z.object({
     "slug": z.string(),
-"campaignSlug": z.string()
+"campaignSlug": z.string(),
+"sequence": z.coerce.number().int().min(1).max(9007199254740991)
     }) as unknown as z.ZodType<ListRaffleEntriesPathParams>
 
 export const listRaffleEntriesQueryParamsSchema = z.object({

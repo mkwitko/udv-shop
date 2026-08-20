@@ -27,6 +27,20 @@ const MESSAGES: Record<string, string> = {
   campaign_not_found: "Esta campanha não existe mais.",
   campaign_not_open: "Esta campanha já foi encerrada.",
   donation_type_not_accepted: "Esta campanha não aceita esse tipo de doação.",
+
+  // sorteio: cada um vale para um período, e período sobreposto deixaria a mesma doação
+  // elegível a dois sorteios. Sem estas mensagens a tela dizia só "não deu para concluir"
+  // e a pessoa não tinha como descobrir o que corrigir.
+  raffle_window_overlap:
+    "Esse período se cruza com o de outro sorteio desta campanha. Ajuste as datas para não se sobreporem.",
+  raffle_open_ended_conflict:
+    "Já existe um sorteio sem data de fim nesta campanha. Coloque uma data de fim nele antes de criar o próximo.",
+  raffle_not_found: "Este sorteio não existe mais.",
+  raffle_not_open: "Este sorteio já foi realizado e não pode mais ser alterado.",
+  raffle_has_entries:
+    "Já tem gente com números neste sorteio, então o valor do número não pode mudar. Prêmios e datas você ainda edita.",
+  raffle_has_no_entries: "Ninguém tem números neste sorteio ainda, então não há o que sortear.",
+  duplicate_prize_position: "Dois prêmios estão na mesma posição. Reordene a lista.",
   monthly_not_supported_for_provider:
     "Doação mensal não está disponível nessa forma de pagamento. Tente a outra opção.",
   subscription_already_cancelled: "Essa contribuição mensal já estava cancelada.",

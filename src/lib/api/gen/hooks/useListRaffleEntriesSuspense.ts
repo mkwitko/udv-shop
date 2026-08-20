@@ -9,27 +9,27 @@ import type { QueryKey, QueryClient, UseSuspenseQueryOptions, UseSuspenseQueryRe
 import { listRaffleEntries } from "../clients/listRaffleEntries.ts";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 
-export const listRaffleEntriesSuspenseQueryKey = (slug: ListRaffleEntriesPathParams["slug"] | undefined, campaignSlug: ListRaffleEntriesPathParams["campaignSlug"] | undefined, params?: ListRaffleEntriesQueryParams) => [{ url: '/stores/:slug/campaigns/:campaignSlug/raffle/entries', params: {slug:slug,campaignSlug:campaignSlug} }, ...(params ? [params] : [])] as const
+export const listRaffleEntriesSuspenseQueryKey = (slug: ListRaffleEntriesPathParams["slug"] | undefined, campaignSlug: ListRaffleEntriesPathParams["campaignSlug"] | undefined, sequence: ListRaffleEntriesPathParams["sequence"] | undefined, params?: ListRaffleEntriesQueryParams) => [{ url: '/stores/:slug/campaigns/:campaignSlug/raffles/:sequence/entries', params: {slug:slug,campaignSlug:campaignSlug,sequence:sequence} }, ...(params ? [params] : [])] as const
 
 export type ListRaffleEntriesSuspenseQueryKey = ReturnType<typeof listRaffleEntriesSuspenseQueryKey>
 
-export function listRaffleEntriesSuspenseQueryOptions(slug: ListRaffleEntriesPathParams["slug"], campaignSlug: ListRaffleEntriesPathParams["campaignSlug"], params?: ListRaffleEntriesQueryParams, config: Partial<RequestConfig> & { client?: Client } = {}) {
+export function listRaffleEntriesSuspenseQueryOptions(slug: ListRaffleEntriesPathParams["slug"], campaignSlug: ListRaffleEntriesPathParams["campaignSlug"], sequence: ListRaffleEntriesPathParams["sequence"], params?: ListRaffleEntriesQueryParams, config: Partial<RequestConfig> & { client?: Client } = {}) {
 
-        const queryKey = listRaffleEntriesSuspenseQueryKey(slug, campaignSlug, params)
+        const queryKey = listRaffleEntriesSuspenseQueryKey(slug, campaignSlug, sequence, params)
         return queryOptions<ListRaffleEntriesQueryResponse, ResponseErrorConfig<Error>, ListRaffleEntriesQueryResponse, typeof queryKey>({
          
          queryKey,
          queryFn: async ({ signal }) => {
-            return listRaffleEntries(slug, campaignSlug, params, { ...config, signal: config.signal ?? signal })
+            return listRaffleEntries(slug, campaignSlug, sequence, params, { ...config, signal: config.signal ?? signal })
          },
         })
 
 }
 
 /**
- * {@link /stores/:slug/campaigns/:campaignSlug/raffle/entries}
+ * {@link /stores/:slug/campaigns/:campaignSlug/raffles/:sequence/entries}
  */
-export function useListRaffleEntriesSuspense<TData = ListRaffleEntriesQueryResponse, TQueryKey extends QueryKey = ListRaffleEntriesSuspenseQueryKey>(slug: ListRaffleEntriesPathParams["slug"], campaignSlug: ListRaffleEntriesPathParams["campaignSlug"], params?: ListRaffleEntriesQueryParams, options: 
+export function useListRaffleEntriesSuspense<TData = ListRaffleEntriesQueryResponse, TQueryKey extends QueryKey = ListRaffleEntriesSuspenseQueryKey>(slug: ListRaffleEntriesPathParams["slug"], campaignSlug: ListRaffleEntriesPathParams["campaignSlug"], sequence: ListRaffleEntriesPathParams["sequence"], params?: ListRaffleEntriesQueryParams, options: 
 {
   query?: Partial<UseSuspenseQueryOptions<ListRaffleEntriesQueryResponse, ResponseErrorConfig<Error>, TData, TQueryKey>> & { client?: QueryClient },
   client?: Partial<RequestConfig> & { client?: Client }
@@ -38,11 +38,11 @@ export function useListRaffleEntriesSuspense<TData = ListRaffleEntriesQueryRespo
 
          const { query: queryConfig = {}, client: config = {} } = options ?? {}
          const { client: queryClient, ...resolvedOptions } = queryConfig
-         const queryKey = resolvedOptions?.queryKey ?? listRaffleEntriesSuspenseQueryKey(slug, campaignSlug, params)
+         const queryKey = resolvedOptions?.queryKey ?? listRaffleEntriesSuspenseQueryKey(slug, campaignSlug, sequence, params)
          
 
          const query = useSuspenseQuery({
-          ...listRaffleEntriesSuspenseQueryOptions(slug, campaignSlug, params, config),
+          ...listRaffleEntriesSuspenseQueryOptions(slug, campaignSlug, sequence, params, config),
           ...resolvedOptions,
           queryKey,
          } as unknown as UseSuspenseQueryOptions, queryClient) as UseSuspenseQueryResult<TData, ResponseErrorConfig<Error>> & { queryKey: TQueryKey }

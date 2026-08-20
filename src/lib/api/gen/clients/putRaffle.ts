@@ -7,19 +7,19 @@ import fetch from "../../fetch-client.ts";
 import type { Client, RequestConfig, ResponseErrorConfig } from "../../fetch-client.ts";
 import type { PutRaffleMutationRequest, PutRaffleMutationResponse, PutRafflePathParams } from "../types/PutRaffle.ts";
 
-function getPutRaffleUrl(slug: PutRafflePathParams["slug"], campaignSlug: PutRafflePathParams["campaignSlug"]) {
-  const res = { method: 'PUT', url: `/stores/${slug}/campaigns/${campaignSlug}/raffle` as const }
+function getPutRaffleUrl(slug: PutRafflePathParams["slug"], campaignSlug: PutRafflePathParams["campaignSlug"], sequence: PutRafflePathParams["sequence"]) {
+  const res = { method: 'PUT', url: `/stores/${slug}/campaigns/${campaignSlug}/raffles/${sequence}` as const }
   return res
 }
 
 /**
- * {@link /stores/:slug/campaigns/:campaignSlug/raffle}
+ * {@link /stores/:slug/campaigns/:campaignSlug/raffles/:sequence}
  */
-export async function putRaffle(slug: PutRafflePathParams["slug"], campaignSlug: PutRafflePathParams["campaignSlug"], data: PutRaffleMutationRequest, config: Partial<RequestConfig<PutRaffleMutationRequest>> & { client?: Client } = {}) {
+export async function putRaffle(slug: PutRafflePathParams["slug"], campaignSlug: PutRafflePathParams["campaignSlug"], sequence: PutRafflePathParams["sequence"], data: PutRaffleMutationRequest, config: Partial<RequestConfig<PutRaffleMutationRequest>> & { client?: Client } = {}) {
   const { client: request = fetch, ...requestConfig } = config
 
   const requestData = data
 
-  const res = await request<PutRaffleMutationResponse, ResponseErrorConfig<Error>, PutRaffleMutationRequest>({ method : "PUT", url : getPutRaffleUrl(slug, campaignSlug).url.toString(), data : requestData, ... requestConfig })
+  const res = await request<PutRaffleMutationResponse, ResponseErrorConfig<Error>, PutRaffleMutationRequest>({ method : "PUT", url : getPutRaffleUrl(slug, campaignSlug, sequence).url.toString(), data : requestData, ... requestConfig })
   return res.data
 }
