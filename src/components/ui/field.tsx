@@ -16,20 +16,39 @@ export function Input({ className, ...props }: React.ComponentProps<"input">) {
   );
 }
 
+/**
+ * A seta nativa do select encosta na borda direita e usa o desenho do sistema, que não
+ * é o da casa. Com `appearance-none` mais um chevron nosso posicionado por dentro, ela
+ * ganha respiro e o mesmo traço dos outros ícones — em qualquer navegador.
+ */
 export function Select({ className, children, ...props }: React.ComponentProps<"select">) {
   return (
-    <select
-      className={cn(
-        "h-12 w-full rounded-md border border-line bg-surface px-3 text-[0.95rem] text-ink",
-        "transition-colors [transition-duration:var(--dur)]",
-        "hover:border-line-strong focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/25",
-        "disabled:opacity-55",
-        className,
-      )}
-      {...props}
-    >
-      {children}
-    </select>
+    <div className="relative w-full">
+      <select
+        className={cn(
+          "h-12 w-full appearance-none rounded-md border border-line bg-surface pl-3.5 pr-11",
+          "text-[0.95rem] text-ink transition-colors [transition-duration:var(--dur)]",
+          "hover:border-line-strong focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/25",
+          "disabled:opacity-55",
+          className,
+        )}
+        {...props}
+      >
+        {children}
+      </select>
+      <svg
+        viewBox="0 0 20 20"
+        className="pointer-events-none absolute inset-y-0 right-3.5 my-auto h-4 w-4 text-muted"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        role="presentation"
+      >
+        <path d="M6 8l4 4 4-4" />
+      </svg>
+    </div>
   );
 }
 

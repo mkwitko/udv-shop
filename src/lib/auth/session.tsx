@@ -16,6 +16,13 @@ interface SessionValue {
   login: (input: { email: string; password: string }) => Promise<SessionUser>;
   register: (input: { name: string; email: string; password: string }) => Promise<SessionUser>;
   logout: () => Promise<void>;
+  /**
+   * Renova o access token para o papel que acabou de nascer. O token traz persona e
+   * papéis de loja assados na hora da emissão: sem isso, quem cria uma loja continua
+   * sem persona de owner até dar F5, e as rotas de gestão respondem 403/404 para o
+   * próprio dono.
+   */
+  reload: () => Promise<SessionUser | null>;
 }
 
 const SessionContext = createContext<SessionValue | null>(null);
@@ -73,6 +80,13 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     status,
     login: async (input) => adopt(await loginRequest(input)),
     register: async (input) => adopt(await registerRequest(input)),
+    reload: async () => {
+      try {
+        return adopt(await refreshRequest());
+      } catch {
+        return null;
+      }
+    },
     logout: async () => {
       try {
         await logoutRequest();
