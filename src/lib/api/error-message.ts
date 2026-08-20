@@ -36,6 +36,8 @@ const MESSAGES: Record<string, string> = {
   raffle_open_ended_conflict:
     "Já existe um sorteio sem data de fim nesta campanha. Coloque uma data de fim nele antes de criar o próximo.",
   raffle_not_found: "Este sorteio não existe mais.",
+  invalid_raffle_transition:
+    "Sorteio já realizado não volta atrás: o resultado saiu com código de auditoria e desfazê-lo tiraria de qualquer pessoa a chance de conferir.",
   raffle_not_open: "Este sorteio já foi realizado e não pode mais ser alterado.",
   raffle_has_entries:
     "Já tem gente com números neste sorteio, então o valor do número não pode mudar. Prêmios e datas você ainda edita.",

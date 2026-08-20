@@ -71,6 +71,7 @@ export type { UpdateCampaign200, UpdateCampaign200AcceptedTypesEnumKey, UpdateCa
 export type { UpdateCampaignStatus200, UpdateCampaignStatus200AcceptedTypesEnumKey, UpdateCampaignStatus200StatusEnumKey, UpdateCampaignStatusMutation, UpdateCampaignStatusMutationRequest, UpdateCampaignStatusMutationRequestStatusEnumKey, UpdateCampaignStatusMutationResponse, UpdateCampaignStatusPathParams } from "./UpdateCampaignStatus.ts";
 export type { UpdateOrderStatus200, UpdateOrderStatusMutation, UpdateOrderStatusMutationRequest, UpdateOrderStatusMutationRequestStatusEnumKey, UpdateOrderStatusMutationResponse, UpdateOrderStatusPathParams } from "./UpdateOrderStatus.ts";
 export type { PayoutKindEnum4Key, UpdateProduct200, UpdateProduct200AvailabilityEnumKey, UpdateProductMutation, UpdateProductMutationRequest, UpdateProductMutationRequestAvailabilityEnumKey, UpdateProductMutationRequestPayoutKindEnumKey, UpdateProductMutationResponse, UpdateProductPathParams } from "./UpdateProduct.ts";
+export type { UpdateRaffleStatus200, UpdateRaffleStatus200StatusEnumKey, UpdateRaffleStatusMutation, UpdateRaffleStatusMutationRequest, UpdateRaffleStatusMutationRequestStatusEnumKey, UpdateRaffleStatusMutationResponse, UpdateRaffleStatusPathParams } from "./UpdateRaffleStatus.ts";
 export type { UpdateStore200, UpdateStore200StatusEnumKey, UpdateStoreMutation, UpdateStoreMutationRequest, UpdateStoreMutationResponse, UpdateStorePathParams } from "./UpdateStore.ts";
 export type { UpdateStoreStatus200, UpdateStoreStatus200StatusEnumKey, UpdateStoreStatusMutation, UpdateStoreStatusMutationRequest, UpdateStoreStatusMutationRequestStatusEnumKey, UpdateStoreStatusMutationResponse, UpdateStoreStatusPathParams } from "./UpdateStoreStatus.ts";
 export type { UpdateSupplier200, UpdateSupplierMutation, UpdateSupplierMutationRequest, UpdateSupplierMutationResponse, UpdateSupplierPathParams } from "./UpdateSupplier.ts";
@@ -147,6 +148,8 @@ export { payoutKindEnum4 } from "./UpdateProduct.ts";
 export { updateProduct200AvailabilityEnum } from "./UpdateProduct.ts";
 export { updateProductMutationRequestAvailabilityEnum } from "./UpdateProduct.ts";
 export { updateProductMutationRequestPayoutKindEnum } from "./UpdateProduct.ts";
+export { updateRaffleStatus200StatusEnum } from "./UpdateRaffleStatus.ts";
+export { updateRaffleStatusMutationRequestStatusEnum } from "./UpdateRaffleStatus.ts";
 export { updateStore200StatusEnum } from "./UpdateStore.ts";
 export { updateStoreStatus200StatusEnum } from "./UpdateStoreStatus.ts";
 export { updateStoreStatusMutationRequestStatusEnum } from "./UpdateStoreStatus.ts";

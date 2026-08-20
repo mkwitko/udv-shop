@@ -71,6 +71,7 @@ export { updateCampaign200Schema, updateCampaignMutationRequestSchema, updateCam
 export { updateCampaignStatus200Schema, updateCampaignStatusMutationRequestSchema, updateCampaignStatusMutationResponseSchema, updateCampaignStatusPathParamsSchema } from "./updateCampaignStatusSchema.ts";
 export { updateOrderStatus200Schema, updateOrderStatusMutationRequestSchema, updateOrderStatusMutationResponseSchema, updateOrderStatusPathParamsSchema } from "./updateOrderStatusSchema.ts";
 export { updateProduct200Schema, updateProductMutationRequestSchema, updateProductMutationResponseSchema, updateProductPathParamsSchema } from "./updateProductSchema.ts";
+export { updateRaffleStatus200Schema, updateRaffleStatusMutationRequestSchema, updateRaffleStatusMutationResponseSchema, updateRaffleStatusPathParamsSchema } from "./updateRaffleStatusSchema.ts";
 export { updateStore200Schema, updateStoreMutationRequestSchema, updateStoreMutationResponseSchema, updateStorePathParamsSchema } from "./updateStoreSchema.ts";
 export { updateStoreStatus200Schema, updateStoreStatusMutationRequestSchema, updateStoreStatusMutationResponseSchema, updateStoreStatusPathParamsSchema } from "./updateStoreStatusSchema.ts";
 export { updateSupplier200Schema, updateSupplierMutationRequestSchema, updateSupplierMutationResponseSchema, updateSupplierPathParamsSchema } from "./updateSupplierSchema.ts";

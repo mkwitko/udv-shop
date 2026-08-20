@@ -11,6 +11,7 @@ export function ConfirmDialog({
   title,
   children,
   confirmLabel,
+  dismissLabel = "Cancelar",
   busy,
   onConfirm,
   onCancel,
@@ -19,6 +20,9 @@ export function ConfirmDialog({
   title: string;
   children?: ReactNode;
   confirmLabel: string;
+  /** Rótulo do botão que desiste da ação. "Cancelar" confunde quando a própria ação
+   *  é cancelar algo — aí a saída é "Voltar". */
+  dismissLabel?: string;
   busy?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
@@ -50,7 +54,7 @@ export function ConfirmDialog({
             {children && <div className="mt-2 text-[0.95rem] text-muted">{children}</div>}
             <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
               <Button variant="ghost" onClick={onCancel} disabled={busy}>
-                Cancelar
+                {dismissLabel}
               </Button>
               <Button variant="danger" onClick={onConfirm} disabled={busy}>
                 {busy ? "Um momento…" : confirmLabel}

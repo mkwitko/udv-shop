@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
-import { Pencil, Plus, Ticket } from "lucide-react";
+import { Ban, Pencil, Plus, RotateCcw, Ticket } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -21,6 +21,7 @@ import { createRaffle } from "#/lib/api/gen/clients/createRaffle";
 import { drawRaffle } from "#/lib/api/gen/clients/drawRaffle";
 import { putRaffle } from "#/lib/api/gen/clients/putRaffle";
 import { updateCampaignStatus } from "#/lib/api/gen/clients/updateCampaignStatus";
+import { updateRaffleStatus } from "#/lib/api/gen/clients/updateRaffleStatus";
 import { listCampaignsQueryKey, useListCampaigns } from "#/lib/api/gen/hooks/useListCampaigns";
 import { useListRaffles } from "#/lib/api/gen/hooks/useListRaffles";
 import type { ListCampaigns200 } from "#/lib/api/gen/types/ListCampaigns";
@@ -327,6 +328,21 @@ function RaffleCard({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [confirmDraw, setConfirmDraw] = useState(false);
+  const [confirmCancel, setConfirmCancel] = useState(false);
+
+  async function setStatus(status: "open" | "cancelled") {
+    setConfirmCancel(false);
+    setBusy(true);
+    setError(null);
+    try {
+      await updateRaffleStatus(slug, campaignSlug, raffle.sequence, { status });
+      await onChanged();
+    } catch (cause) {
+      setError(errorMessage(cause));
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function draw() {
     setConfirmDraw(false);
@@ -364,8 +380,12 @@ function RaffleCard({
         <div className="flex flex-wrap items-center gap-2">
           <span className="kicker">{raffle.sequence}º sorteio</span>
           <h4 className="font-display font-semibold">{raffle.title}</h4>
-          <Tag tone={raffle.status === "drawn" ? "neutral" : "brand"}>
-            {raffle.status === "drawn" ? "realizado" : "no ar"}
+          <Tag tone={raffle.status === "open" ? "brand" : "neutral"}>
+            {raffle.status === "open"
+              ? "no ar"
+              : raffle.status === "drawn"
+                ? "realizado"
+                : "cancelado"}
           </Tag>
         </div>
         <p className="text-muted text-sm tabular-nums">{raffleWindowLabel(raffle)}</p>
@@ -409,6 +429,19 @@ function RaffleCard({
             <Pencil className="h-4 w-4" aria-hidden />
             Editar
           </Button>
+          <Button size="sm" variant="ghost" disabled={busy} onClick={() => setConfirmCancel(true)}>
+            <Ban className="h-4 w-4" aria-hidden />
+            Cancelar sorteio
+          </Button>
+        </div>
+      )}
+
+      {raffle.status === "cancelled" && (
+        <div className="mt-3 flex flex-wrap gap-2">
+          <Button size="sm" variant="secondary" disabled={busy} onClick={() => setStatus("open")}>
+            <RotateCcw className="h-4 w-4" aria-hidden />
+            Reabrir
+          </Button>
         </div>
       )}
 
@@ -420,6 +453,19 @@ function RaffleCard({
           </span>
         </p>
       )}
+
+      <ConfirmDialog
+        open={confirmCancel}
+        title="Cancelar este sorteio?"
+        confirmLabel="Cancelar sorteio"
+        dismissLabel="Voltar"
+        busy={busy}
+        onCancel={() => setConfirmCancel(false)}
+        onConfirm={() => void setStatus("cancelled")}
+      >
+        Os {raffle.totalEntries} números somem e quem doou volta a concorrer no próximo sorteio que
+        cobrir a data da doação. Dá para reabrir depois, se o período ainda estiver livre.
+      </ConfirmDialog>
 
       <ConfirmDialog
         open={confirmDraw}

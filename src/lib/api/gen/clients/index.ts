@@ -71,6 +71,7 @@ export { updateCampaign } from "./updateCampaign.ts";
 export { updateCampaignStatus } from "./updateCampaignStatus.ts";
 export { updateOrderStatus } from "./updateOrderStatus.ts";
 export { updateProduct } from "./updateProduct.ts";
+export { updateRaffleStatus } from "./updateRaffleStatus.ts";
 export { updateStore } from "./updateStore.ts";
 export { updateStoreStatus } from "./updateStoreStatus.ts";
 export { updateSupplier } from "./updateSupplier.ts";
