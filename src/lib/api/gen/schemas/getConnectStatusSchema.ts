@@ -16,12 +16,14 @@ export const getConnectStatusPathParamsSchema = z.object({
 export const getConnectStatus200Schema = z.object({
     "stripe": z.object({
     "connected": z.boolean(),
+"transfersEnabled": z.boolean(),
 "chargesEnabled": z.boolean(),
 "payoutsEnabled": z.boolean(),
 "detailsSubmitted": z.boolean()
     }),
 "woovi": z.object({
-    "connected": z.boolean()
+    "connected": z.boolean(),
+"pixKeyMasked": z.nullable(z.string())
     }),
 "applicationFeeBps": z.int().min(-9007199254740991).max(9007199254740991)
     }) as unknown as z.ZodType<GetConnectStatus200>

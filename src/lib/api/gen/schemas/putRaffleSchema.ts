@@ -27,6 +27,9 @@ export const putRaffle200Schema = z.object({
 "prizes": z.array(z.object({
     "position": z.int().min(-9007199254740991).max(9007199254740991),
 "title": z.string(),
+"description": z.nullable(z.string()),
+"images": z.array(z.string()),
+"imageUrls": z.array(z.string()),
 "winner": z.nullable(z.object({
     "number": z.int().min(-9007199254740991).max(9007199254740991),
 "participant": z.string()
@@ -39,7 +42,9 @@ export const putRaffleMutationRequestSchema = z.object({
 "drawAt": z.iso.datetime().nullish(),
 "prizes": z.array(z.object({
     "position": z.int().min(1).max(9007199254740991),
-"title": z.string().min(2).max(200)
+"title": z.string().min(2).max(200),
+"description": z.optional(z.string().max(2000)),
+"images": z.optional(z.array(z.string().max(300).regex(/^stores\/.*/)).max(6))
     })).min(1).max(20)
     }) as unknown as z.ZodType<PutRaffleMutationRequest>
 

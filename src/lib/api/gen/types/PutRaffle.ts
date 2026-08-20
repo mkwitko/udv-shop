@@ -84,6 +84,18 @@ export type PutRaffle200 = {
         */
         title: string;
         /**
+         * @type string
+        */
+        description: string | null;
+        /**
+         * @type array
+        */
+        images: string[];
+        /**
+         * @type array
+        */
+        imageUrls: string[];
+        /**
          * @type object
         */
         winner: {
@@ -128,6 +140,15 @@ export type PutRaffleMutationRequest = {
          * @type string
         */
         title: string;
+        /**
+         * @maxLength 2000
+         * @type string | undefined
+        */
+        description?: string;
+        /**
+         * @type array | undefined
+        */
+        images?: string[];
     }[];
 };
 

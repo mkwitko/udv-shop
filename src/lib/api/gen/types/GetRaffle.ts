@@ -84,6 +84,18 @@ export type GetRaffle200 = {
         */
         title: string;
         /**
+         * @type string
+        */
+        description: string | null;
+        /**
+         * @type array
+        */
+        images: string[];
+        /**
+         * @type array
+        */
+        imageUrls: string[];
+        /**
          * @type object
         */
         winner: {

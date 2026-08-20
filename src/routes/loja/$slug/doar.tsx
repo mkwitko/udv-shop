@@ -9,8 +9,9 @@ import { PixPanel } from "#/components/pay/pix-panel";
 import { StepHeading } from "#/components/pay/steps";
 import { StripePanel } from "#/components/pay/stripe-panel";
 import { Button } from "#/components/ui/button";
-import { Field, FormError, Input, Textarea } from "#/components/ui/field";
+import { Field, FormError, Textarea } from "#/components/ui/field";
 import { GlyphEstrela } from "#/components/ui/glyphs";
+import { MoneyInput } from "#/components/ui/money-input";
 import { ShareButton } from "#/components/ui/share-button";
 import { errorMessage } from "#/lib/api/error-message";
 import { createDonation } from "#/lib/api/gen/clients/createDonation";
@@ -309,10 +310,8 @@ function DonatePage() {
             })}
           </div>
           <Field label="Outro valor" htmlFor="custom" error={undefined}>
-            <Input
+            <MoneyInput
               id="custom"
-              inputMode="decimal"
-              placeholder="R$ 0,00"
               value={customValue}
               onChange={(event) => setCustomValue(event.target.value)}
             />

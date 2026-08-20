@@ -15,7 +15,6 @@ import { useGetConnectStatus } from "#/lib/api/gen/hooks/useGetConnectStatus";
 import { useListMyStores } from "#/lib/api/gen/hooks/useListMyStores";
 import { useListPayouts } from "#/lib/api/gen/hooks/useListPayouts";
 import { useListProducts } from "#/lib/api/gen/hooks/useListProducts";
-import { publicRequest } from "#/lib/api/public";
 import { money } from "#/lib/format";
 import { siteUrl } from "#/lib/seo";
 
@@ -31,9 +30,12 @@ function Overview() {
   const { slug } = Route.useParams();
   const { data: connect } = useGetConnectStatus(slug);
   const { data: billing } = useGetBillingStatus(slug);
-  const { data: products } = useListProducts(slug, { limit: 1 }, { client: publicRequest });
+  // cliente autenticado de propósito: a listagem pública devolve 404 em loja `pending`,
+  // e era isso que deixava "Adicionar um produto" pendente para sempre depois de cadastrar.
+  const { data: products } = useListProducts(slug, { limit: 1 });
   const { data: stores } = useListMyStores();
-  const role = stores?.items.find((candidate) => candidate.slug === slug)?.role;
+  const myStore = stores?.items.find((candidate) => candidate.slug === slug);
+  const role = myStore?.role;
   const canSeePayouts = role === "owner" || role === "admin";
   const { data: payouts } = useListPayouts(slug, { query: { enabled: canSeePayouts } });
   // só o que está em aberto: crédito com um parceiro não abate a dívida com outro
@@ -56,6 +58,14 @@ function Overview() {
   const steps: Step[] = [
     { done: true, label: "Criar conta e loja", to: null },
     {
+      // a liberação é da plataforma, não da loja: entra como passo para o dono entender
+      // por que a vitrine pública ainda não mostra a loja dele.
+      done: myStore?.status === "active",
+      label: "Loja liberada pela plataforma",
+      to: null,
+      why: "Enquanto a liberação não sai, só quem é da loja consegue abrir as páginas dela.",
+    },
+    {
       done: hasProduct,
       label: "Adicionar um produto",
       to: "/gestao/$slug/produtos",
@@ -77,7 +87,9 @@ function Overview() {
       cta: "Ver assinatura",
     },
   ];
-  const pct = Math.round((steps.filter((s) => s.done).length / (steps.length + 1)) * 100);
+  // sobre o total de passos, sem `+1`: com o denominador inflado a barra travava em 80%
+  // mesmo com tudo pronto, e a loja ficava eternamente "quase lá".
+  const pct = Math.round((steps.filter((s) => s.done).length / steps.length) * 100);
   // uma coisa por vez (§13): a home diz o próximo passo, não a lista de pendências
   const next = steps.find((step) => !step.done);
 

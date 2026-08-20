@@ -46,6 +46,38 @@
   --glow: color-mix(in oklab, var(--brand) 12%, transparent);
   --edge: transparent; /* fio de luz no topo do card — só existe no escuro */
 
+  /* ── Paleta escura, escrita uma vez ────────────────────────────────────────
+     Os dois blocos escuros (media query e [data-theme]) só apontam para estes
+     valores. Antes cada bloco tinha sua própria cópia e eles saíam de sincronia.
+     O escuro é marrom-neutro FUNDO (não sépia): a tangerina é a única cor
+     saturada da tela, então o fundo precisa recuar para ela aparecer. */
+  --d-bg: #16120f;
+  --d-surface: #1f1a17;
+  --d-elevated: #272120;
+  --d-ink: #f8f3ee;
+  --d-ink-muted: #bdb2a8;
+  --d-line: #37302b;
+  --d-line-strong: #52483f;
+
+  --d-brand: #f2652d;
+  --d-brand-hover: #ff8049;
+  --d-brand-deep: #ffa675;
+  --d-brand-soft: #4a2412;
+  --d-brand-pale: #2b1c13;
+
+  --d-coral: #f2926f;
+  --d-plum: #b57a99;
+  --d-lavender: #b0a0d4;
+  --d-sky: #93c6d9;
+  --d-sand: #d2c1a4;
+
+  --d-success: #4cc38f;
+  --d-success-soft: #14301f;
+  --d-warning: #e6ac4c;
+  --d-warning-soft: #33260e;
+  --d-danger: #ff8b7e;
+  --d-danger-soft: #38201b;
+
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-exit: cubic-bezier(0.4, 0, 1, 1);
   --dur: 180ms;
@@ -55,74 +87,88 @@
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #1c1715;
-    --surface: #27201d;
-    --elevated: #322925;
-    --ink: #fff8f3;
-    --ink-muted: #b5a89f;
-    --line: #3a322d;
-    --line-strong: #4c423b;
+    --bg: var(--d-bg);
+    --surface: var(--d-surface);
+    --elevated: var(--d-elevated);
+    --ink: var(--d-ink);
+    --ink-muted: var(--d-ink-muted);
+    --line: var(--d-line);
+    --line-strong: var(--d-line-strong);
 
-    --brand: #ef5f29;
-    --brand-hover: #ff7a42;
-    --brand-deep: #ffa471;
+    --brand: var(--d-brand);
+    --brand-hover: var(--d-brand-hover);
+    --brand-deep: var(--d-brand-deep);
     --brand-ink: #ffffff;
-    --brand-soft: #3f2617;
-    --brand-pale: #2e211a;
+    --brand-soft: var(--d-brand-soft);
+    --brand-pale: var(--d-brand-pale);
 
-    --coral: #f2926f;
-    --plum: #a76c8b;
-    --lavender: #a795cc;
-    --sky: #8cc0d3;
-    --sand: #cdbb9d;
+    --coral: var(--d-coral);
+    --plum: var(--d-plum);
+    --lavender: var(--d-lavender);
+    --sky: var(--d-sky);
+    --sand: var(--d-sand);
 
-    --success: #4cc38f;
-    --success-soft: #173525;
-    --warning: #e0a545;
-    --warning-soft: #33270f;
-    --accent: #e0a545;
-    --danger: #ff8b7e;
-    --danger-soft: #38201b;
+    --success: var(--d-success);
+    --success-soft: var(--d-success-soft);
+    --warning: var(--d-warning);
+    --warning-soft: var(--d-warning-soft);
+    --accent: var(--d-warning);
+    --danger: var(--d-danger);
+    --danger-soft: var(--d-danger-soft);
 
-    --glow: color-mix(in oklab, var(--brand) 16%, transparent);
-    --edge: rgb(255 255 255 / 0.05);
-    --shadow-card: 0 1px 2px rgb(0 0 0 / 0.45), 0 18px 44px -26px rgb(0 0 0 / 0.85);
+    --glow: color-mix(in oklab, var(--brand) 18%, transparent);
+    --edge: rgb(255 255 255 / 0.06);
+    --shadow-card: 0 1px 2px rgb(0 0 0 / 0.5), 0 20px 48px -28px rgb(0 0 0 / 0.9);
   }
 }
 
 :root[data-theme="dark"] {
-  --bg: #1c1715;
-  --surface: #27201d;
-  --elevated: #322925;
-  --ink: #fff8f3;
-  --ink-muted: #b5a89f;
-  --line: #3a322d;
-  --line-strong: #4c423b;
+  --bg: var(--d-bg);
+  --surface: var(--d-surface);
+  --elevated: var(--d-elevated);
+  --ink: var(--d-ink);
+  --ink-muted: var(--d-ink-muted);
+  --line: var(--d-line);
+  --line-strong: var(--d-line-strong);
 
-  --brand: #ef5f29;
-  --brand-hover: #ff7a42;
-  --brand-deep: #ffa471;
+  --brand: var(--d-brand);
+  --brand-hover: var(--d-brand-hover);
+  --brand-deep: var(--d-brand-deep);
   --brand-ink: #ffffff;
-  --brand-soft: #3f2617;
-  --brand-pale: #2e211a;
+  --brand-soft: var(--d-brand-soft);
+  --brand-pale: var(--d-brand-pale);
 
-  --coral: #f2926f;
-  --plum: #a76c8b;
-  --lavender: #a795cc;
-  --sky: #8cc0d3;
-  --sand: #cdbb9d;
+  --coral: var(--d-coral);
+  --plum: var(--d-plum);
+  --lavender: var(--d-lavender);
+  --sky: var(--d-sky);
+  --sand: var(--d-sand);
 
-  --success: #4cc38f;
-  --success-soft: #173525;
-  --warning: #e0a545;
-  --warning-soft: #33270f;
-  --accent: #e0a545;
-  --danger: #ff8b7e;
-  --danger-soft: #38201b;
+  --success: var(--d-success);
+  --success-soft: var(--d-success-soft);
+  --warning: var(--d-warning);
+  --warning-soft: var(--d-warning-soft);
+  --accent: var(--d-warning);
+  --danger: var(--d-danger);
+  --danger-soft: var(--d-danger-soft);
 
-  --glow: color-mix(in oklab, var(--brand) 16%, transparent);
-  --edge: rgb(255 255 255 / 0.05);
-  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.45), 0 18px 44px -26px rgb(0 0 0 / 0.85);
+  --glow: color-mix(in oklab, var(--brand) 18%, transparent);
+  --edge: rgb(255 255 255 / 0.06);
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.5), 0 20px 48px -28px rgb(0 0 0 / 0.9);
+}
+
+/* `dark:` segue a MESMA regra dos tokens: preferência do sistema quando não há
+   escolha explícita, e [data-theme] quando o usuário mexeu no botão. Sem isso o
+   utilitário dark: do Tailwind ignorava o toggle e só olhava o sistema. */
+@custom-variant dark {
+  &:where([data-theme="dark"], [data-theme="dark"] *) {
+    @slot;
+  }
+  @media (prefers-color-scheme: dark) {
+    &:where(:root:not([data-theme="light"]), :root:not([data-theme="light"]) *) {
+      @slot;
+    }
+  }
 }
 
 @theme inline {
@@ -201,8 +247,15 @@
     color-scheme: light;
   }
 
-  :root[data-theme="dark"] html,
-  html:has(:root[data-theme="dark"]) {
+  /* `html` É o :root — `:root[data-theme] html` nunca casa, e sem isso a barra de
+     rolagem e os controles nativos ficavam claros dentro da página escura. */
+  @media (prefers-color-scheme: dark) {
+    html:not([data-theme="light"]) {
+      color-scheme: dark;
+    }
+  }
+
+  html[data-theme="dark"] {
     color-scheme: dark;
   }
 

@@ -152,6 +152,47 @@ export type CreateCampaignMutationRequest = {
      * @type string | undefined, date-time
     */
     endsAt?: string;
+    /**
+     * @type object | undefined
+    */
+    raffle?: {
+        /**
+         * @minLength 100
+         * @maxLength 10000000
+         * @type integer
+        */
+        centsPerNumber: number;
+        /**
+         * @type string, date-time
+        */
+        drawAt?: string | null;
+        /**
+         * @type array
+        */
+        prizes: {
+            /**
+             * @minLength 1
+             * @maxLength 9007199254740991
+             * @type integer
+            */
+            position: number;
+            /**
+             * @minLength 2
+             * @maxLength 200
+             * @type string
+            */
+            title: string;
+            /**
+             * @maxLength 2000
+             * @type string | undefined
+            */
+            description?: string;
+            /**
+             * @type array | undefined
+            */
+            images?: string[];
+        }[];
+    };
 };
 
 export type CreateCampaignMutationResponse = CreateCampaign201;

@@ -40,7 +40,17 @@ export const createCampaignMutationRequestSchema = z.object({
 "coverImage": z.optional(z.string().max(300).regex(/^stores\/.*/)),
 "goalCents": z.optional(z.int().max(1000000000).gt(0)),
 "acceptedTypes": z.optional(z.enum(["one_time", "monthly", "both"]).default("both")),
-"endsAt": z.optional(z.iso.datetime())
+"endsAt": z.optional(z.iso.datetime()),
+"raffle": z.optional(z.object({
+    "centsPerNumber": z.int().min(100).max(10000000),
+"drawAt": z.iso.datetime().nullish(),
+"prizes": z.array(z.object({
+    "position": z.int().min(1).max(9007199254740991),
+"title": z.string().min(2).max(200),
+"description": z.optional(z.string().max(2000)),
+"images": z.optional(z.array(z.string().max(300).regex(/^stores\/.*/)).max(6))
+    })).min(1).max(20)
+    }))
     }) as unknown as z.ZodType<CreateCampaignMutationRequest>
 
 export const createCampaignMutationResponseSchema = z.lazy(() => createCampaign201Schema) as unknown as z.ZodType<CreateCampaignMutationResponse>

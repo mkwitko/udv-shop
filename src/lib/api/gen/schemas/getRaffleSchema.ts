@@ -27,6 +27,9 @@ export const getRaffle200Schema = z.object({
 "prizes": z.array(z.object({
     "position": z.int().min(-9007199254740991).max(9007199254740991),
 "title": z.string(),
+"description": z.nullable(z.string()),
+"images": z.array(z.string()),
+"imageUrls": z.array(z.string()),
 "winner": z.nullable(z.object({
     "number": z.int().min(-9007199254740991).max(9007199254740991),
 "participant": z.string()

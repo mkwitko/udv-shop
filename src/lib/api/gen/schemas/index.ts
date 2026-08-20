@@ -13,6 +13,8 @@ export { createProduct201Schema, createProductMutationRequestSchema, createProdu
 export { createSettlement201Schema, createSettlementMutationRequestSchema, createSettlementMutationResponseSchema, createSettlementPathParamsSchema } from "./createSettlementSchema.ts";
 export { createStore201Schema, createStoreMutationRequestSchema, createStoreMutationResponseSchema } from "./createStoreSchema.ts";
 export { createStripeAccountLink201Schema, createStripeAccountLinkMutationResponseSchema, createStripeAccountLinkPathParamsSchema } from "./createStripeAccountLinkSchema.ts";
+export { createStripeAccountSession201Schema, createStripeAccountSessionMutationResponseSchema, createStripeAccountSessionPathParamsSchema } from "./createStripeAccountSessionSchema.ts";
+export { createStripeDashboardLink201Schema, createStripeDashboardLinkMutationResponseSchema, createStripeDashboardLinkPathParamsSchema } from "./createStripeDashboardLinkSchema.ts";
 export { createSupplier201Schema, createSupplierMutationRequestSchema, createSupplierMutationResponseSchema, createSupplierPathParamsSchema } from "./createSupplierSchema.ts";
 export { deleteStoreDomain200Schema, deleteStoreDomainMutationResponseSchema, deleteStoreDomainPathParamsSchema } from "./deleteStoreDomainSchema.ts";
 export { drawRaffle202Schema, drawRaffleMutationResponseSchema, drawRafflePathParamsSchema } from "./drawRaffleSchema.ts";
@@ -31,6 +33,7 @@ export { getRaffle200Schema, getRafflePathParamsSchema, getRaffleQueryResponseSc
 export { getStatement200Schema, getStatementPathParamsSchema, getStatementQueryParamsSchema, getStatementQueryResponseSchema } from "./getStatementSchema.ts";
 export { getStoreDomain200Schema, getStoreDomainPathParamsSchema, getStoreDomainQueryResponseSchema } from "./getStoreDomainSchema.ts";
 export { getStore200Schema, getStorePathParamsSchema, getStoreQueryResponseSchema } from "./getStoreSchema.ts";
+export { getWooviBalance200Schema, getWooviBalancePathParamsSchema, getWooviBalanceQueryResponseSchema } from "./getWooviBalanceSchema.ts";
 export { listCampaigns200Schema, listCampaignsPathParamsSchema, listCampaignsQueryParamsSchema, listCampaignsQueryResponseSchema } from "./listCampaignsSchema.ts";
 export { listMyDonations200Schema, listMyDonationsQueryParamsSchema, listMyDonationsQueryResponseSchema } from "./listMyDonationsSchema.ts";
 export { listMyInterests200Schema, listMyInterestsQueryParamsSchema, listMyInterestsQueryResponseSchema } from "./listMyInterestsSchema.ts";
@@ -58,6 +61,10 @@ export { resetPassword204Schema, resetPasswordMutationRequestSchema, resetPasswo
 export { resolveStoreDomain200Schema, resolveStoreDomainQueryParamsSchema, resolveStoreDomainQueryResponseSchema } from "./resolveStoreDomainSchema.ts";
 export { restoreProduct200Schema, restoreProductMutationResponseSchema, restoreProductPathParamsSchema } from "./restoreProductSchema.ts";
 export { stripeWebhook200Schema, stripeWebhookMutationResponseSchema } from "./stripeWebhookSchema.ts";
+export { suggestCampaignStory200Schema, suggestCampaignStoryMutationRequestSchema, suggestCampaignStoryMutationResponseSchema, suggestCampaignStoryPathParamsSchema } from "./suggestCampaignStorySchema.ts";
+export { suggestPrizeDescription200Schema, suggestPrizeDescriptionMutationRequestSchema, suggestPrizeDescriptionMutationResponseSchema, suggestPrizeDescriptionPathParamsSchema } from "./suggestPrizeDescriptionSchema.ts";
+export { suggestProductDescription200Schema, suggestProductDescriptionMutationRequestSchema, suggestProductDescriptionMutationResponseSchema, suggestProductDescriptionPathParamsSchema } from "./suggestProductDescriptionSchema.ts";
+export { suggestStoreDescription200Schema, suggestStoreDescriptionMutationRequestSchema, suggestStoreDescriptionMutationResponseSchema } from "./suggestStoreDescriptionSchema.ts";
 export { updateCampaign200Schema, updateCampaignMutationRequestSchema, updateCampaignMutationResponseSchema, updateCampaignPathParamsSchema } from "./updateCampaignSchema.ts";
 export { updateCampaignStatus200Schema, updateCampaignStatusMutationRequestSchema, updateCampaignStatusMutationResponseSchema, updateCampaignStatusPathParamsSchema } from "./updateCampaignStatusSchema.ts";
 export { updateOrderStatus200Schema, updateOrderStatusMutationRequestSchema, updateOrderStatusMutationResponseSchema, updateOrderStatusPathParamsSchema } from "./updateOrderStatusSchema.ts";
@@ -67,4 +74,5 @@ export { updateStoreStatus200Schema, updateStoreStatusMutationRequestSchema, upd
 export { updateSupplier200Schema, updateSupplierMutationRequestSchema, updateSupplierMutationResponseSchema, updateSupplierPathParamsSchema } from "./updateSupplierSchema.ts";
 export { verifyEmail204Schema, verifyEmailMutationRequestSchema, verifyEmailMutationResponseSchema } from "./verifyEmailSchema.ts";
 export { verifyStoreDomain200Schema, verifyStoreDomainMutationResponseSchema, verifyStoreDomainPathParamsSchema } from "./verifyStoreDomainSchema.ts";
+export { withdrawWoovi200Schema, withdrawWooviMutationResponseSchema, withdrawWooviPathParamsSchema } from "./withdrawWooviSchema.ts";
 export { wooviWebhook200Schema, wooviWebhookMutationResponseSchema } from "./wooviWebhookSchema.ts";

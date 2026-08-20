@@ -37,8 +37,18 @@ const TICKER = [
   "sorteio auditável",
   "catálogo com página própria",
   "doação mensal sem burocracia",
-  "taxa declarada antes da venda",
+  "sem comissão por venda",
   "sua loja aparece no Google",
+];
+
+/** O que a assinatura inclui. Preço fica na seção; se mudar, muda no Stripe também. */
+const PLAN_INCLUDES = [
+  "Loja com página própria e endereço para divulgar",
+  "Pix e cartão, com o dinheiro caindo direto na sua conta",
+  "Campanhas com meta, doação única ou mensal",
+  "Sorteios com regra pública e resultado auditável",
+  "Encomendas, pedidos e extrato em planilha",
+  "Quantos produtos e campanhas você quiser",
 ];
 
 type Glyph = (props: { className?: string }) => React.ReactElement;
@@ -86,7 +96,7 @@ function Landing() {
                   </Button>
                 </div>
                 <p className="rise rise-3 mt-4 text-sm text-white/75">
-                  Grátis para começar. Só cobramos quando você vende.
+                  R$ 199 por mês, sem comissão por venda.
                 </p>
               </div>
 
@@ -235,7 +245,7 @@ function Landing() {
         {/* ═══ O DINHEIRO VAI DIRETO: a promessa central ══════════════════════ */}
         <section className="shell py-16 md:py-24">
           <Reveal>
-            <div className="rounded-[1.75rem] bg-brand-pale px-6 py-12 md:px-14 md:py-16">
+            <div className="rounded-[1.75rem] border border-brand/15 bg-brand-pale px-6 py-12 md:px-14 md:py-16">
               <p className="kicker">A promessa</p>
               <h2 className="mt-3 max-w-[18ch] text-title">
                 O dinheiro vai direto para quem organiza.
@@ -261,12 +271,8 @@ function Landing() {
               </p>
 
               <div className="mt-8 grid gap-8 border-line border-t pt-8 sm:grid-cols-3">
-                <BigFact
-                  value={0}
-                  prefix="R$ "
-                  label="para começar — só cobramos quando você vende"
-                />
-                <BigFact value={5} suffix="%" label="de taxa, declarada antes de cada venda" />
+                <BigFact value={0} suffix="%" label="de comissão sobre o que você vende" />
+                <BigFact value={199} prefix="R$ " label="por mês, com tudo incluído" />
                 <BigFact value={100} suffix="%" label="do repasse direto na sua conta" />
               </div>
             </div>
@@ -290,6 +296,50 @@ function Landing() {
               <RaffleDemo />
             </Reveal>
           </div>
+        </section>
+
+        {/* ═══ ASSINATURA: um preço só, sem comissão ══════════════════════════ */}
+        <section className="shell pb-16 md:pb-24">
+          <Reveal>
+            <div className="card grid gap-8 p-6 md:grid-cols-[0.9fr_1.1fr] md:items-center md:p-10">
+              <div>
+                <p className="kicker">Quanto custa</p>
+                <h2 className="mt-3 text-title">Um preço só, sem surpresa.</h2>
+                <p className="mt-4 max-w-[40ch] text-lede text-muted">
+                  A plataforma se sustenta pela assinatura da loja. Nada é descontado das suas
+                  vendas nem das doações que você recebe.
+                </p>
+                <div className="mt-7 flex items-end gap-2">
+                  <p className="font-bold font-display text-5xl text-brand-deep tabular-nums md:text-6xl">
+                    R$ 199
+                  </p>
+                  <p className="pb-2 font-semibold text-muted">/mês</p>
+                </div>
+                <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+                  <Button asChild size="lg" className="w-full sm:w-auto">
+                    <Link to="/criar-conta">
+                      Criar minha loja
+                      <ArrowRight className="h-4 w-4" aria-hidden />
+                    </Link>
+                  </Button>
+                </div>
+                <p className="mt-4 text-muted text-sm">
+                  Cancele quando quiser, direto no painel da loja.
+                </p>
+              </div>
+
+              <ul className="grid gap-3 rounded-[1.25rem] border border-brand/15 bg-brand-pale p-5 md:p-6">
+                {PLAN_INCLUDES.map((item) => (
+                  <li key={item} className="flex items-start gap-3 text-[0.98rem]">
+                    <span className="mt-0.5 inline-grid h-5 w-5 shrink-0 place-items-center rounded-full bg-brand text-white">
+                      <Check className="h-3 w-3" aria-hidden />
+                    </span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </Reveal>
         </section>
 
         {/* ═══ LOJAS REAIS ════════════════════════════════════════════════════ */}
@@ -472,7 +522,7 @@ function StepBig({
   return (
     <Reveal className="h-full">
       <div className="flex h-full flex-col">
-        <p className="font-bold font-display text-7xl text-brand-soft leading-none md:text-8xl dark:text-brand-soft">
+        <p className="font-bold font-display text-7xl text-brand-soft leading-none md:text-8xl dark:text-brand/45">
           {n}
         </p>
         <h3 className="-mt-4 font-bold font-display text-xl">{title}</h3>

@@ -26,6 +26,10 @@ export type GetConnectStatus200 = {
         /**
          * @type boolean
         */
+        transfersEnabled: boolean;
+        /**
+         * @type boolean
+        */
         chargesEnabled: boolean;
         /**
          * @type boolean
@@ -44,6 +48,10 @@ export type GetConnectStatus200 = {
          * @type boolean
         */
         connected: boolean;
+        /**
+         * @type string
+        */
+        pixKeyMasked: string | null;
     };
     /**
      * @minLength -9007199254740991

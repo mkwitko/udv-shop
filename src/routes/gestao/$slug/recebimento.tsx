@@ -1,20 +1,30 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { Check, CreditCard, ExternalLink, QrCode, ReceiptText } from "lucide-react";
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
+import { StripeConnectEmbedded } from "#/components/stripe-connect-embedded";
 import { Button } from "#/components/ui/button";
 import { Field, FormError, Input } from "#/components/ui/field";
 import { Tag } from "#/components/ui/tag";
+import { useToast } from "#/components/ui/toast";
 import { errorMessage } from "#/lib/api/error-message";
 import { createBillingCheckout } from "#/lib/api/gen/clients/createBillingCheckout";
 import { createBillingPortal } from "#/lib/api/gen/clients/createBillingPortal";
 import { createStripeAccountLink } from "#/lib/api/gen/clients/createStripeAccountLink";
+import { createStripeDashboardLink } from "#/lib/api/gen/clients/createStripeDashboardLink";
 import { putWooviConnect } from "#/lib/api/gen/clients/putWooviConnect";
+import { withdrawWoovi } from "#/lib/api/gen/clients/withdrawWoovi";
 import { useGetBillingStatus } from "#/lib/api/gen/hooks/useGetBillingStatus";
 import {
   getConnectStatusQueryKey,
   useGetConnectStatus,
 } from "#/lib/api/gen/hooks/useGetConnectStatus";
-import { longDate } from "#/lib/format";
+import {
+  getWooviBalanceQueryKey,
+  useGetWooviBalance,
+} from "#/lib/api/gen/hooks/useGetWooviBalance";
+import { longDate, money } from "#/lib/format";
+import { stripePublishableKey } from "#/lib/pay/stripe";
+import { cn } from "#/lib/utils";
 
 export const Route = createFileRoute("/gestao/$slug/recebimento")({
   // o onboarding do Stripe volta para cá com ?connect=ok|refresh
@@ -47,7 +57,7 @@ function PaymentsAdmin() {
       </div>
 
       <FeeNote slug={slug} />
-      <div className="grid items-start gap-6 lg:grid-cols-2">
+      <div className="grid gap-6 lg:grid-cols-2">
         <PixBlock slug={slug} />
         <CardBlock slug={slug} />
       </div>
@@ -62,6 +72,57 @@ function PaymentsAdmin() {
       </div>
       <BillingBlock slug={slug} />
     </div>
+  );
+}
+
+/**
+ * Casca dos dois cards de recebimento. Existe para eles ficarem alinhados de verdade:
+ * mesma altura (`h-full` + grid que estica), corpo que cresce e AÇÃO ancorada no rodapé.
+ * Sem isso um card ficava mais alto que o outro e os botões desalinhavam, porque a
+ * altura vinha do tamanho do texto de cada um. Com os dois na mesma altura, o `mt-auto`
+ * do rodapé já alinha os botões — não é preciso reservar linha no subtítulo.
+ */
+function PaymentCard({
+  icon,
+  iconClass,
+  title,
+  subtitle,
+  badge,
+  children,
+  actions,
+}: {
+  icon: ReactNode;
+  iconClass: string;
+  title: string;
+  subtitle: string;
+  badge?: ReactNode;
+  children?: ReactNode;
+  actions: ReactNode;
+}) {
+  return (
+    <section className="card flex h-full flex-col p-5">
+      <header className="flex items-start gap-3">
+        <span
+          className={cn(
+            "inline-grid h-11 w-11 shrink-0 place-items-center rounded-[0.9rem]",
+            iconClass,
+          )}
+        >
+          {icon}
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 className="font-display font-semibold">{title}</h2>
+            {badge}
+          </div>
+          <p className="mt-0.5 text-muted text-sm">{subtitle}</p>
+        </div>
+      </header>
+
+      {children ? <div className="mt-4 grid gap-3">{children}</div> : null}
+
+      <div className="mt-auto pt-4">{actions}</div>
+    </section>
   );
 }
 
@@ -94,66 +155,152 @@ function PixBlock({ slug }: { slug: string }) {
   }
 
   return (
-    <section className="card p-5">
-      <header className="flex items-center gap-3">
-        <span className="inline-grid h-11 w-11 shrink-0 place-items-center rounded-[0.9rem] bg-brand-soft text-brand-deep">
-          <QrCode className="h-5 w-5" aria-hidden />
-        </span>
-        <div>
-          <h2 className="font-display font-semibold">Receber por Pix</h2>
-          <p className="text-sm text-muted">
-            O valor cai na conta da chave, já com a taxa separada.
-          </p>
-        </div>
-        {connected && (
-          <Tag tone="brand" className="ml-auto">
-            ligado
-          </Tag>
-        )}
-      </header>
-
-      <div className="mt-4 grid gap-3">
-        <Field
-          label={connected ? "Trocar a chave Pix" : "Chave Pix da loja"}
-          htmlFor="pixKey"
-          hint="Pode ser CNPJ, e-mail, telefone ou chave aleatória."
-          error={undefined}
-        >
-          <Input
-            id="pixKey"
-            value={pixKey}
-            onChange={(event) => {
-              setPixKey(event.target.value);
-              setSaved(false);
-            }}
-            placeholder="chave@exemplo.org"
-          />
-        </Field>
-        <FormError>{error}</FormError>
-        {saved && (
-          <p className="flex items-center gap-2 text-sm text-brand-deep">
-            <Check className="h-4 w-4" aria-hidden /> Chave salva. O Pix já está valendo.
-          </p>
-        )}
-        <Button onClick={save} disabled={saving} className="justify-self-start">
-          {saving ? "Salvando…" : "Salvar chave Pix"}
+    <PaymentCard
+      icon={<QrCode className="h-5 w-5" aria-hidden />}
+      iconClass="bg-brand-soft text-brand-deep"
+      title="Receber por Pix"
+      subtitle="Cai na hora, na chave que você cadastrar. Sem nada descontado da venda."
+      badge={connected ? <Tag tone="brand">ligado</Tag> : undefined}
+      actions={
+        <Button onClick={save} disabled={saving}>
+          {saving ? "Salvando…" : connected ? "Salvar nova chave" : "Salvar chave Pix"}
         </Button>
+      }
+    >
+      {/* dizer só "ligado" não bastava: a loja precisa conferir QUAL chave recebe o
+            dinheiro. A API devolve a chave parcial — a inteira não trafega.
+            Texto solto, sem moldura: numa caixa cinza logo acima do campo de chave, isso
+            era lido como um input desabilitado. */}
+      {connected && connect?.woovi.pixKeyMasked && (
+        <p className="flex flex-wrap items-baseline gap-x-2 text-sm">
+          <span className="text-muted">Recebendo na chave</span>
+          <span className="font-medium tabular-nums">{connect.woovi.pixKeyMasked}</span>
+        </p>
+      )}
+
+      {connected && <PixSaldo slug={slug} />}
+
+      <Field
+        label={connected ? "Trocar a chave Pix" : "Chave Pix da loja"}
+        htmlFor="pixKey"
+        hint="Pode ser CNPJ, e-mail, telefone ou chave aleatória."
+        error={undefined}
+      >
+        <Input
+          id="pixKey"
+          value={pixKey}
+          onChange={(event) => {
+            setPixKey(event.target.value);
+            setSaved(false);
+          }}
+          placeholder="chave@exemplo.org"
+        />
+      </Field>
+      <FormError>{error}</FormError>
+      {saved && (
+        <p className="flex items-center gap-2 text-brand-deep text-sm">
+          <Check className="h-4 w-4" aria-hidden /> Chave salva. O Pix já está valendo.
+        </p>
+      )}
+    </PaymentCard>
+  );
+}
+
+/**
+ * Saldo Pix que ainda está na conta da plataforma. Existe porque split para subconta
+ * Woovi é saldo VIRTUAL: o valor só sai daqui no saque. O saque roda sozinho a cada Pix
+ * confirmado, então normalmente isto mostra zero — o botão é para quando sobra saldo
+ * (falha no automático, ou dinheiro que entrou antes disso existir).
+ */
+function PixSaldo({ slug }: { slug: string }) {
+  const { queryClient } = useRouter().options.context;
+  const toast = useToast();
+  const { data, isPending } = useGetWooviBalance(slug);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  if (isPending || !data?.available) return null;
+
+  const saldo = data.balanceCents;
+  // Zero é o estado normal (o saque roda a cada Pix confirmado). Mostrar "R$ 0,00" com
+  // texto explicando que não há nada só ocupa espaço — aparece quando há dinheiro parado
+  // ou quando a Woovi travou o saque, que é quando a loja precisa saber.
+  if (saldo === 0 && !data.withdrawBlocked) return null;
+
+  async function sacar() {
+    setBusy(true);
+    setError(null);
+    try {
+      const result = await withdrawWoovi(slug);
+      if (result.status === "requested") {
+        toast(`Saque de ${money(result.balanceCents)} pedido. Cai na sua chave Pix.`);
+      } else if (result.status === "empty") {
+        toast("Não havia saldo para sacar.");
+      } else {
+        setError(
+          "A Woovi bloqueou o saque desta subconta. Fale com quem cuida da plataforma — o dinheiro não foi perdido.",
+        );
+      }
+      await queryClient.invalidateQueries({ queryKey: getWooviBalanceQueryKey(slug) });
+    } catch (cause) {
+      setError(errorMessage(cause));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="grid gap-2 rounded-[0.9rem] border border-line bg-surface px-3.5 py-3">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <span className="text-muted text-sm">Saldo Pix a caminho</span>
+        <span className="font-bold font-display tabular-nums">{money(saldo)}</span>
       </div>
-    </section>
+      <p className="text-muted text-xs">
+        {data.withdrawBlocked
+          ? "A Woovi bloqueou o saque desta subconta. Fale com quem cuida da plataforma."
+          : "O saque acontece sozinho a cada Pix recebido. Se preferir, force agora."}
+      </p>
+      {!data.withdrawBlocked && (
+        <Button
+          variant="secondary"
+          size="sm"
+          className="justify-self-start"
+          disabled={busy}
+          onClick={sacar}
+        >
+          {busy ? "Sacando…" : "Sacar para minha chave"}
+        </Button>
+      )}
+      <FormError>{error}</FormError>
+    </div>
   );
 }
 
 function CardBlock({ slug }: { slug: string }) {
-  const { data: connect } = useGetConnectStatus(slug);
+  const { data: connect, refetch } = useGetConnectStatus(slug);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [onboarding, setOnboarding] = useState(false);
+  const [embeddedFailed, setEmbeddedFailed] = useState(false);
+  // Sem chave publicável não há componente embutido: sobra o fluxo hospedado, que é o
+  // mesmo de antes. Serve para ambiente sem Stripe configurado — e para quando o
+  // embutido falha em montar, caso em que o hospedado é o caminho que ainda funciona.
+  const embedded = stripePublishableKey() !== "" && !embeddedFailed;
   const connected = Boolean(connect?.stripe.connected);
+  // Ter conta na Stripe não é o mesmo que poder receber: até a capability `transfers`
+  // ficar ativa a loja não vende no cartão, e dizer "ligado" aqui deixaria o núcleo
+  // esperando venda que a API está barrando.
+  const ready = Boolean(connect?.stripe.transfersEnabled);
 
-  async function openOnboarding() {
+  // A conta é Express: o núcleo não entra em dashboard.stripe.com, entra por um link de
+  // uso único que a plataforma gera na hora. Por isso é botão, não href fixo.
+  const canOpenDashboard = Boolean(connect?.stripe.detailsSubmitted);
+
+  async function openLink(create: () => Promise<{ url: string }>) {
     setBusy(true);
     setError(null);
     try {
-      const { url } = await createStripeAccountLink(slug);
+      const { url } = await create();
       window.location.href = url;
     } catch (cause) {
       setError(errorMessage(cause));
@@ -162,35 +309,68 @@ function CardBlock({ slug }: { slug: string }) {
   }
 
   return (
-    <section className="card p-5">
-      <header className="flex items-center gap-3">
-        <span className="inline-grid h-11 w-11 shrink-0 place-items-center rounded-[0.9rem] bg-sky/18 text-sky">
-          <CreditCard className="h-5 w-5" aria-hidden />
-        </span>
-        <div>
-          <h2 className="font-display font-semibold">Receber por cartão</h2>
-          <p className="text-sm text-muted">
-            Cadastro guiado pela Stripe, a empresa que processa o cartão. Tenha o CNPJ e os dados
-            bancários à mão.
-          </p>
+    <PaymentCard
+      icon={<CreditCard className="h-5 w-5" aria-hidden />}
+      iconClass="bg-sky/18 text-sky"
+      title="Receber por cartão"
+      subtitle="Cadastro guiado pela Stripe, que processa o pagamento. Tenha CNPJ e dados bancários à mão."
+      badge={
+        connected ? (
+          <Tag tone={ready ? "brand" : "accent"}>{ready ? "ligado" : "cadastro incompleto"}</Tag>
+        ) : undefined
+      }
+      actions={
+        <div className="flex flex-wrap gap-2">
+          {/* Um destaque por card: com cadastro pendente o que importa é terminá-lo, e
+              dois botões laranja lado a lado não diziam qual era o próximo passo. */}
+          {canOpenDashboard && (
+            <Button
+              onClick={() => openLink(() => createStripeDashboardLink(slug))}
+              disabled={busy}
+              variant={ready ? "primary" : "secondary"}
+            >
+              Abrir painel de recebimentos
+              <ExternalLink className="h-4 w-4" aria-hidden />
+            </Button>
+          )}
+          <Button
+            onClick={() =>
+              embedded ? setOnboarding(true) : openLink(() => createStripeAccountLink(slug))
+            }
+            disabled={busy || (embedded && onboarding)}
+            variant={ready ? "secondary" : "primary"}
+          >
+            {ready ? "Revisar cadastro" : connected ? "Continuar cadastro" : "Começar cadastro"}
+            {embedded ? null : <ExternalLink className="h-4 w-4" aria-hidden />}
+          </Button>
         </div>
-        {connected && (
-          <Tag tone="brand" className="ml-auto">
-            ligado
-          </Tag>
-        )}
-      </header>
+      }
+    >
+      {connected && !ready && (
+        <p className="text-muted text-sm">
+          A Stripe ainda está conferindo os dados da loja. Enquanto isso o cartão fica indisponível
+          na sua página — volte ao cadastro para ver o que falta.
+        </p>
+      )}
       <FormError>{error}</FormError>
-      <Button
-        onClick={openOnboarding}
-        disabled={busy}
-        variant={connected ? "secondary" : "primary"}
-        className="mt-4"
-      >
-        {connected ? "Revisar cadastro" : "Começar cadastro"}
-        <ExternalLink className="h-4 w-4" aria-hidden />
-      </Button>
-    </section>
+      {/* Só monta depois de conta existir ou de o núcleo pedir o cadastro: a rota da
+          sessão cria a conta conectada, e montar sozinho criaria conta para quem nunca
+          pediu. */}
+      {embedded && (connected || onboarding) && (
+        <StripeConnectEmbedded
+          slug={slug}
+          showOnboarding={onboarding}
+          onExit={() => {
+            setOnboarding(false);
+            void refetch();
+          }}
+          onLoadError={() => {
+            setEmbeddedFailed(true);
+            setOnboarding(false);
+          }}
+        />
+      )}
+    </PaymentCard>
   );
 }
 
@@ -269,15 +449,24 @@ function BillingBlock({ slug }: { slug: string }) {
 function FeeNote({ slug }: { slug: string }) {
   const { data: connect } = useGetConnectStatus(slug);
   const bps = connect?.applicationFeeBps;
+  // Zero é o normal agora: a plataforma vive da mensalidade, não de comissão. Dizer
+  // "taxa de 0%" faria a pessoa procurar a taxa que não existe.
   const fee =
-    bps === undefined ? null : (bps / 100).toLocaleString("pt-BR", { maximumFractionDigits: 2 });
+    bps === undefined || bps === 0
+      ? null
+      : (bps / 100).toLocaleString("pt-BR", { maximumFractionDigits: 2 });
 
   return (
     <p className="rounded-[1rem] border border-line bg-surface px-4 py-3 text-[0.95rem]">
       <span className="font-semibold">O pagamento vai direto para a conta da sua loja.</span>{" "}
       <span className="text-muted">
         O dinheiro não fica parado na plataforma.
-        {fee ? ` Taxa da plataforma: ${fee}% por venda, descontada na hora.` : ""}
+        {fee
+          ? ` Taxa da plataforma: ${fee}% por venda, descontada na hora.`
+          : // Quem paga o Stripe/Woovi é a plataforma (fees.payer: application, ADR-024 +
+            // comissão zero, ADR-027): a loja recebe o valor integral. Dizer que existe a
+            // taxa e que ela não sai da venda é mais honesto — e mais forte — que omitir.
+            " Cartão e Pix têm taxa de quem processa o pagamento, e ela é paga pela Colheita: não sai da sua venda. Da sua parte, só a mensalidade da plataforma."}
       </span>
     </p>
   );

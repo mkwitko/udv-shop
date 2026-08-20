@@ -7,6 +7,7 @@ import { z } from "zod";
 import { Button } from "#/components/ui/button";
 import { EmptyState } from "#/components/ui/empty-state";
 import { Field, FormError, Input } from "#/components/ui/field";
+import { MoneyInput } from "#/components/ui/money-input";
 import { SkeletonRows } from "#/components/ui/skeleton";
 import { Tag } from "#/components/ui/tag";
 import { useToast } from "#/components/ui/toast";
@@ -225,10 +226,8 @@ function SupplierRow({
             htmlFor={`amount-${row.supplier.id}`}
             hint="Só o registro: o Pix ou o dinheiro sai por fora."
           >
-            <Input
+            <MoneyInput
               id={`amount-${row.supplier.id}`}
-              inputMode="decimal"
-              placeholder="R$ 0,00"
               value={amount}
               onChange={(event) => setAmount(event.target.value)}
             />

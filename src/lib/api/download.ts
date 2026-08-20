@@ -1,6 +1,5 @@
-import { getAccessToken, setAccessToken } from "./auth-token";
-import { ApiError, resolveBaseUrl } from "./fetch-client";
-import { refresh } from "./gen/clients/refresh";
+import { getAccessToken } from "./auth-token";
+import { ApiError, renewAccessToken, resolveBaseUrl } from "./fetch-client";
 
 /**
  * Baixa um arquivo da API. Fora do cliente gerado de propósito: as rotas de CSV
@@ -9,12 +8,9 @@ import { refresh } from "./gen/clients/refresh";
 export async function downloadFile(path: string, filename: string): Promise<void> {
   let res = await send(path);
   if (res.status === 401) {
-    // token de acesso vive em memória e pode ter expirado com a aba aberta
-    const renewed = await refresh().catch(() => null);
-    if (renewed?.accessToken) {
-      setAccessToken(renewed.accessToken);
-      res = await send(path);
-    }
+    // token de acesso vive em memória e pode ter expirado com a aba aberta; passa pela
+    // mesma fila do cliente HTTP para não disparar dois refresh com o mesmo cookie
+    if (await renewAccessToken()) res = await send(path);
   }
   if (!res.ok) {
     throw new ApiError(res.status, `http_${res.status}`, "Não foi possível gerar o arquivo.");
