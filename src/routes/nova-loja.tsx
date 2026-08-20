@@ -6,6 +6,7 @@ import { z } from "zod";
 import { RequireSession } from "#/components/auth/require-session";
 import { SiteFooter } from "#/components/site/site-footer";
 import { SiteHeader } from "#/components/site/site-header";
+import { AiStoreDescription } from "#/components/store/ai-text";
 import { Button } from "#/components/ui/button";
 import { Field, FormError, Input, Textarea } from "#/components/ui/field";
 import { errorMessage } from "#/lib/api/error-message";
@@ -45,7 +46,7 @@ export const Route = createFileRoute("/nova-loja")({
 function NewStorePage() {
   const navigate = useNavigate();
   const { queryClient } = useRouter().options.context;
-  const { status } = useSession();
+  const { status, reload } = useSession();
   const [formError, setFormError] = useState<string | null>(null);
 
   const {
@@ -66,9 +67,12 @@ function NewStorePage() {
         slug: values.slug,
         ...(values.description ? { description: values.description } : {}),
       });
+      // o papel de owner nasceu agora: sem renovar o token, a gestão da loja recém-criada
+      // responde 403 insufficient_persona até a pessoa dar F5.
+      await reload();
       await queryClient.invalidateQueries({ queryKey: listMyStoresQueryKey() });
-      // vai para /conta e não para a loja: a loja nasce pending e o token atual ainda não
-      // carrega o papel novo, então a página pública responderia 404 para o próprio dono.
+      // vai para /conta e não para a vitrine: a loja nasce pending e a página pública
+      // responderia 404 para quem não é membro.
       await navigate({ to: "/conta", replace: true });
     } catch (error) {
       setFormError(errorMessage(error));
@@ -137,6 +141,14 @@ function NewStorePage() {
               {...register("description")}
             />
           </Field>
+
+          <AiStoreDescription
+            name={watch("name") ?? ""}
+            description={watch("description") ?? ""}
+            onApply={(text) =>
+              setValue("description", text, { shouldDirty: true, shouldValidate: true })
+            }
+          />
 
           <div className="flex flex-wrap items-center gap-3">
             <Button type="submit" size="lg" disabled={isSubmitting}>
