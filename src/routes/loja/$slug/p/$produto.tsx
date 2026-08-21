@@ -358,14 +358,14 @@ function InterestCta({ slug, produto }: { slug: string; produto: string }) {
   const [state, setState] = useState<"idle" | "saving" | "done">("idle");
   const [error, setError] = useState<string | null>(null);
   const [contact, setContact] = useState<GuestContact>(EMPTY_CONTACT);
-  // `loading` conta como convidado só para o envio: os campos aparecem apenas quando a
-  // sessão já respondeu que não existe, para não piscarem na tela de quem está logado.
-  const guest = status !== "authenticated";
-  const askContact = status === "anonymous";
+  // Enquanto a sessão não respondeu não se sabe de quem é este interesse: o botão espera.
+  // Sem isso quem está logado levava "Coloque seu nome" ao clicar rápido numa conexão lenta.
+  const sessionPending = status === "loading";
+  const visitor = status === "anonymous";
 
   async function interest() {
     setError(null);
-    if (guest) {
+    if (visitor) {
       const problem = validateGuestContact(contact);
       if (problem) {
         setError(problem);
@@ -378,7 +378,7 @@ function InterestCta({ slug, produto }: { slug: string; produto: string }) {
         storeSlug: slug,
         productSlug: produto,
         qty: 1,
-        ...(guest ? { contact: toContactPayload(contact) } : {}),
+        ...(visitor ? { contact: toContactPayload(contact) } : {}),
       });
       setState("done");
     } catch (cause) {
@@ -395,7 +395,7 @@ function InterestCta({ slug, produto }: { slug: string; produto: string }) {
           Pronto, você está na lista!
         </p>
         <p className="mt-1.5 text-muted text-sm">
-          {guest && contact.email === ""
+          {visitor && contact.email === ""
             ? "Quando o produto chegar, quem cuida da loja fala com você pelo telefone que deixou."
             : "Quando o produto chegar, a loja avisa você por e-mail."}
         </p>
@@ -405,17 +405,26 @@ function InterestCta({ slug, produto }: { slug: string; produto: string }) {
 
   return (
     <div className="grid gap-4">
-      {askContact && (
+      {visitor && (
         <GuestContactFields
           value={contact}
           onChange={setContact}
           emailHint="Com e-mail, o aviso de chegada é automático."
         />
       )}
-      <Button size="lg" className="w-full" onClick={interest} disabled={state === "saving"}>
-        {state === "saving" ? "Anotando…" : "Quero ser avisado"}
+      <Button
+        size="lg"
+        className="w-full"
+        onClick={interest}
+        disabled={state === "saving" || sessionPending}
+      >
+        {sessionPending
+          ? "Só um instante…"
+          : state === "saving"
+            ? "Anotando…"
+            : "Quero ser avisado"}
       </Button>
-      {askContact && (
+      {visitor && (
         <Link
           to="/entrar"
           search={{ redirect: `/loja/${slug}/p/${produto}` }}

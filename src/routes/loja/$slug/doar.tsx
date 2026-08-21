@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { CreditCard, QrCode } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
@@ -36,6 +36,12 @@ const SearchSchema = z.object({
   campanha: z.string().optional(),
   /** Valor em centavos escolhido na página da campanha, para já chegar aqui decidido. */
   valor: z.coerce.number().int().positive().optional(),
+  /**
+   * Doação em andamento e a chave do recibo. Ficam na URL para a tela de pagamento sobreviver
+   * a um F5 — quem doou sem conta não tem "minhas doações" para reencontrar o Pix.
+   */
+  doacao: z.string().uuid().optional(),
+  recibo: z.string().uuid().optional(),
 });
 
 const PRESETS_CENTS = [2000, 5000, 10000];
@@ -69,15 +75,19 @@ function DonatePage() {
     query: { enabled: Boolean(search.campanha) },
   });
 
+  const navigate = useNavigate({ from: Route.fullPath });
   const reduceMotion = useReducedMotion();
   const { status } = useSession();
-  // `guest` decide o que é enviado; `visitor` decide o que a tela mostra. Enquanto a sessão
-  // carrega, quem está logado não pode ver campos de convidado nem botão travado.
-  const guest = status !== "authenticated";
+  // Enquanto a sessão não respondeu não se sabe de quem é esta doação, e nem os campos de
+  // convidado nem a validação deles fazem sentido: o botão espera. Sem isso quem está logado
+  // levava "Coloque seu nome" ao clicar rápido numa conexão lenta.
+  const sessionPending = status === "loading";
   const visitor = status === "anonymous";
   const [contact, setContact] = useState<GuestContact>(EMPTY_CONTACT);
-  const [receiptToken, setReceiptToken] = useState<string | null>(null);
-  const [phase, setPhase] = useState<Phase>("form");
+  // A URL é a fonte da verdade da doação em andamento: recarregar a página não pode perder um
+  // Pix que já está esperando pagamento.
+  const resumed = Boolean(search.doacao && search.recibo);
+  const [phase, setPhase] = useState<Phase>(resumed ? "pay" : "form");
   // valor vindo da página da campanha manda, desde que caiba nos limites da doação
   const [amountCents, setAmountCents] = useState<number>(
     search.valor && search.valor >= MIN_CENTS && search.valor <= MAX_CENTS ? search.valor : 5000,
@@ -91,7 +101,8 @@ function DonatePage() {
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  const donationId = result?.donation.id;
+  const donationId = result?.donation.id ?? search.doacao;
+  const receiptToken = result?.receiptToken ?? search.recibo ?? null;
   // os números do sorteio nascem num worker logo DEPOIS do "paid" — vale a pena
   // continuar perguntando algumas vezes para mostrá-los na tela de obrigado
   const paidPollsRef = useRef(0);
@@ -107,24 +118,31 @@ function DonatePage() {
   const polling = (phase === "pay" || phase === "done") && Boolean(donationId);
   const { data: mine } = useGetMyDonation(donationId, {
     query: {
-      enabled: polling && !guest,
+      enabled: polling && !receiptToken,
       refetchInterval: (query) => pollInterval(query.state.data),
     },
   });
   // Quem doou sem conta não tem sessão para consultar a doação: acompanha pelo recibo, cuja
   // chave nasceu junto com o pagamento. Sem isso o Pix ficaria num QR code sem resposta.
-  const { data: receipt } = useGetDonationReceipt(
+  const {
+    data: receipt,
+    isLoading: receiptLoading,
+    isError: receiptError,
+  } = useGetDonationReceipt(
     donationId,
     { token: receiptToken ?? "" },
     {
       client: publicRequest,
       query: {
-        enabled: polling && guest && Boolean(receiptToken),
+        enabled: polling && Boolean(receiptToken),
+        // Token inválido não melhora tentando de novo: retentar só faz a tela ficar em
+        // "carregando" por segundos antes de admitir que o link não vale.
+        retry: false,
         refetchInterval: (query) => pollInterval(query.state.data),
       },
     },
   );
-  const liveDonation = guest ? receipt : mine;
+  const liveDonation = receiptToken ? receipt : mine;
 
   useEffect(() => {
     if (phase !== "pay" || !liveDonation) return;
@@ -164,13 +182,11 @@ function DonatePage() {
       setFormError(`A doação máxima é ${money(MAX_CENTS)}.`);
       return;
     }
-    if (guest && type === "monthly") {
-      // A trava visual usa `visitor`; esta guarda cobre a janela em que a sessão ainda estava
-      // carregando e a pessoa conseguiu escolher "todo mês".
+    if (visitor && type === "monthly") {
       setFormError("A doação mensal precisa de conta. Entre para continuar.");
       return;
     }
-    if (guest) {
+    if (visitor) {
       const problem = validateGuestContact(contact);
       if (problem) {
         setFormError(problem);
@@ -187,10 +203,17 @@ function DonatePage() {
         amountCents: effectiveCents,
         anonymous,
         message: message || undefined,
-        ...(guest ? { contact: toContactPayload(contact) } : {}),
+        ...(visitor ? { contact: toContactPayload(contact) } : {}),
       });
       setResult(response);
-      setReceiptToken(response.receiptToken);
+      // O id e a chave do recibo vão para a URL: é o que faz um F5 voltar para o Pix em vez
+      // de para o formulário em branco. `replace` para o botão voltar não repetir a doação.
+      if (response.receiptToken) {
+        void navigate({
+          search: { ...search, doacao: response.donation.id, recibo: response.receiptToken },
+          replace: true,
+        });
+      }
       setPhase("pay");
     } catch (error) {
       setFormError(errorMessage(error));
@@ -220,7 +243,7 @@ function DonatePage() {
             <div className="rise rise-4 card mt-8 p-5 text-left">
               <p className="kicker">Seus números da sorte</p>
               <p className="mt-1.5 text-sm text-muted">
-                {guest && contact.email === ""
+                {visitor && contact.email === ""
                   ? "Esta campanha tem sorteio entre quem doa. Anote seus números — quem organiza fala com você pelo telefone que deixou."
                   : "Esta campanha tem sorteio entre quem doa. Guarde seus números — o resultado também chega por e-mail."}
               </p>
@@ -255,7 +278,7 @@ function DonatePage() {
               size="lg"
               variant="primary"
             />
-            {!guest && (
+            {status === "authenticated" && (
               <Button asChild size="lg" variant="secondary">
                 <Link to="/conta">Ver minhas doações</Link>
               </Button>
@@ -285,14 +308,51 @@ function DonatePage() {
     );
   }
 
-  if (phase === "pay" && result) {
+  if (phase === "pay") {
+    // Depois de um F5 não existe mais `result`: o Pix vem do recibo, que é justamente o que
+    // faz esta tela sobreviver ao recarregamento. O cartão não sobrevive — o clientSecret
+    // morre com a aba — e aí a tela pede para começar de novo.
+    // Só o recibo carrega a cobrança guardada; `useGetMyDonation` não expõe brCode.
+    const pix = result?.payment.provider === "woovi" ? result.payment : receipt?.pix;
+    const stripeSecret = result?.payment.provider === "stripe" ? result.payment.clientSecret : null;
+    const amountCents = result?.donation.amountCents ?? liveDonation?.amountCents;
+
+    // Ainda buscando a cobrança guardada: sem esta guarda a tela pisca "pagamento não está
+    // mais aqui" a cada recarregamento, antes de o recibo responder.
+    if (!pix && !stripeSecret && receiptLoading) {
+      return (
+        <section className="shell mx-auto max-w-md py-10 md:py-16" aria-busy="true">
+          <div className="h-7 w-52 animate-pulse rounded-md bg-surface" />
+          <div className="mt-6 h-64 animate-pulse rounded-lg bg-surface" />
+        </section>
+      );
+    }
+
+    if (!pix && !stripeSecret) {
+      const restart = () => {
+        void navigate({ search: { ...search, doacao: undefined, recibo: undefined } });
+        setPhase("form");
+      };
+      return (
+        <section className="shell mx-auto max-w-md py-16 md:py-24">
+          <h1 className="font-display text-2xl font-semibold tracking-tight">
+            {receiptError ? "Não encontramos este pagamento" : "Este pagamento não está mais aqui"}
+          </h1>
+          <p className="mt-3 text-muted">
+            {receiptError
+              ? "O link pode ter expirado ou estar incompleto. Nada foi cobrado."
+              : "O pagamento no cartão precisa ser feito de uma vez. Nada foi cobrado — é só começar de novo."}
+          </p>
+          <Button size="lg" className="mt-6 w-full" onClick={restart}>
+            Fazer a doação de novo
+          </Button>
+        </section>
+      );
+    }
+
     return (
       <section className="shell mx-auto max-w-md py-10 md:py-16">
-        <StepHeading
-          step={2}
-          total={2}
-          title={result.payment.provider === "woovi" ? "Pague com Pix" : "Pague com cartão"}
-        />
+        <StepHeading step={2} total={2} title={pix ? "Pague com Pix" : "Pague com cartão"} />
         <div className="card mt-6 flex items-center justify-between gap-4 p-4">
           <p className="min-w-0 truncate text-sm text-muted">
             {type === "monthly" ? "Doação mensal" : "Doação"}
@@ -303,26 +363,30 @@ function DonatePage() {
               </>
             ) : null}
           </p>
-          <p className="shrink-0 font-display font-semibold tabular-nums">
-            {money(result.donation.amountCents)}
-            {type === "monthly" && <span className="text-sm text-muted">/mês</span>}
-          </p>
+          {amountCents !== undefined && (
+            <p className="shrink-0 font-display font-semibold tabular-nums">
+              {money(amountCents)}
+              {type === "monthly" && <span className="text-sm text-muted">/mês</span>}
+            </p>
+          )}
         </div>
 
         <div className="mt-6">
-          {result.payment.provider === "woovi" ? (
+          {pix ? (
             <PixPanel
-              brCode={result.payment.brCode}
-              qrCodeImageUrl={result.payment.qrCodeImageUrl}
-              expiresAt={result.payment.expiresAt}
+              brCode={pix.brCode}
+              qrCodeImageUrl={pix.qrCodeImageUrl}
+              expiresAt={pix.expiresAt}
               onExpired={() => setPhase("expired")}
             />
           ) : (
-            <StripePanel
-              clientSecret={result.payment.clientSecret}
-              submitLabel={`Doar ${money(result.donation.amountCents)}${type === "monthly" ? " por mês" : ""}`}
-              onConfirmed={() => undefined /* o poll acima detecta o "paid" do webhook */}
-            />
+            stripeSecret && (
+              <StripePanel
+                clientSecret={stripeSecret}
+                submitLabel={`Doar ${money(amountCents ?? 0)}${type === "monthly" ? " por mês" : ""}`}
+                onConfirmed={() => undefined /* o poll acima detecta o "paid" do webhook */}
+              />
+            )
           )}
         </div>
 
@@ -333,6 +397,12 @@ function DonatePage() {
           <span className="h-2 w-2 animate-pulse rounded-full bg-accent" aria-hidden />
           Esperando o banco confirmar…
         </p>
+        {receiptToken && (
+          <p className="mt-4 text-center text-muted text-sm">
+            Pode fechar esta página: guarde o link e volte quando quiser para ver se o pagamento
+            caiu.
+          </p>
+        )}
       </section>
     );
   }
@@ -499,13 +569,16 @@ function DonatePage() {
           type="submit"
           disabled={
             submitting ||
+            sessionPending ||
             effectiveCents === null ||
             (type === "monthly" && (!cardAvailable || visitor))
           }
         >
-          {submitting
-            ? "Preparando…"
-            : `Continuar — ${effectiveCents !== null ? money(effectiveCents) : "escolha o valor"}${type === "monthly" ? "/mês" : ""}`}
+          {sessionPending
+            ? "Só um instante…"
+            : submitting
+              ? "Preparando…"
+              : `Continuar — ${effectiveCents !== null ? money(effectiveCents) : "escolha o valor"}${type === "monthly" ? "/mês" : ""}`}
         </Button>
         <p className="text-center text-sm text-muted">Você ainda não paga nada nesta etapa.</p>
       </form>

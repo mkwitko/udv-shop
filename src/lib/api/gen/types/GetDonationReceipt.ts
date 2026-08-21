@@ -82,6 +82,23 @@ export type GetDonationReceipt200 = {
     */
     raffleNumbers: number[];
     /**
+     * @type object
+    */
+    pix: {
+        /**
+         * @type string
+        */
+        brCode: string;
+        /**
+         * @type string
+        */
+        qrCodeImageUrl: string;
+        /**
+         * @type string
+        */
+        expiresAt: string;
+    } | null;
+    /**
      * @type string
     */
     createdAt: string;

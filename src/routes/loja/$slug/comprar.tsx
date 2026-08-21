@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Check, CreditCard, Minus, Plus, QrCode } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import { useEffect, useState } from "react";
@@ -33,6 +33,12 @@ import { seo } from "#/lib/seo";
 const SearchSchema = z.object({
   produto: z.string().min(1),
   qtd: z.coerce.number().int().min(1).max(99).catch(1),
+  /**
+   * Pedido em andamento e a chave do recibo. Ficam na URL para a tela de pagamento sobreviver a
+   * um F5 — quem comprou sem conta não tem "meus pedidos" para reencontrar o Pix.
+   */
+  pedido: z.string().uuid().optional(),
+  recibo: z.string().uuid().optional(),
 });
 
 /**
@@ -70,13 +76,17 @@ function BuyPage() {
   const { data: product } = useGetProduct(slug, search.produto, { client: publicRequest });
 
   const { status } = useSession();
-  // `guest` decide o que é enviado; `visitor` decide o que a tela mostra. Enquanto a sessão
-  // carrega, quem está logado não pode ver campos de convidado.
-  const guest = status !== "authenticated";
+  // Enquanto a sessão não respondeu não se sabe de quem é este pedido, e nem os campos de
+  // convidado nem a validação deles fazem sentido: o botão espera. Sem isso quem está logado
+  // levava "Coloque seu nome" ao clicar rápido numa conexão lenta.
+  const sessionPending = status === "loading";
   const visitor = status === "anonymous";
+  const navigate = useNavigate({ from: Route.fullPath });
   const [contact, setContact] = useState<GuestContact>(EMPTY_CONTACT);
-  const [receiptToken, setReceiptToken] = useState<string | null>(null);
-  const [phase, setPhase] = useState<Phase>("form");
+  // A URL é a fonte da verdade do pedido em andamento: recarregar a página não pode perder um
+  // Pix que já está esperando pagamento.
+  const resumed = Boolean(search.pedido && search.recibo);
+  const [phase, setPhase] = useState<Phase>(resumed ? "pay" : "form");
   const [qty, setQty] = useState(search.qtd);
   const [provider, setProvider] = useState<Provider>("woovi");
   const [result, setResult] = useState<Checkout201 | null>(null);
@@ -90,31 +100,39 @@ function BuyPage() {
 
   // enquanto o Pix ou o cartão está na tela, a página pergunta ao servidor se o
   // pagamento chegou — a pessoa não precisa apertar nada
-  const orderId = result?.order.id;
+  const orderId = result?.order.id ?? search.pedido;
+  const receiptToken = result?.receiptToken ?? search.recibo ?? null;
   const polling = phase === "pay" && Boolean(orderId);
   function pollInterval(order: { status: string } | undefined) {
     return !order || order.status === "pending_payment" ? 4000 : false;
   }
   const { data: mine } = useGetMyOrder(orderId, {
     query: {
-      enabled: polling && !guest,
+      enabled: polling && !receiptToken,
       refetchInterval: (query) => pollInterval(query.state.data),
     },
   });
   // Quem comprou sem conta não tem sessão para consultar o pedido: acompanha pelo recibo, cuja
   // chave nasceu junto com o pagamento. Sem isso o Pix ficaria num QR code sem resposta.
-  const { data: receipt } = useGetOrderReceipt(
+  const {
+    data: receipt,
+    isLoading: receiptLoading,
+    isError: receiptError,
+  } = useGetOrderReceipt(
     orderId,
     { token: receiptToken ?? "" },
     {
       client: publicRequest,
       query: {
-        enabled: polling && guest && Boolean(receiptToken),
+        enabled: polling && Boolean(receiptToken),
+        // Token inválido não melhora tentando de novo: retentar só faz a tela ficar em
+        // "carregando" por segundos antes de admitir que o link não vale.
+        retry: false,
         refetchInterval: (query) => pollInterval(query.state.data),
       },
     },
   );
-  const liveOrder = guest ? receipt : mine;
+  const liveOrder = receiptToken ? receipt : mine;
 
   useEffect(() => {
     if (phase !== "pay" || !liveOrder) return;
@@ -130,7 +148,7 @@ function BuyPage() {
 
   async function submit(values: BuyForm) {
     setFormError(null);
-    if (guest) {
+    if (visitor) {
       const problem = validateGuestContact(contact);
       if (problem) {
         setFormError(problem);
@@ -145,11 +163,20 @@ function BuyPage() {
         storeSlug: slug,
         provider,
         items: [{ productSlug: search.produto, qty }],
-        ...(guest ? { contact: toContactPayload(contact) } : { contactPhone: values.contactPhone }),
+        ...(visitor
+          ? { contact: toContactPayload(contact) }
+          : { contactPhone: values.contactPhone }),
         note: values.note || undefined,
       });
       setResult(response);
-      setReceiptToken(response.receiptToken);
+      // O id e a chave do recibo vão para a URL: é o que faz um F5 voltar para o Pix em vez de
+      // para o formulário em branco. `replace` para o botão voltar não repetir a compra.
+      if (response.receiptToken) {
+        void navigate({
+          search: { ...search, pedido: response.order.id, recibo: response.receiptToken },
+          replace: true,
+        });
+      }
       setPhase("pay");
     } catch (error) {
       setFormError(errorMessage(error));
@@ -174,7 +201,7 @@ function BuyPage() {
                 <StepNum n={2} /> {result?.order.store.name} vai falar com você pelo telefone que
                 deixou, para combinar a entrega.
               </li>
-              {!guest && (
+              {status === "authenticated" && (
                 <li className="flex gap-2.5">
                   <StepNum n={3} /> Acompanhe tudo em Minha conta.
                 </li>
@@ -182,12 +209,16 @@ function BuyPage() {
             </ol>
           </div>
           <div className="rise rise-4 mt-8 grid gap-3">
-            {!guest && (
+            {status === "authenticated" && (
               <Button asChild size="lg">
                 <Link to="/conta">Ver meus pedidos</Link>
               </Button>
             )}
-            <Button asChild size="lg" variant={guest ? "primary" : "secondary"}>
+            <Button
+              asChild
+              size="lg"
+              variant={status === "authenticated" ? "secondary" : "primary"}
+            >
               <Link to="/loja/$slug" params={{ slug }}>
                 Voltar para a loja
               </Link>
@@ -212,36 +243,69 @@ function BuyPage() {
     );
   }
 
-  if (phase === "pay" && result) {
+  if (phase === "pay") {
+    // Depois de um F5 não existe mais `result`: o Pix vem do recibo, que é justamente o que faz
+    // esta tela sobreviver ao recarregamento. O cartão não sobrevive — o clientSecret morre com
+    // a aba — e aí a tela pede para começar de novo.
+    const pix = result?.payment.provider === "woovi" ? result.payment : receipt?.pix;
+    const stripeSecret = result?.payment.provider === "stripe" ? result.payment.clientSecret : null;
+    const orderTotalCents = result?.order.totalCents ?? receipt?.totalCents ?? totalCents;
+
+    // Sem esta guarda a tela pisca "pagamento não está mais aqui" a cada recarregamento, antes
+    // de o recibo responder.
+    if (!pix && !stripeSecret && receiptLoading) {
+      return (
+        <section className="shell mx-auto max-w-md py-10 md:py-16" aria-busy="true">
+          <div className="h-7 w-52 animate-pulse rounded-md bg-surface" />
+          <div className="mt-6 h-64 animate-pulse rounded-lg bg-surface" />
+        </section>
+      );
+    }
+
+    if (!pix && !stripeSecret) {
+      const restart = () => {
+        void navigate({ search: { ...search, pedido: undefined, recibo: undefined } });
+        setPhase("form");
+      };
+      return (
+        <section className="shell mx-auto max-w-md py-16 md:py-24">
+          <h1 className="font-bold font-display text-2xl tracking-tight">
+            {receiptError ? "Não encontramos este pedido" : "Este pagamento não está mais aqui"}
+          </h1>
+          <p className="mt-3 text-muted">
+            {receiptError
+              ? "O link pode ter expirado ou estar incompleto. Nada foi cobrado."
+              : "O pagamento no cartão precisa ser feito de uma vez. Nada foi cobrado — é só começar de novo."}
+          </p>
+          <Button size="lg" className="mt-6 w-full" onClick={restart}>
+            Fazer o pedido de novo
+          </Button>
+        </section>
+      );
+    }
+
     return (
       <section className="shell mx-auto max-w-md py-10 md:py-16">
-        <StepHeading
-          step={2}
-          total={2}
-          title={result.payment.provider === "woovi" ? "Pague com Pix" : "Pague com cartão"}
-        />
+        <StepHeading step={2} total={2} title={pix ? "Pague com Pix" : "Pague com cartão"} />
 
-        <OrderSummary
-          name={product.name}
-          qty={qty}
-          totalCents={result.order.totalCents}
-          className="mt-6"
-        />
+        <OrderSummary name={product.name} qty={qty} totalCents={orderTotalCents} className="mt-6" />
 
         <div className="mt-6">
-          {result.payment.provider === "woovi" ? (
+          {pix ? (
             <PixPanel
-              brCode={result.payment.brCode}
-              qrCodeImageUrl={result.payment.qrCodeImageUrl}
-              expiresAt={result.payment.expiresAt}
+              brCode={pix.brCode}
+              qrCodeImageUrl={pix.qrCodeImageUrl}
+              expiresAt={pix.expiresAt}
               onExpired={() => setPhase("expired")}
             />
           ) : (
-            <StripePanel
-              clientSecret={result.payment.clientSecret}
-              submitLabel={`Pagar ${money(result.order.totalCents)}`}
-              onConfirmed={() => undefined /* o poll acima detecta o "paid" do webhook */}
-            />
+            stripeSecret && (
+              <StripePanel
+                clientSecret={stripeSecret}
+                submitLabel={`Pagar ${money(orderTotalCents)}`}
+                onConfirmed={() => undefined /* o poll acima detecta o "paid" do webhook */}
+              />
+            )
           )}
         </div>
 
@@ -252,6 +316,12 @@ function BuyPage() {
           <span className="h-2 w-2 animate-pulse rounded-full bg-accent" aria-hidden />
           Esperando o banco confirmar…
         </p>
+        {receiptToken && (
+          <p className="mt-4 text-center text-muted text-sm">
+            Pode fechar esta página: guarde o link e volte quando quiser para ver se o pagamento
+            caiu.
+          </p>
+        )}
       </section>
     );
   }
@@ -372,8 +442,12 @@ function BuyPage() {
 
         <FormError>{formError}</FormError>
 
-        <Button size="lg" type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "Preparando pagamento…" : "Continuar"}
+        <Button size="lg" type="submit" disabled={isSubmitting || sessionPending}>
+          {sessionPending
+            ? "Só um instante…"
+            : isSubmitting
+              ? "Preparando pagamento…"
+              : "Continuar"}
         </Button>
         <p className="text-center text-sm text-muted">Você ainda não paga nada nesta etapa.</p>
       </form>

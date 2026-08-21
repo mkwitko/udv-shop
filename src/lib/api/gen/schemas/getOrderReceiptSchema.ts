@@ -31,6 +31,11 @@ export const getOrderReceipt200Schema = z.object({
 "qty": z.int().min(-9007199254740991).max(9007199254740991),
 "priceCents": z.int().min(-9007199254740991).max(9007199254740991)
     })),
+"pix": z.nullable(z.object({
+    "brCode": z.string(),
+"qrCodeImageUrl": z.string(),
+"expiresAt": z.string()
+    })),
 "createdAt": z.string()
     }) as unknown as z.ZodType<GetOrderReceipt200>
 

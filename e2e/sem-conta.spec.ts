@@ -55,6 +55,33 @@ test("visitante compra por Pix sem criar conta", async ({ page }) => {
   await expect(page.getByRole("link", { name: "Ver meus pedidos" })).toHaveCount(0);
 });
 
+// Sem conta não existe "meus pedidos" para reencontrar um Pix. Se o recarregamento perder a
+// cobrança, a pessoa fica com um pendente que não tem como pagar.
+test("Pix sobrevive a um recarregamento da página", async ({ page }) => {
+  await page.goto(`/loja/${STORE_SLUG}/comprar?produto=camiseta-uniao&qtd=1`);
+  await preencherContato(page);
+  await page.getByRole("button", { name: "Continuar" }).click();
+  await expect(page.getByRole("button", { name: "Copiar código Pix" })).toBeVisible();
+
+  // o id e a chave do recibo entraram na URL
+  await expect(page).toHaveURL(/pedido=[0-9a-f-]{36}.*recibo=[0-9a-f-]{36}/);
+
+  await page.reload();
+  await expect(page.getByRole("button", { name: "Copiar código Pix" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Pedido confirmado!" })).toBeVisible({
+    timeout: FAKE_PIX_CONFIRM_TIMEOUT,
+  });
+});
+
+test("link com recibo inválido não finge que existe um pagamento", async ({ page }) => {
+  await page.goto(
+    `/loja/${STORE_SLUG}/comprar?produto=camiseta-uniao&qtd=1` +
+      "&pedido=00000000-0000-4000-8000-000000000000" +
+      "&recibo=00000000-0000-4000-8000-000000000001",
+  );
+  await expect(page.getByRole("heading", { name: "Não encontramos este pedido" })).toBeVisible();
+});
+
 test("formulário cobra nome e telefone antes de mandar", async ({ page }) => {
   await page.goto(`/loja/${STORE_SLUG}/p/livro-doutrina`);
   await page.getByRole("textbox", { name: "Seu nome" }).fill("Ma");
