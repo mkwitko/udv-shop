@@ -7,6 +7,7 @@ import { PayChoice } from "#/components/pay/pay-choice";
 import { PixPanel } from "#/components/pay/pix-panel";
 import { StepHeading } from "#/components/pay/steps";
 import { StripePanel } from "#/components/pay/stripe-panel";
+import { Captcha, turnstileSiteKey } from "#/components/store/captcha";
 import {
   EMPTY_CONTACT,
   type GuestContact,
@@ -84,6 +85,7 @@ function DonatePage() {
   const sessionPending = status === "loading";
   const visitor = status === "anonymous";
   const [contact, setContact] = useState<GuestContact>(EMPTY_CONTACT);
+  const [captchaToken, setCaptchaToken] = useState("");
   // A URL é a fonte da verdade da doação em andamento: recarregar a página não pode perder um
   // Pix que já está esperando pagamento.
   const resumed = Boolean(search.doacao && search.recibo);
@@ -192,6 +194,10 @@ function DonatePage() {
         setFormError(problem);
         return;
       }
+      if (turnstileSiteKey() && !captchaToken) {
+        setFormError("Confirme que você não é um robô.");
+        return;
+      }
     }
     setSubmitting(true);
     try {
@@ -203,7 +209,7 @@ function DonatePage() {
         amountCents: effectiveCents,
         anonymous,
         message: message || undefined,
-        ...(visitor ? { contact: toContactPayload(contact) } : {}),
+        ...(visitor ? { contact: toContactPayload(contact), captchaToken } : {}),
       });
       setResult(response);
       // O id e a chave do recibo vão para a URL: é o que faz um F5 voltar para o Pix em vez
@@ -561,6 +567,7 @@ function DonatePage() {
             emailHint="Com e-mail, o recibo e o resultado do sorteio chegam sozinhos."
           />
         )}
+        {visitor && type !== "monthly" && <Captcha onToken={setCaptchaToken} />}
 
         <FormError>{formError}</FormError>
 

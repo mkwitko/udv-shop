@@ -208,6 +208,11 @@ export type CheckoutMutationRequest = {
         */
         email?: string;
     };
+    /**
+     * @maxLength 4096
+     * @type string | undefined
+    */
+    captchaToken?: string;
 };
 
 export type CheckoutMutationResponse = Checkout201;

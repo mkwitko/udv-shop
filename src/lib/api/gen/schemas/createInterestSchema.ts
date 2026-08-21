@@ -37,7 +37,8 @@ export const createInterestMutationRequestSchema = z.object({
     "name": z.string().min(2).max(120),
 "phone": z.string().min(8).max(20),
 "email": z.optional(z.email())
-    }))
+    })),
+"captchaToken": z.optional(z.string().max(4096))
     }) as unknown as z.ZodType<CreateInterestMutationRequest>
 
 export const createInterestMutationResponseSchema = z.lazy(() => createInterest201Schema) as unknown as z.ZodType<CreateInterestMutationResponse>

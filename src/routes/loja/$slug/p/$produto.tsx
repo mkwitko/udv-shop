@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Check, ChevronRight, CreditCard, HandCoins, Store, Truck } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { Captcha, turnstileSiteKey } from "#/components/store/captcha";
 import {
   EMPTY_CONTACT,
   type GuestContact,
@@ -358,6 +359,7 @@ function InterestCta({ slug, produto }: { slug: string; produto: string }) {
   const [state, setState] = useState<"idle" | "saving" | "done">("idle");
   const [error, setError] = useState<string | null>(null);
   const [contact, setContact] = useState<GuestContact>(EMPTY_CONTACT);
+  const [captchaToken, setCaptchaToken] = useState("");
   // Enquanto a sessão não respondeu não se sabe de quem é este interesse: o botão espera.
   // Sem isso quem está logado levava "Coloque seu nome" ao clicar rápido numa conexão lenta.
   const sessionPending = status === "loading";
@@ -371,6 +373,10 @@ function InterestCta({ slug, produto }: { slug: string; produto: string }) {
         setError(problem);
         return;
       }
+      if (turnstileSiteKey() && !captchaToken) {
+        setError("Confirme que você não é um robô.");
+        return;
+      }
     }
     setState("saving");
     try {
@@ -378,7 +384,7 @@ function InterestCta({ slug, produto }: { slug: string; produto: string }) {
         storeSlug: slug,
         productSlug: produto,
         qty: 1,
-        ...(visitor ? { contact: toContactPayload(contact) } : {}),
+        ...(visitor ? { contact: toContactPayload(contact), captchaToken } : {}),
       });
       setState("done");
     } catch (cause) {
@@ -412,6 +418,7 @@ function InterestCta({ slug, produto }: { slug: string; produto: string }) {
           emailHint="Com e-mail, o aviso de chegada é automático."
         />
       )}
+      {visitor && <Captcha onToken={setCaptchaToken} />}
       <Button
         size="lg"
         className="w-full"

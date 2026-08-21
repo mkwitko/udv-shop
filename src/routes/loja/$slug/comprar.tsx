@@ -9,6 +9,7 @@ import { PayChoice } from "#/components/pay/pay-choice";
 import { PixPanel } from "#/components/pay/pix-panel";
 import { StepHeading } from "#/components/pay/steps";
 import { StripePanel } from "#/components/pay/stripe-panel";
+import { Captcha, turnstileSiteKey } from "#/components/store/captcha";
 import {
   EMPTY_CONTACT,
   type GuestContact,
@@ -83,6 +84,7 @@ function BuyPage() {
   const visitor = status === "anonymous";
   const navigate = useNavigate({ from: Route.fullPath });
   const [contact, setContact] = useState<GuestContact>(EMPTY_CONTACT);
+  const [captchaToken, setCaptchaToken] = useState("");
   // A URL é a fonte da verdade do pedido em andamento: recarregar a página não pode perder um
   // Pix que já está esperando pagamento.
   const resumed = Boolean(search.pedido && search.recibo);
@@ -154,6 +156,10 @@ function BuyPage() {
         setFormError(problem);
         return;
       }
+      if (turnstileSiteKey() && !captchaToken) {
+        setFormError("Confirme que você não é um robô.");
+        return;
+      }
     } else if (!values.contactPhone || values.contactPhone.replace(/\D/g, "").length < 10) {
       setFormError("Coloque um telefone com DDD para a loja falar com você.");
       return;
@@ -164,7 +170,7 @@ function BuyPage() {
         provider,
         items: [{ productSlug: search.produto, qty }],
         ...(visitor
-          ? { contact: toContactPayload(contact) }
+          ? { contact: toContactPayload(contact), captchaToken }
           : { contactPhone: values.contactPhone }),
         note: values.note || undefined,
       });
@@ -439,6 +445,8 @@ function BuyPage() {
           <span className="font-medium text-muted text-sm">Total</span>
           <span className="font-bold font-display text-xl tabular-nums">{money(totalCents)}</span>
         </div>
+
+        {visitor && <Captcha onToken={setCaptchaToken} />}
 
         <FormError>{formError}</FormError>
 

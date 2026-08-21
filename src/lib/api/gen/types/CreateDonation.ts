@@ -223,6 +223,11 @@ export type CreateDonationMutationRequest = {
         */
         email?: string;
     };
+    /**
+     * @maxLength 4096
+     * @type string | undefined
+    */
+    captchaToken?: string;
 };
 
 export type CreateDonationMutationResponse = CreateDonation201;

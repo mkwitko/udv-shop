@@ -59,7 +59,8 @@ export const checkoutMutationRequestSchema = z.object({
     "name": z.string().min(2).max(120),
 "phone": z.string().min(8).max(20),
 "email": z.optional(z.email())
-    }))
+    })),
+"captchaToken": z.optional(z.string().max(4096))
     }) as unknown as z.ZodType<CheckoutMutationRequest>
 
 export const checkoutMutationResponseSchema = z.lazy(() => checkout201Schema) as unknown as z.ZodType<CheckoutMutationResponse>

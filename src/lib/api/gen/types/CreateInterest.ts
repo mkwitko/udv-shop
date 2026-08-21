@@ -116,6 +116,11 @@ export type CreateInterestMutationRequest = {
         */
         email?: string;
     };
+    /**
+     * @maxLength 4096
+     * @type string | undefined
+    */
+    captchaToken?: string;
 };
 
 export type CreateInterestMutationResponse = CreateInterest201;
