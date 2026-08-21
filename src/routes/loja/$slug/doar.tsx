@@ -242,16 +242,22 @@ function DonatePage() {
           <p className="rise rise-3 mt-4 text-lede text-muted">
             {type === "monthly"
               ? "Sua contribuição mensal está ativa. Você pode acompanhá-la (e cancelar quando quiser) na sua conta."
-              : `O valor de ${money(result?.donation.amountCents ?? effectiveCents ?? 0)} já está a caminho de quem organiza.`}
+              : // O servidor manda no valor: depois de um F5 `result` é nulo e o formulário
+                // já voltou ao valor padrão — mostrar isso diria um número que ninguém doou.
+                `O valor de ${money(liveDonation?.amountCents ?? result?.donation.amountCents ?? effectiveCents ?? 0)} já está a caminho de quem organiza.`}
           </p>
 
           {numbers.length > 0 && (
             <div className="rise rise-4 card mt-8 p-5 text-left">
               <p className="kicker">Seus números da sorte</p>
               <p className="mt-1.5 text-sm text-muted">
-                {visitor && contact.email === ""
-                  ? "Esta campanha tem sorteio entre quem doa. Anote seus números — quem organiza fala com você pelo telefone que deixou."
-                  : "Esta campanha tem sorteio entre quem doa. Guarde seus números — o resultado também chega por e-mail."}
+                {/* Depois de um F5 não se sabe mais se a pessoa deixou e-mail: aí a frase não
+                    promete canal nenhum, em vez de prometer o errado. */}
+                {result === null
+                  ? "Esta campanha tem sorteio entre quem doa. Guarde seus números."
+                  : visitor && contact.email === ""
+                    ? "Esta campanha tem sorteio entre quem doa. Anote seus números — quem organiza fala com você pelo telefone que deixou."
+                    : "Esta campanha tem sorteio entre quem doa. Guarde seus números — o resultado também chega por e-mail."}
               </p>
               <ul className="mt-4 flex flex-wrap gap-2">
                 {numbers.map((n, index) => (

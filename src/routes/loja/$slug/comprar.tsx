@@ -204,8 +204,10 @@ function BuyPage() {
                 <StepNum n={1} /> O pagamento foi confirmado.
               </li>
               <li className="flex gap-2.5">
-                <StepNum n={2} /> {result?.order.store.name} vai falar com você pelo telefone que
-                deixou, para combinar a entrega.
+                {/* depois de um F5 `result` é nulo: o nome vem do recibo, senão a frase começa
+                    com um vazio */}
+                <StepNum n={2} /> {result?.order.store.name ?? receipt?.store.name ?? "A loja"} vai
+                falar com você pelo telefone que deixou, para combinar a entrega.
               </li>
               {status === "authenticated" && (
                 <li className="flex gap-2.5">
