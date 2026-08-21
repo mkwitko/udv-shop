@@ -3,5 +3,14 @@
   "name": "udv-shop-web",
   "compatibility_date": "2025-09-02",
   "compatibility_flags": ["nodejs_compat"],
-  "main": "src/server.ts"
+  "main": "src/server.ts",
+  // Sem isto não existe log de Worker para investigar erro em produção.
+  "observability": { "enabled": true, "head_sampling_rate": 1 },
+  // O SSR chama a API no Brasil a cada página; deixar a Cloudflare aproximar o Worker da
+  // origem corta uma volta de latência por requisição.
+  "placement": { "mode": "smart" }
+  // Domínio da plataforma: quando existir, acrescentar aqui e fazer deploy —
+  //   "routes": [{ "pattern": "SEU-DOMINIO", "custom_domain": true }]
+  // Rota apontando para zona que não está na conta faz o `wrangler deploy` falhar, então
+  // fica fora até o domínio existir de verdade.
 }
