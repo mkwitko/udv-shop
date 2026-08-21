@@ -14,7 +14,7 @@ import {
   useGetInterestDemand,
 } from "#/lib/api/gen/hooks/useGetInterestDemand";
 import { useListStoreInterests } from "#/lib/api/gen/hooks/useListStoreInterests";
-import { longDate, money } from "#/lib/format";
+import { formatStoredPhone, longDate, money } from "#/lib/format";
 
 export const Route = createFileRoute("/gestao/$slug/encomendas")({
   component: InterestsAdmin,
@@ -54,7 +54,8 @@ function InterestsAdmin() {
       <h2 className="font-display text-lg font-semibold tracking-tight">Encomendas</h2>
       <p className="mt-1 text-sm text-muted">
         Quem pediu um produto sob encomenda — ou avisou que quer um esgotado — entra nesta fila.
-        Quando o produto chegar, um botão avisa todo mundo por e-mail de uma vez.
+        Quando o produto chegar, um botão avisa por e-mail todo mundo de uma vez. Quem entrou sem
+        deixar e-mail aparece na lista com o telefone: com essa gente, é você quem fala.
       </p>
 
       <FormError>{error}</FormError>
@@ -118,7 +119,6 @@ function InterestsAdmin() {
                       </Button>
                     </div>
                   </div>
-
                   {open && <InterestPeople slug={slug} productSlug={item.product.slug} />}
                 </li>
               );
@@ -138,9 +138,11 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 /**
- * Lista de quem está na fila (§10 do brief): nome, quando entrou e o telefone
- * mascarado. O contato completo não fica exposto numa lista aberta na mesa — a loja
- * fala com a pessoa pelo e-mail que o botão "avisar que chegou" dispara.
+ * Lista de quem está na fila (§10 do brief): nome, quando entrou e o telefone. Para staff o
+ * número sai mascarado — contato completo não fica exposto numa lista aberta na mesa. Para
+ * quem responde pela loja ele vira um link de WhatsApp, porque quem entrou na fila sem deixar
+ * e-mail só é avisado assim: o botão "avisar que chegou" manda e-mail, e não há para onde
+ * mandar.
  */
 function InterestPeople({ slug, productSlug }: { slug: string; productSlug: string }) {
   const { data, isPending, isError } = useListStoreInterests(slug, { productSlug, limit: 50 });
@@ -164,8 +166,19 @@ function InterestPeople({ slug, productSlug }: { slug: string; productSlug: stri
         <li key={person.id} className="flex flex-wrap items-baseline gap-x-3 gap-y-1 text-sm">
           <span className="font-medium">{person.customer.name}</span>
           <span className="text-muted">entrou em {longDate(person.createdAt)}</span>
-          {person.customer.phoneMasked && (
-            <span className="text-muted tabular-nums">{person.customer.phoneMasked}</span>
+          {person.customer.phone ? (
+            <a
+              href={`https://wa.me/${person.customer.phone.replace(/\D/g, "")}`}
+              target="_blank"
+              rel="noreferrer"
+              className="text-brand-deep tabular-nums underline underline-offset-4"
+            >
+              {formatStoredPhone(person.customer.phone)}
+            </a>
+          ) : (
+            person.customer.phoneMasked && (
+              <span className="text-muted tabular-nums">{person.customer.phoneMasked}</span>
+            )
           )}
           {person.qty > 1 && <span className="text-muted">{person.qty} un</span>}
           <Tag className="ml-auto" tone={person.status === "open" ? "brand" : "neutral"}>

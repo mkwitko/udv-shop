@@ -18,6 +18,16 @@ export function percent(part: number, total: number): number {
   return Math.min(100, Math.round((part / total) * 100));
 }
 
+/**
+ * Exibe um telefone guardado pela API — que vem em dígitos com DDI, "5548999995678" — na forma
+ * de sempre. Usado onde a loja lê o contato de quem participou sem conta.
+ */
+export function formatStoredPhone(stored: string): string {
+  const digits = stored.replace(/\D/g, "");
+  const national = digits.startsWith("55") && digits.length > 11 ? digits.slice(2) : digits;
+  return formatPhone(national);
+}
+
 /** "(48) 99999-9999" a partir do que a pessoa digitar; guarda só dígitos na API. */
 export function formatPhone(raw: string): string {
   const digits = raw.replace(/\D/g, "").slice(0, 11);
