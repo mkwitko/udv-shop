@@ -14,7 +14,7 @@ export const refresh200Schema = z.object({
 "user": z.object({
     "id": z.string(),
 "name": z.string(),
-"email": z.string(),
+"email": z.nullable(z.string()),
 "emailVerified": z.boolean(),
 "platformAdmin": z.boolean()
     })

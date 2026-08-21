@@ -32,7 +32,12 @@ export const createInterestMutationRequestSchema = z.object({
     "storeSlug": z.string().min(1),
 "productSlug": z.string().min(1),
 "qty": z.optional(z.int().min(1).max(99).default(1)),
-"note": z.optional(z.string().max(500))
+"note": z.optional(z.string().max(500)),
+"contact": z.optional(z.object({
+    "name": z.string().min(2).max(120),
+"phone": z.string().min(8).max(20),
+"email": z.optional(z.email())
+    }))
     }) as unknown as z.ZodType<CreateInterestMutationRequest>
 
 export const createInterestMutationResponseSchema = z.lazy(() => createInterest201Schema) as unknown as z.ZodType<CreateInterestMutationResponse>

@@ -27,7 +27,7 @@ export type Refresh200 = {
         /**
          * @type string
         */
-        email: string;
+        email: string | null;
         /**
          * @type boolean
         */

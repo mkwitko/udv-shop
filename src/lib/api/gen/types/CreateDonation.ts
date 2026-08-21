@@ -146,6 +146,10 @@ export type CreateDonation201 = {
         */
         expiresAt: string;
     });
+    /**
+     * @type string
+    */
+    receiptToken: string | null;
 };
 
 export const createDonationMutationRequestProviderEnum = {
@@ -198,6 +202,27 @@ export type CreateDonationMutationRequest = {
      * @type string | undefined
     */
     message?: string;
+    /**
+     * @type object | undefined
+    */
+    contact?: {
+        /**
+         * @minLength 2
+         * @maxLength 120
+         * @type string
+        */
+        name: string;
+        /**
+         * @minLength 8
+         * @maxLength 20
+         * @type string
+        */
+        phone: string;
+        /**
+         * @type string | undefined, email
+        */
+        email?: string;
+    };
 };
 
 export type CreateDonationMutationResponse = CreateDonation201;

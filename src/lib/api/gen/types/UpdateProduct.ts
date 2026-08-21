@@ -88,6 +88,23 @@ export type UpdateProduct200 = {
     /**
      * @type object
     */
+    category: {
+        /**
+         * @type string
+        */
+        id: string;
+        /**
+         * @type string
+        */
+        slug: string;
+        /**
+         * @type string
+        */
+        name: string;
+    } | null;
+    /**
+     * @type object
+    */
     payout: {
         /**
          * @type string
@@ -161,6 +178,10 @@ export type UpdateProductMutationRequest = {
      * @type string | undefined
     */
     availability?: UpdateProductMutationRequestAvailabilityEnumKey;
+    /**
+     * @type string, uuid
+    */
+    categoryId?: string | null;
     /**
      * @type string, uuid
     */

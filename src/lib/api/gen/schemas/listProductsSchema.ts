@@ -13,7 +13,10 @@ export const listProductsPathParamsSchema = z.object({
 export const listProductsQueryParamsSchema = z.object({
     "limit": z.coerce.number().int().min(1).max(50).default(20),
 "cursor": z.optional(z.string()),
-"all": z.optional(z.enum(["true", "false"]))
+"all": z.optional(z.enum(["true", "false"])),
+"category": z.optional(z.string().max(80)),
+"q": z.optional(z.string().max(80)),
+"sort": z.enum(["recent", "price_asc", "price_desc"]).default("recent")
     }) as unknown as z.ZodType<ListProductsQueryParams>
 
 /**
@@ -33,6 +36,11 @@ export const listProducts200Schema = z.object({
 "availability": z.enum(["in_stock", "on_demand"]),
 "active": z.boolean(),
 "createdAt": z.string(),
+"category": z.nullable(z.object({
+    "id": z.string(),
+"slug": z.string(),
+"name": z.string()
+    })),
 "payout": z.nullable(z.object({
     "supplierId": z.string(),
 "supplierName": z.string(),

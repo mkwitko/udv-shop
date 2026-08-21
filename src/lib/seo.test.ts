@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { money, percent } from "./format";
-import { organizationLd, productLd, seo } from "./seo";
+import { breadcrumbLd, organizationLd, productLd, seo } from "./seo";
 
 type Meta = Array<Record<string, string>>;
 
@@ -74,5 +74,22 @@ describe("seo", () => {
     );
     expect(ld["@type"]).toBe("Organization");
     expect(ld.url).toContain("/loja/nucleo-demo");
+  });
+
+  it("trilha numera os degraus na ordem em que a pessoa lê", () => {
+    const ld = JSON.parse(
+      breadcrumbLd([
+        { name: "Núcleo Demo", path: "/loja/nucleo-demo" },
+        { name: "Chás", path: "/loja/nucleo-demo?categoria=chas" },
+        { name: "Chá verde", path: "/loja/nucleo-demo/p/cha-verde" },
+      ]).children,
+    );
+
+    expect(ld["@type"]).toBe("BreadcrumbList");
+    expect(ld.itemListElement.map((item: { position: number }) => item.position)).toEqual([
+      1, 2, 3,
+    ]);
+    expect(ld.itemListElement[1].item).toContain("/loja/nucleo-demo?categoria=chas");
+    expect(ld.itemListElement[2].name).toBe("Chá verde");
   });
 });

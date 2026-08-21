@@ -42,7 +42,8 @@ export const createDonation201Schema = z.object({
 "brCode": z.string(),
 "qrCodeImageUrl": z.string(),
 "expiresAt": z.string()
-    })])
+    })]),
+"receiptToken": z.nullable(z.string())
     }) as unknown as z.ZodType<CreateDonation201>
 
 export const createDonationMutationRequestSchema = z.object({
@@ -52,7 +53,12 @@ export const createDonationMutationRequestSchema = z.object({
 "type": z.optional(z.enum(["one_time", "monthly"]).default("one_time")),
 "amountCents": z.int().min(500).max(5000000),
 "anonymous": z.optional(z.boolean().default(false)),
-"message": z.optional(z.string().max(500))
+"message": z.optional(z.string().max(500)),
+"contact": z.optional(z.object({
+    "name": z.string().min(2).max(120),
+"phone": z.string().min(8).max(20),
+"email": z.optional(z.email())
+    }))
     }) as unknown as z.ZodType<CreateDonationMutationRequest>
 
 export const createDonationMutationResponseSchema = z.lazy(() => createDonation201Schema) as unknown as z.ZodType<CreateDonationMutationResponse>

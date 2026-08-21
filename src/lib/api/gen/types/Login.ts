@@ -27,7 +27,7 @@ export type Login200 = {
         /**
          * @type string
         */
-        email: string;
+        email: string | null;
         /**
          * @type boolean
         */

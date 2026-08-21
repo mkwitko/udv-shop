@@ -19,7 +19,12 @@ export const updateStore200Schema = z.object({
 "name": z.string(),
 "description": z.nullable(z.string()),
 "status": z.enum(["pending", "active", "suspended"]),
-"branding": z.nullable(z.any()),
+"branding": z.nullable(z.object({
+    "logoKey": z.nullable(z.string()),
+"coverKey": z.nullable(z.string()),
+"logoUrl": z.nullable(z.string()),
+"coverUrl": z.nullable(z.string())
+    })),
 "createdAt": z.string()
     }) as unknown as z.ZodType<UpdateStore200>
 
@@ -27,8 +32,9 @@ export const updateStoreMutationRequestSchema = z.object({
     "name": z.optional(z.string().min(2).max(120)),
 "description": z.string().max(2000).nullish(),
 "branding": z.optional(z.object({
-    
-    }).catchall(z.any()))
+    "logoKey": z.string().max(300).regex(/^stores\/.*/).nullish(),
+"coverKey": z.string().max(300).regex(/^stores\/.*/).nullish()
+    }))
     }) as unknown as z.ZodType<UpdateStoreMutationRequest>
 
 export const updateStoreMutationResponseSchema = z.lazy(() => updateStore200Schema) as unknown as z.ZodType<UpdateStoreMutationResponse>

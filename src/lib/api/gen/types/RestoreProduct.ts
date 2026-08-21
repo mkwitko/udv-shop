@@ -88,6 +88,23 @@ export type RestoreProduct200 = {
     /**
      * @type object
     */
+    category: {
+        /**
+         * @type string
+        */
+        id: string;
+        /**
+         * @type string
+        */
+        slug: string;
+        /**
+         * @type string
+        */
+        name: string;
+    } | null;
+    /**
+     * @type object
+    */
     payout: {
         /**
          * @type string

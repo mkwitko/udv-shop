@@ -40,7 +40,8 @@ export const listStoreInterests200Schema = z.object({
 "createdAt": z.string(),
 "customer": z.object({
     "name": z.string(),
-"phoneMasked": z.nullable(z.string())
+"phoneMasked": z.nullable(z.string()),
+"phone": z.nullable(z.string())
     })
     })),
 "nextCursor": z.nullable(z.string())

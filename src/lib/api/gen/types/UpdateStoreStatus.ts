@@ -43,7 +43,27 @@ export type UpdateStoreStatus200 = {
      * @type string
     */
     status: UpdateStoreStatus200StatusEnumKey;
-    branding: any | null;
+    /**
+     * @type object
+    */
+    branding: {
+        /**
+         * @type string
+        */
+        logoKey: string | null;
+        /**
+         * @type string
+        */
+        coverKey: string | null;
+        /**
+         * @type string
+        */
+        logoUrl: string | null;
+        /**
+         * @type string
+        */
+        coverUrl: string | null;
+    } | null;
     /**
      * @type string
     */

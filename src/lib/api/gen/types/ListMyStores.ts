@@ -48,7 +48,27 @@ export type ListMyStores200 = {
          * @type string
         */
         status: ItemsStatusEnum3Key;
-        branding: any | null;
+        /**
+         * @type object
+        */
+        branding: {
+            /**
+             * @type string
+            */
+            logoKey: string | null;
+            /**
+             * @type string
+            */
+            coverKey: string | null;
+            /**
+             * @type string
+            */
+            logoUrl: string | null;
+            /**
+             * @type string
+            */
+            coverUrl: string | null;
+        } | null;
         /**
          * @type string
         */

@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { AiDescription } from "#/components/store/ai-text";
+import { CategoryManager } from "#/components/store/category-manager";
 import { Button } from "#/components/ui/button";
 import { ConfirmDialog } from "#/components/ui/confirm";
 import { EmptyState } from "#/components/ui/empty-state";
@@ -16,10 +17,12 @@ import { Tag } from "#/components/ui/tag";
 import { useToast } from "#/components/ui/toast";
 import { errorMessage } from "#/lib/api/error-message";
 import { archiveProduct } from "#/lib/api/gen/clients/archiveProduct";
+import { createCategory } from "#/lib/api/gen/clients/createCategory";
 import { createProduct } from "#/lib/api/gen/clients/createProduct";
 import { restoreProduct } from "#/lib/api/gen/clients/restoreProduct";
 import { updateProduct } from "#/lib/api/gen/clients/updateProduct";
 import { useGetConnectStatus } from "#/lib/api/gen/hooks/useGetConnectStatus";
+import { listCategoriesQueryKey, useListCategories } from "#/lib/api/gen/hooks/useListCategories";
 import { useListMyStores } from "#/lib/api/gen/hooks/useListMyStores";
 import { listProductsQueryKey, useListProducts } from "#/lib/api/gen/hooks/useListProducts";
 import { useListSuppliers } from "#/lib/api/gen/hooks/useListSuppliers";
@@ -46,6 +49,8 @@ const ProductSchema = z.object({
   description: z.string().max(2000).optional(),
   stock: z.string().optional(),
   onDemand: z.boolean(),
+  /** Vazio = produto sem gaveta. A vitrine mostra ele em "Tudo". */
+  categoryId: z.string(),
   // repasse: parceiro vazio significa "a loja fica com tudo"
   supplierId: z.string(),
   payoutMode: z.enum(["fixed", "percent"]),
@@ -199,6 +204,12 @@ function ProductsAdmin() {
           )}
         </>
       )}
+
+      {/* categorias moram aqui porque são decisão de vitrine, não de configuração:
+          quem está cadastrando produto é quem decide as gavetas */}
+      <div className="rule mt-12 pt-8">
+        <CategoryManager slug={slug} />
+      </div>
     </div>
   );
 }
@@ -275,6 +286,7 @@ function ProductForm({
           description: product.description ?? undefined,
           stock: String(product.stock),
           onDemand: product.availability === "on_demand",
+          categoryId: product.category?.id ?? "",
           supplierId: product.payout?.supplierId ?? "",
           payoutMode: product.payout?.kind === "percent_bps" ? "percent" : "fixed",
           payoutValue: payoutValueToInput(product.payout),
@@ -282,6 +294,7 @@ function ProductForm({
       : {
           onDemand: false,
           stock: "0",
+          categoryId: "",
           supplierId: "",
           payoutMode: "fixed",
           payoutValue: "",
@@ -352,6 +365,8 @@ function ProductForm({
       images: images.map((image) => image.key),
       stock: values.onDemand ? 0 : Math.max(0, Number.parseInt(values.stock || "0", 10) || 0),
       availability: values.onDemand ? ("on_demand" as const) : ("in_stock" as const),
+      // string vazia é "sem categoria": a API espera null, não ""
+      categoryId: values.categoryId || null,
       ...payoutPatch,
     };
     try {
@@ -433,6 +448,12 @@ function ProductForm({
             onApply={(text) =>
               setValue("description", text, { shouldDirty: true, shouldValidate: true })
             }
+          />
+
+          <CategoryField
+            slug={slug}
+            value={watch("categoryId") ?? ""}
+            onChange={(id) => setValue("categoryId", id, { shouldDirty: true })}
           />
         </section>
 
@@ -625,6 +646,105 @@ function ProductForm({
           histórico ficam salvos, e você pode restaurar quando quiser.
         </ConfirmDialog>
       </form>
+    </div>
+  );
+}
+
+/**
+ * Categoria do produto, com atalho para criar uma nova sem sair do formulário — obrigar
+ * a ir até a lista, criar, voltar e digitar tudo de novo é como se perde um cadastro.
+ */
+function CategoryField({
+  slug,
+  value,
+  onChange,
+}: {
+  slug: string;
+  value: string;
+  onChange: (id: string) => void;
+}) {
+  const { queryClient } = useRouter().options.context;
+  const { data } = useListCategories(slug);
+  const [creating, setCreating] = useState(false);
+  const [name, setName] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const categories = data?.items ?? [];
+
+  async function create() {
+    if (name.trim().length < 2) {
+      setError("Escreva um nome com pelo menos duas letras.");
+      return;
+    }
+    setBusy(true);
+    setError(null);
+    try {
+      const created = await createCategory(slug, { name: name.trim() });
+      await queryClient.invalidateQueries({ queryKey: listCategoriesQueryKey(slug) });
+      // já entra selecionada: criar uma gaveta e não guardar o produto nela seria estranho
+      onChange(created.id);
+      setName("");
+      setCreating(false);
+    } catch (cause) {
+      setError(errorMessage(cause));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="grid gap-2">
+      <Field
+        label="Categoria (opcional)"
+        htmlFor="categoryId"
+        hint="É por ela que as pessoas filtram a vitrine."
+      >
+        <Select id="categoryId" value={value} onChange={(event) => onChange(event.target.value)}>
+          <option value="">Sem categoria</option>
+          {categories.map((category) => (
+            <option key={category.id} value={category.id}>
+              {category.name}
+            </option>
+          ))}
+        </Select>
+      </Field>
+
+      {creating ? (
+        <div className="flex flex-wrap items-center gap-2">
+          <Input
+            // foco automático: o campo só existe porque a pessoa pediu para criar
+            autoFocus
+            aria-label="Nome da nova categoria"
+            className="h-11 min-w-[10rem] flex-1"
+            placeholder="Chás"
+            value={name}
+            onChange={(event) => setName(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                event.preventDefault();
+                void create();
+              }
+              if (event.key === "Escape") setCreating(false);
+            }}
+          />
+          <Button type="button" size="sm" disabled={busy} onClick={() => void create()}>
+            {busy ? "Criando…" : "Criar e usar"}
+          </Button>
+          <Button type="button" variant="ghost" size="sm" onClick={() => setCreating(false)}>
+            Cancelar
+          </Button>
+        </div>
+      ) : (
+        <button
+          type="button"
+          className="justify-self-start text-brand-deep text-sm underline underline-offset-4"
+          onClick={() => setCreating(true)}
+        >
+          + Criar categoria
+        </button>
+      )}
+
+      <FormError>{error}</FormError>
     </div>
   );
 }

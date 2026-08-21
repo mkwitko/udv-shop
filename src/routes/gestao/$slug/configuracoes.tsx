@@ -1,16 +1,19 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
-import { Check, Copy, Globe, RefreshCw } from "lucide-react";
+import { Check, Copy, Globe, Image as ImageIcon, RefreshCw } from "lucide-react";
 import { useState } from "react";
 import { Button } from "#/components/ui/button";
 import { ConfirmDialog } from "#/components/ui/confirm";
 import { Field, FormError, Input } from "#/components/ui/field";
+import { ImagePicker, type PickedImage } from "#/components/ui/image-picker";
 import { SkeletonRows } from "#/components/ui/skeleton";
 import { Tag } from "#/components/ui/tag";
 import { useToast } from "#/components/ui/toast";
 import { errorMessage } from "#/lib/api/error-message";
 import { deleteStoreDomain } from "#/lib/api/gen/clients/deleteStoreDomain";
 import { putStoreDomain } from "#/lib/api/gen/clients/putStoreDomain";
+import { updateStore } from "#/lib/api/gen/clients/updateStore";
 import { verifyStoreDomain } from "#/lib/api/gen/clients/verifyStoreDomain";
+import { getStoreQueryKey, useGetStore } from "#/lib/api/gen/hooks/useGetStore";
 import { getStoreDomainQueryKey, useGetStoreDomain } from "#/lib/api/gen/hooks/useGetStoreDomain";
 import { longDate } from "#/lib/format";
 
@@ -25,11 +28,107 @@ function SettingsAdmin() {
       <div>
         <h2 className="font-display font-semibold text-lg tracking-tight">Configurações</h2>
         <p className="mt-1 text-muted text-sm">
-          Endereço da loja na internet. Para preço, produto e recebimento, use as outras abas.
+          A cara da loja e o endereço dela na internet. Para preço, produto e recebimento, use as
+          outras abas.
         </p>
       </div>
+      <BrandingBlock slug={slug} />
       <DomainBlock slug={slug} />
     </div>
+  );
+}
+
+/**
+ * Logo e capa. Sem elas a vitrine continua no bloco tangerina de sempre — a loja que não
+ * subir nada não fica pior do que está hoje; a que subir ganha a cara da comunidade.
+ */
+function BrandingBlock({ slug }: { slug: string }) {
+  const { queryClient } = useRouter().options.context;
+  const { data: store, isPending } = useGetStore(slug);
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState<null | "logo" | "cover">(null);
+  const toast = useToast();
+
+  const logo: PickedImage[] = store?.branding?.logoKey
+    ? [{ key: store.branding.logoKey, url: store.branding.logoUrl ?? "" }]
+    : [];
+  const cover: PickedImage[] = store?.branding?.coverKey
+    ? [{ key: store.branding.coverKey, url: store.branding.coverUrl ?? "" }]
+    : [];
+
+  // PATCH de um campo só: mandar a capa não pode apagar a logo que já estava lá
+  async function save(field: "logoKey" | "coverKey", images: PickedImage[]) {
+    const which = field === "logoKey" ? "logo" : "cover";
+    setBusy(which);
+    setError(null);
+    try {
+      await updateStore(slug, { branding: { [field]: images[0]?.key ?? null } });
+      await queryClient.invalidateQueries({ queryKey: getStoreQueryKey(slug) });
+      toast(images.length > 0 ? "Imagem salva." : "Imagem removida.");
+    } catch (cause) {
+      setError(errorMessage(cause));
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  if (isPending) return <SkeletonRows rows={2} />;
+
+  return (
+    <section className="card p-5">
+      <div className="flex flex-wrap items-center gap-3">
+        <span
+          className="inline-grid h-11 w-11 shrink-0 place-items-center rounded-[0.9rem] bg-brand-soft text-brand-deep"
+          aria-hidden
+        >
+          <ImageIcon className="h-5 w-5" />
+        </span>
+        <div className="min-w-[12rem] flex-1">
+          <h3 className="font-display font-semibold tracking-tight">A cara da loja</h3>
+          <p className="mt-0.5 text-muted text-sm">
+            Uma logo e uma foto de capa. Sem elas, a loja abre no bloco laranja de sempre.
+          </p>
+        </div>
+      </div>
+
+      <FormError>{error}</FormError>
+
+      <div className="mt-5 grid gap-6 md:grid-cols-2">
+        <div className="grid gap-2">
+          <h4 className="kicker">Logo</h4>
+          <p className="text-muted text-sm">
+            Aparece redonda no topo da loja. Imagem quadrada funciona melhor.
+          </p>
+          <ImagePicker
+            storeSlug={slug}
+            images={logo}
+            max={1}
+            multiple={false}
+            label="Escolher a logo"
+            onError={setError}
+            onChange={(images) => void save("logoKey", images)}
+          />
+          {busy === "logo" && <p className="text-muted text-sm">Salvando…</p>}
+        </div>
+
+        <div className="grid gap-2">
+          <h4 className="kicker">Capa</h4>
+          <p className="text-muted text-sm">
+            Faixa larga atrás do nome. Escolha uma foto do núcleo, de preferência sem texto.
+          </p>
+          <ImagePicker
+            storeSlug={slug}
+            images={cover}
+            max={1}
+            multiple={false}
+            label="Escolher a capa"
+            onError={setError}
+            onChange={(images) => void save("coverKey", images)}
+          />
+          {busy === "cover" && <p className="text-muted text-sm">Salvando…</p>}
+        </div>
+      </div>
+    </section>
   );
 }
 

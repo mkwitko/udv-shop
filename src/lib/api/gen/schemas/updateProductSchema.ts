@@ -27,6 +27,11 @@ export const updateProduct200Schema = z.object({
 "availability": z.enum(["in_stock", "on_demand"]),
 "active": z.boolean(),
 "createdAt": z.string(),
+"category": z.nullable(z.object({
+    "id": z.string(),
+"slug": z.string(),
+"name": z.string()
+    })),
 "payout": z.nullable(z.object({
     "supplierId": z.string(),
 "supplierName": z.string(),
@@ -43,6 +48,7 @@ export const updateProductMutationRequestSchema = z.object({
 "images": z.optional(z.array(z.string().regex(/^stores\/.*/)).max(10)),
 "stock": z.optional(z.int().min(0).max(9007199254740991)),
 "availability": z.optional(z.enum(["in_stock", "on_demand"])),
+"categoryId": z.uuid().nullish(),
 "supplierId": z.uuid().nullish(),
 "payoutKind": z.enum(["fixed_cents", "percent_bps"]).nullish(),
 "payoutValue": z.int().min(0).max(9007199254740991).nullish()

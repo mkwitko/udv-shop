@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Ticket } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "#/components/ui/button";
+import { HeroGallery } from "#/components/ui/hero-gallery";
 import { ShareButton } from "#/components/ui/share-button";
 import { Tag } from "#/components/ui/tag";
 import { getCampaignQueryOptions, useGetCampaign } from "#/lib/api/gen/hooks/useGetCampaign";
@@ -194,32 +195,14 @@ function CampaignPage() {
     <article className="pb-24 md:pb-14">
       {/* capa em faixa larga: é a primeira coisa que aparece quando o link abre */}
       {campaign.coverImageUrl ? (
-        <div className="relative">
-          {/* capa primeiro e o resto em carrossel: a foto escolhida é a que abre a página
-              e a que viaja no link, as outras contam o resto sem empurrar o texto para baixo */}
-          <div className="flex snap-x snap-mandatory overflow-x-auto">
-            {gallery.map((url) => (
-              <img
-                key={url}
-                src={url}
-                alt=""
-                className="aspect-4/3 w-full shrink-0 snap-center bg-surface object-cover sm:aspect-21/9"
-              />
-            ))}
-          </div>
-          <div className="absolute inset-0 bg-linear-to-t from-ink/80 via-ink/30 to-transparent" />
-          {gallery.length > 1 && (
-            <span className="absolute top-3 right-3 rounded-full bg-ink/60 px-2.5 py-1 text-white text-xs tabular-nums">
-              {gallery.length} fotos
-            </span>
-          )}
-          <div className="shell absolute inset-x-0 bottom-0 pb-6 md:pb-10">
-            <p className="kicker text-white/80">{campaign.store.name}</p>
-            <h1 className="mt-2 max-w-[20ch] text-balance font-display font-semibold text-3xl text-white tracking-tight md:text-5xl">
-              {campaign.title}
-            </h1>
-          </div>
-        </div>
+        // capa primeiro e o resto em carrossel: a foto escolhida é a que abre a página
+        // e a que viaja no link, as outras contam o resto sem empurrar o texto para baixo
+        <HeroGallery images={gallery}>
+          <p className="kicker text-white/80">{campaign.store.name}</p>
+          <h1 className="mt-2 max-w-[20ch] text-balance font-display font-semibold text-3xl text-white tracking-tight md:text-5xl">
+            {campaign.title}
+          </h1>
+        </HeroGallery>
       ) : (
         <div className="bloco">
           <div className="shell py-12 md:py-16">

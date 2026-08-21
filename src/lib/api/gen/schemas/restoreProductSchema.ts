@@ -27,6 +27,11 @@ export const restoreProduct200Schema = z.object({
 "availability": z.enum(["in_stock", "on_demand"]),
 "active": z.boolean(),
 "createdAt": z.string(),
+"category": z.nullable(z.object({
+    "id": z.string(),
+"slug": z.string(),
+"name": z.string()
+    })),
 "payout": z.nullable(z.object({
     "supplierId": z.string(),
 "supplierName": z.string(),

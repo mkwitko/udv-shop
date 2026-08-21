@@ -125,6 +125,10 @@ export type ListStoreInterests200 = {
              * @type string
             */
             phoneMasked: string | null;
+            /**
+             * @type string
+            */
+            phone: string | null;
         };
     }[];
     /**

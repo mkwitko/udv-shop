@@ -59,6 +59,22 @@ export function organizationLd(store: { name: string; slug: string; description:
   });
 }
 
+/**
+ * Trilha da página, para o Google desenhar "Loja › Categoria › Produto" no resultado em
+ * vez de repetir a URL crua. A ordem é a mesma que a pessoa vê na tela.
+ */
+export function breadcrumbLd(items: Array<{ name: string; path: string }>) {
+  return jsonLd({
+    "@type": "BreadcrumbList",
+    itemListElement: items.map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: item.name,
+      item: `${siteUrl()}${item.path}`,
+    })),
+  });
+}
+
 export function productLd(input: {
   name: string;
   description: string | null;

@@ -42,7 +42,8 @@ export const checkout201Schema = z.object({
 "brCode": z.string(),
 "qrCodeImageUrl": z.string(),
 "expiresAt": z.string()
-    })])
+    })]),
+"receiptToken": z.nullable(z.string())
     }) as unknown as z.ZodType<Checkout201>
 
 export const checkoutMutationRequestSchema = z.object({
@@ -52,8 +53,13 @@ export const checkoutMutationRequestSchema = z.object({
     "productSlug": z.string().min(1),
 "qty": z.int().min(1).max(99)
     })).min(1).max(20),
-"contactPhone": z.string().min(8).max(20),
-"note": z.optional(z.string().max(500))
+"contactPhone": z.optional(z.string().min(8).max(20)),
+"note": z.optional(z.string().max(500)),
+"contact": z.optional(z.object({
+    "name": z.string().min(2).max(120),
+"phone": z.string().min(8).max(20),
+"email": z.optional(z.email())
+    }))
     }) as unknown as z.ZodType<CheckoutMutationRequest>
 
 export const checkoutMutationResponseSchema = z.lazy(() => checkout201Schema) as unknown as z.ZodType<CheckoutMutationResponse>

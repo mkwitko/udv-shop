@@ -138,7 +138,7 @@ export type ListStoreDonations200 = {
             /**
              * @type string
             */
-            email: string;
+            email: string | null;
             /**
              * @type string
             */

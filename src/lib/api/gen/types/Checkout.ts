@@ -137,6 +137,10 @@ export type Checkout201 = {
         */
         expiresAt: string;
     });
+    /**
+     * @type string
+    */
+    receiptToken: string | null;
 };
 
 export const checkoutMutationRequestProviderEnum = {
@@ -175,14 +179,35 @@ export type CheckoutMutationRequest = {
     /**
      * @minLength 8
      * @maxLength 20
-     * @type string
+     * @type string | undefined
     */
-    contactPhone: string;
+    contactPhone?: string;
     /**
      * @maxLength 500
      * @type string | undefined
     */
     note?: string;
+    /**
+     * @type object | undefined
+    */
+    contact?: {
+        /**
+         * @minLength 2
+         * @maxLength 120
+         * @type string
+        */
+        name: string;
+        /**
+         * @minLength 8
+         * @maxLength 20
+         * @type string
+        */
+        phone: string;
+        /**
+         * @type string | undefined, email
+        */
+        email?: string;
+    };
 };
 
 export type CheckoutMutationResponse = Checkout201;

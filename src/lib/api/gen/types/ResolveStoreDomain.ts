@@ -45,7 +45,27 @@ export type ResolveStoreDomain200 = {
      * @type string
     */
     status: ResolveStoreDomain200StatusEnumKey;
-    branding: any | null;
+    /**
+     * @type object
+    */
+    branding: {
+        /**
+         * @type string
+        */
+        logoKey: string | null;
+        /**
+         * @type string
+        */
+        coverKey: string | null;
+        /**
+         * @type string
+        */
+        logoUrl: string | null;
+        /**
+         * @type string
+        */
+        coverUrl: string | null;
+    } | null;
     /**
      * @type string
     */

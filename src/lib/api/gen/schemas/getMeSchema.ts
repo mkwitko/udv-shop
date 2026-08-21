@@ -12,7 +12,7 @@ import { z } from "zod/v4";
 export const getMe200Schema = z.object({
     "id": z.string(),
 "name": z.string(),
-"email": z.string(),
+"email": z.nullable(z.string()),
 "emailVerified": z.boolean(),
 "platformAdmin": z.boolean()
     }) as unknown as z.ZodType<GetMe200>

@@ -22,7 +22,12 @@ export const adminListStores200Schema = z.object({
 "name": z.string(),
 "description": z.nullable(z.string()),
 "status": z.enum(["pending", "active", "suspended"]),
-"branding": z.nullable(z.any()),
+"branding": z.nullable(z.object({
+    "logoKey": z.nullable(z.string()),
+"coverKey": z.nullable(z.string()),
+"logoUrl": z.nullable(z.string()),
+"coverUrl": z.nullable(z.string())
+    })),
 "createdAt": z.string()
     })),
 "nextCursor": z.nullable(z.string())

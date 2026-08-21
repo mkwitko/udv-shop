@@ -84,6 +84,23 @@ export type CreateProduct201 = {
     /**
      * @type object
     */
+    category: {
+        /**
+         * @type string
+        */
+        id: string;
+        /**
+         * @type string
+        */
+        slug: string;
+        /**
+         * @type string
+        */
+        name: string;
+    } | null;
+    /**
+     * @type object
+    */
     payout: {
         /**
          * @type string
@@ -166,6 +183,10 @@ export type CreateProductMutationRequest = {
      * @type string | undefined
     */
     availability?: CreateProductMutationRequestAvailabilityEnumKey;
+    /**
+     * @type string, uuid
+    */
+    categoryId?: string | null;
     /**
      * @type string, uuid
     */

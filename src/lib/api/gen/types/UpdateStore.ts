@@ -43,7 +43,27 @@ export type UpdateStore200 = {
      * @type string
     */
     status: UpdateStore200StatusEnumKey;
-    branding: any | null;
+    /**
+     * @type object
+    */
+    branding: {
+        /**
+         * @type string
+        */
+        logoKey: string | null;
+        /**
+         * @type string
+        */
+        coverKey: string | null;
+        /**
+         * @type string
+        */
+        logoUrl: string | null;
+        /**
+         * @type string
+        */
+        coverUrl: string | null;
+    } | null;
     /**
      * @type string
     */
@@ -66,7 +86,18 @@ export type UpdateStoreMutationRequest = {
      * @type object | undefined
     */
     branding?: {
-        [key: string]: any;
+        /**
+         * @maxLength 300
+         * @pattern ^stores\/.*
+         * @type string
+        */
+        logoKey?: string | null;
+        /**
+         * @maxLength 300
+         * @pattern ^stores\/.*
+         * @type string
+        */
+        coverKey?: string | null;
     };
 };
 

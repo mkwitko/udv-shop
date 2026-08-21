@@ -19,7 +19,7 @@ export type GetMe200 = {
     /**
      * @type string
     */
-    email: string;
+    email: string | null;
     /**
      * @type boolean
     */

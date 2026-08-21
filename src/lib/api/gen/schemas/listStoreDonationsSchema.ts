@@ -42,7 +42,7 @@ export const listStoreDonations200Schema = z.object({
 "createdAt": z.string(),
 "donor": z.object({
     "name": z.string(),
-"email": z.string(),
+"email": z.nullable(z.string()),
 "phone": z.nullable(z.string())
     })
     })),

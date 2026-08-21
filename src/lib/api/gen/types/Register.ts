@@ -27,7 +27,7 @@ export type Register201 = {
         /**
          * @type string
         */
-        email: string;
+        email: string | null;
         /**
          * @type boolean
         */
