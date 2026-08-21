@@ -3,11 +3,17 @@ import { CreditCard, QrCode } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
-import { RequireSession } from "#/components/auth/require-session";
 import { PayChoice } from "#/components/pay/pay-choice";
 import { PixPanel } from "#/components/pay/pix-panel";
 import { StepHeading } from "#/components/pay/steps";
 import { StripePanel } from "#/components/pay/stripe-panel";
+import {
+  EMPTY_CONTACT,
+  type GuestContact,
+  GuestContactFields,
+  toContactPayload,
+  validateGuestContact,
+} from "#/components/store/guest-contact-fields";
 import { Button } from "#/components/ui/button";
 import { Field, FormError, Textarea } from "#/components/ui/field";
 import { GlyphEstrela } from "#/components/ui/glyphs";
@@ -16,9 +22,11 @@ import { ShareButton } from "#/components/ui/share-button";
 import { errorMessage } from "#/lib/api/error-message";
 import { createDonation } from "#/lib/api/gen/clients/createDonation";
 import { useGetCampaign } from "#/lib/api/gen/hooks/useGetCampaign";
+import { useGetDonationReceipt } from "#/lib/api/gen/hooks/useGetDonationReceipt";
 import { useGetMyDonation } from "#/lib/api/gen/hooks/useGetMyDonation";
 import type { CreateDonation201 } from "#/lib/api/gen/types/CreateDonation";
 import { publicRequest } from "#/lib/api/public";
+import { useSession } from "#/lib/auth/session";
 import { money } from "#/lib/format";
 import { parseAmount } from "#/lib/pay/amount";
 import { stripePublishableKey } from "#/lib/pay/stripe";
@@ -44,15 +52,12 @@ export const Route = createFileRoute("/loja/$slug/doar")({
   component: DonateRoute,
 });
 
+/**
+ * Doação avulsa não pede conta: nome e telefone bastam. A mensal continua pedindo, e o próprio
+ * formulário explica por quê — é lá que a pessoa cancela sem depender de ninguém.
+ */
 function DonateRoute() {
-  const { slug } = Route.useParams();
-  const search = Route.useSearch();
-  const redirect = `/loja/${slug}/doar${search.campanha ? `?campanha=${search.campanha}` : ""}`;
-  return (
-    <RequireSession redirectTo={redirect}>
-      <DonatePage />
-    </RequireSession>
-  );
+  return <DonatePage />;
 }
 
 function DonatePage() {
@@ -65,6 +70,13 @@ function DonatePage() {
   });
 
   const reduceMotion = useReducedMotion();
+  const { status } = useSession();
+  // `guest` decide o que é enviado; `visitor` decide o que a tela mostra. Enquanto a sessão
+  // carrega, quem está logado não pode ver campos de convidado nem botão travado.
+  const guest = status !== "authenticated";
+  const visitor = status === "anonymous";
+  const [contact, setContact] = useState<GuestContact>(EMPTY_CONTACT);
+  const [receiptToken, setReceiptToken] = useState<string | null>(null);
   const [phase, setPhase] = useState<Phase>("form");
   // valor vindo da página da campanha manda, desde que caiba nos limites da doação
   const [amountCents, setAmountCents] = useState<number>(
@@ -83,20 +95,36 @@ function DonatePage() {
   // os números do sorteio nascem num worker logo DEPOIS do "paid" — vale a pena
   // continuar perguntando algumas vezes para mostrá-los na tela de obrigado
   const paidPollsRef = useRef(0);
-  const { data: liveDonation } = useGetMyDonation(donationId, {
+  function pollInterval(donation: { status: string; raffleNumbers: number[] } | undefined) {
+    if (!donation || donation.status === "pending_payment") return 4000;
+    if (donation.status === "paid" && donation.raffleNumbers.length === 0) {
+      paidPollsRef.current += 1;
+      return paidPollsRef.current <= 5 ? 3000 : false;
+    }
+    return false;
+  }
+
+  const polling = (phase === "pay" || phase === "done") && Boolean(donationId);
+  const { data: mine } = useGetMyDonation(donationId, {
     query: {
-      enabled: (phase === "pay" || phase === "done") && Boolean(donationId),
-      refetchInterval: (query) => {
-        const donation = query.state.data;
-        if (!donation || donation.status === "pending_payment") return 4000;
-        if (donation.status === "paid" && donation.raffleNumbers.length === 0) {
-          paidPollsRef.current += 1;
-          return paidPollsRef.current <= 5 ? 3000 : false;
-        }
-        return false;
-      },
+      enabled: polling && !guest,
+      refetchInterval: (query) => pollInterval(query.state.data),
     },
   });
+  // Quem doou sem conta não tem sessão para consultar a doação: acompanha pelo recibo, cuja
+  // chave nasceu junto com o pagamento. Sem isso o Pix ficaria num QR code sem resposta.
+  const { data: receipt } = useGetDonationReceipt(
+    donationId,
+    { token: receiptToken ?? "" },
+    {
+      client: publicRequest,
+      query: {
+        enabled: polling && guest && Boolean(receiptToken),
+        refetchInterval: (query) => pollInterval(query.state.data),
+      },
+    },
+  );
+  const liveDonation = guest ? receipt : mine;
 
   useEffect(() => {
     if (phase !== "pay" || !liveDonation) return;
@@ -136,6 +164,19 @@ function DonatePage() {
       setFormError(`A doação máxima é ${money(MAX_CENTS)}.`);
       return;
     }
+    if (guest && type === "monthly") {
+      // A trava visual usa `visitor`; esta guarda cobre a janela em que a sessão ainda estava
+      // carregando e a pessoa conseguiu escolher "todo mês".
+      setFormError("A doação mensal precisa de conta. Entre para continuar.");
+      return;
+    }
+    if (guest) {
+      const problem = validateGuestContact(contact);
+      if (problem) {
+        setFormError(problem);
+        return;
+      }
+    }
     setSubmitting(true);
     try {
       const response = await createDonation({
@@ -146,8 +187,10 @@ function DonatePage() {
         amountCents: effectiveCents,
         anonymous,
         message: message || undefined,
+        ...(guest ? { contact: toContactPayload(contact) } : {}),
       });
       setResult(response);
+      setReceiptToken(response.receiptToken);
       setPhase("pay");
     } catch (error) {
       setFormError(errorMessage(error));
@@ -177,8 +220,9 @@ function DonatePage() {
             <div className="rise rise-4 card mt-8 p-5 text-left">
               <p className="kicker">Seus números da sorte</p>
               <p className="mt-1.5 text-sm text-muted">
-                Esta campanha tem sorteio entre quem doa. Guarde seus números — o resultado também
-                chega por e-mail.
+                {guest && contact.email === ""
+                  ? "Esta campanha tem sorteio entre quem doa. Anote seus números — quem organiza fala com você pelo telefone que deixou."
+                  : "Esta campanha tem sorteio entre quem doa. Guarde seus números — o resultado também chega por e-mail."}
               </p>
               <ul className="mt-4 flex flex-wrap gap-2">
                 {numbers.map((n, index) => (
@@ -211,9 +255,11 @@ function DonatePage() {
               size="lg"
               variant="primary"
             />
-            <Button asChild size="lg" variant="secondary">
-              <Link to="/conta">Ver minhas doações</Link>
-            </Button>
+            {!guest && (
+              <Button asChild size="lg" variant="secondary">
+                <Link to="/conta">Ver minhas doações</Link>
+              </Button>
+            )}
             <Button asChild size="lg" variant="ghost">
               <Link to="/loja/$slug" params={{ slug }}>
                 Voltar para a loja
@@ -344,10 +390,14 @@ function DonatePage() {
             <TypeChoice
               checked={type === "monthly"}
               onSelect={() => setType("monthly")}
-              disabled={!cardAvailable}
+              disabled={!cardAvailable || visitor}
               title="Todo mês"
               detail={
-                cardAvailable ? "No cartão, cancele quando quiser" : "Indisponível: só no cartão"
+                visitor
+                  ? "Precisa de conta, para você cancelar quando quiser"
+                  : cardAvailable
+                    ? "No cartão, cancele quando quiser"
+                    : "Indisponível: só no cartão"
               }
             />
           </fieldset>
@@ -418,12 +468,40 @@ function DonatePage() {
           </p>
         )}
 
+        {/* Campanha só-mensal e visitante: sem conta não há onde cancelar depois, então a
+            porta certa é entrar — e não um botão que só renderia erro. */}
+        {type === "monthly" && visitor && (
+          <div className="rounded-[1rem] bg-warning-soft px-4 py-3 text-[0.95rem]">
+            <p>
+              A doação mensal precisa de conta: é lá que você cancela quando quiser, sem depender de
+              ninguém.
+            </p>
+            <Button asChild size="sm" variant="secondary" className="mt-3">
+              <Link to="/entrar" search={{ redirect: `/loja/${slug}/doar` }}>
+                Entrar ou criar conta
+              </Link>
+            </Button>
+          </div>
+        )}
+
+        {visitor && type !== "monthly" && (
+          <GuestContactFields
+            value={contact}
+            onChange={setContact}
+            emailHint="Com e-mail, o recibo e o resultado do sorteio chegam sozinhos."
+          />
+        )}
+
         <FormError>{formError}</FormError>
 
         <Button
           size="lg"
           type="submit"
-          disabled={submitting || effectiveCents === null || (type === "monthly" && !cardAvailable)}
+          disabled={
+            submitting ||
+            effectiveCents === null ||
+            (type === "monthly" && (!cardAvailable || visitor))
+          }
         >
           {submitting
             ? "Preparando…"
