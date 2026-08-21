@@ -4,6 +4,7 @@ export { archiveProduct204Schema, archiveProductMutationResponseSchema, archiveP
 export { cancelDonationSubscription202Schema, cancelDonationSubscriptionMutationResponseSchema, cancelDonationSubscriptionPathParamsSchema } from "./cancelDonationSubscriptionSchema.ts";
 export { cancelInterest200Schema, cancelInterestMutationResponseSchema, cancelInterestPathParamsSchema } from "./cancelInterestSchema.ts";
 export { cancelOrder200Schema, cancelOrderMutationResponseSchema, cancelOrderPathParamsSchema } from "./cancelOrderSchema.ts";
+export { cancelStoreDonationSubscription202Schema, cancelStoreDonationSubscriptionMutationResponseSchema, cancelStoreDonationSubscriptionPathParamsSchema } from "./cancelStoreDonationSubscriptionSchema.ts";
 export { checkout201Schema, checkoutMutationRequestSchema, checkoutMutationResponseSchema } from "./checkoutSchema.ts";
 export { createBillingCheckout201Schema, createBillingCheckoutMutationResponseSchema, createBillingCheckoutPathParamsSchema } from "./createBillingCheckoutSchema.ts";
 export { createBillingPortal201Schema, createBillingPortalMutationResponseSchema, createBillingPortalPathParamsSchema } from "./createBillingPortalSchema.ts";

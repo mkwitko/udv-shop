@@ -4,6 +4,7 @@ export type { ArchiveProduct204, ArchiveProduct204EnumKey, ArchiveProductMutatio
 export type { CancelDonationSubscription202, CancelDonationSubscription202StatusEnumKey, CancelDonationSubscriptionMutation, CancelDonationSubscriptionMutationResponse, CancelDonationSubscriptionPathParams } from "./CancelDonationSubscription.ts";
 export type { CancelInterest200, CancelInterestMutation, CancelInterestMutationResponse, CancelInterestPathParams } from "./CancelInterest.ts";
 export type { CancelOrder200, CancelOrderMutation, CancelOrderMutationResponse, CancelOrderPathParams } from "./CancelOrder.ts";
+export type { CancelStoreDonationSubscription202, CancelStoreDonationSubscription202StatusEnumKey, CancelStoreDonationSubscriptionMutation, CancelStoreDonationSubscriptionMutationResponse, CancelStoreDonationSubscriptionPathParams } from "./CancelStoreDonationSubscription.ts";
 export type { Checkout201, CheckoutMutation, CheckoutMutationRequest, CheckoutMutationRequestProviderEnumKey, CheckoutMutationResponse, PaymentProviderEnum4Key, PaymentProviderEnum5Key } from "./Checkout.ts";
 export type { CreateBillingCheckout201, CreateBillingCheckoutMutation, CreateBillingCheckoutMutationResponse, CreateBillingCheckoutPathParams } from "./CreateBillingCheckout.ts";
 export type { CreateBillingPortal201, CreateBillingPortalMutation, CreateBillingPortalMutationResponse, CreateBillingPortalPathParams } from "./CreateBillingPortal.ts";
@@ -93,6 +94,7 @@ export { itemsStatusEnum2 } from "./AdminListStores.ts";
 export { archiveCampaign200AcceptedTypesEnum } from "./ArchiveCampaign.ts";
 export { archiveCampaign200StatusEnum } from "./ArchiveCampaign.ts";
 export { cancelDonationSubscription202StatusEnum } from "./CancelDonationSubscription.ts";
+export { cancelStoreDonationSubscription202StatusEnum } from "./CancelStoreDonationSubscription.ts";
 export { checkoutMutationRequestProviderEnum } from "./Checkout.ts";
 export { paymentProviderEnum4 } from "./Checkout.ts";
 export { paymentProviderEnum5 } from "./Checkout.ts";

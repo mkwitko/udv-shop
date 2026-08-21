@@ -4,6 +4,7 @@ export { archiveProduct } from "./archiveProduct.ts";
 export { cancelDonationSubscription } from "./cancelDonationSubscription.ts";
 export { cancelInterest } from "./cancelInterest.ts";
 export { cancelOrder } from "./cancelOrder.ts";
+export { cancelStoreDonationSubscription } from "./cancelStoreDonationSubscription.ts";
 export { checkout } from "./checkout.ts";
 export { createBillingCheckout } from "./createBillingCheckout.ts";
 export { createBillingPortal } from "./createBillingPortal.ts";

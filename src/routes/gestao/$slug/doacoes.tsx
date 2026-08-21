@@ -1,11 +1,23 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { useState } from "react";
 import { Button } from "#/components/ui/button";
+import { ConfirmDialog } from "#/components/ui/confirm";
 import { EmptyState } from "#/components/ui/empty-state";
+import { FormError } from "#/components/ui/field";
 import { GlyphCoracao } from "#/components/ui/glyphs";
 import { SkeletonRows } from "#/components/ui/skeleton";
 import { Tag } from "#/components/ui/tag";
-import { useListStoreDonations } from "#/lib/api/gen/hooks/useListStoreDonations";
+import { useToast } from "#/components/ui/toast";
+import { errorMessage } from "#/lib/api/error-message";
+import { cancelStoreDonationSubscription } from "#/lib/api/gen/clients/cancelStoreDonationSubscription";
+import {
+  listStoreDonationsQueryKey,
+  useListStoreDonations,
+} from "#/lib/api/gen/hooks/useListStoreDonations";
+import type { ListStoreDonations200 } from "#/lib/api/gen/types/ListStoreDonations";
 import { longDate, money } from "#/lib/format";
+
+type Donation = ListStoreDonations200["items"][number];
 
 export const Route = createFileRoute("/gestao/$slug/doacoes")({
   component: DonationsAdmin,
@@ -13,6 +25,11 @@ export const Route = createFileRoute("/gestao/$slug/doacoes")({
 
 function DonationsAdmin() {
   const { slug } = Route.useParams();
+  const { queryClient } = useRouter().options.context;
+  const toast = useToast();
+  const [ending, setEnding] = useState<Donation | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { data, isPending } = useListStoreDonations(slug, { limit: 50 });
   const donations = data?.items ?? [];
   const paid = donations.filter((donation) => donation.status === "paid");
@@ -27,6 +44,8 @@ function DonationsAdmin() {
       <p className="mt-1 text-sm text-muted">
         Cada apoio que chegou pela sua loja ou por uma campanha, com a mensagem de quem doou.
       </p>
+
+      <FormError>{error}</FormError>
 
       {isPending ? (
         <SkeletonRows rows={3} className="mt-6" />
@@ -100,14 +119,66 @@ function DonationsAdmin() {
                       <span className="text-sm text-muted">/mês</span>
                     )}
                   </p>
+                  {/* Quem doa cancela na própria conta. Este botão é a saída de quem ligou
+                      para a loja porque perdeu acesso ao e-mail — antes só o Dashboard do
+                      Stripe resolvia. */}
+                  {donation.type === "monthly" && donation.subscriptionActive && (
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      className="w-full sm:w-auto"
+                      onClick={() => setEnding(donation)}
+                    >
+                      Encerrar mensal
+                    </Button>
+                  )}
                 </li>
               );
             })}
           </ul>
         </>
       )}
+
+      <ConfirmDialog
+        open={ending !== null}
+        title="Encerrar esta doação mensal?"
+        confirmLabel="Encerrar mensal"
+        dismissLabel="Voltar"
+        busy={busy}
+        onCancel={() => setEnding(null)}
+        onConfirm={() => void endSubscription()}
+      >
+        <p>
+          A cobrança de {ending ? money(ending.amountCents) : ""} por mês para de acontecer a partir
+          do próximo ciclo. O que já foi doado continua registrado.
+        </p>
+        <p className="mt-2">
+          Faça isso quando a pessoa pedir. Ela não é avisada automaticamente — quem combinou o
+          encerramento conta a ela.
+        </p>
+      </ConfirmDialog>
     </div>
   );
+
+  async function endSubscription() {
+    if (!ending) return;
+    setBusy(true);
+    setError(null);
+    try {
+      await cancelStoreDonationSubscription(slug, ending.id);
+      toast("Doação mensal encerrada. Não haverá nova cobrança.");
+      await queryClient.invalidateQueries({
+        queryKey: listStoreDonationsQueryKey(slug, { limit: 50 }),
+      });
+    } catch (cause) {
+      setError(errorMessage(cause));
+    } finally {
+      setBusy(false);
+      // Fecha também quando dá erro: o aviso fica no topo da lista, e atrás do modal a
+      // pessoa não o veria.
+      setEnding(null);
+    }
+  }
 }
 
 function StatCard({ label, value, hint }: { label: string; value: string; hint?: string }) {
