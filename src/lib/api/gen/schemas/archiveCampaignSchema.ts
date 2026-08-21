@@ -3,18 +3,18 @@
 * Do not edit manually.
 */
 
-import type { GetCampaign200, GetCampaignPathParams, GetCampaignQueryResponse } from "../types/GetCampaign.ts";
+import type { ArchiveCampaign200, ArchiveCampaignMutationRequest, ArchiveCampaignMutationResponse, ArchiveCampaignPathParams } from "../types/ArchiveCampaign.ts";
 import { z } from "zod/v4";
 
-export const getCampaignPathParamsSchema = z.object({
+export const archiveCampaignPathParamsSchema = z.object({
     "slug": z.string(),
 "campaignSlug": z.string()
-    }) as unknown as z.ZodType<GetCampaignPathParams>
+    }) as unknown as z.ZodType<ArchiveCampaignPathParams>
 
 /**
  * @description Default Response
  */
-export const getCampaign200Schema = z.object({
+export const archiveCampaign200Schema = z.object({
     "id": z.string(),
 "store": z.object({
     "slug": z.string(),
@@ -35,6 +35,10 @@ export const getCampaign200Schema = z.object({
 "status": z.enum(["draft", "active", "paused", "finished"]),
 "endsAt": z.nullable(z.string()),
 "createdAt": z.string()
-    }) as unknown as z.ZodType<GetCampaign200>
+    }) as unknown as z.ZodType<ArchiveCampaign200>
 
-export const getCampaignQueryResponseSchema = z.lazy(() => getCampaign200Schema) as unknown as z.ZodType<GetCampaignQueryResponse>
+export const archiveCampaignMutationRequestSchema = z.object({
+    "archived": z.boolean()
+    }) as unknown as z.ZodType<ArchiveCampaignMutationRequest>
+
+export const archiveCampaignMutationResponseSchema = z.lazy(() => archiveCampaign200Schema) as unknown as z.ZodType<ArchiveCampaignMutationResponse>

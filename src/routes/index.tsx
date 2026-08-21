@@ -151,7 +151,7 @@ function Landing() {
               icon={<GlyphBilhete className="h-5 w-5" />}
               tone="bg-lavender/18 text-lavender"
               title="Participar"
-              body="Campanha com meta à vista e sorteio auditável entre quem ajudou a chegar lá."
+              body="Campanha com meta à vista e sorteio auditável entre quem auxiliou a chegar lá."
               items={["Meta pública", "Números da sorte", "Resultado verificável"]}
             />
           </div>

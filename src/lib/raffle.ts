@@ -1,4 +1,5 @@
 import type { PickedImage } from "#/components/ui/image-picker";
+import { maskAmountInput, parseAmount } from "#/lib/pay/amount";
 
 /** Valor mínimo de um número da sorte, espelhando `RAFFLE_MIN_CENTS_PER_NUMBER` da API. */
 export const RAFFLE_MIN_CENTS_PER_NUMBER = 100;
@@ -66,6 +67,143 @@ export function isoEndToLocalDate(iso: string | null | undefined): string {
   const date = new Date(iso);
   date.setDate(date.getDate() - 1);
   return isoToLocalDate(date.toISOString());
+}
+
+/** Mês inteiro pronto para virar janela de sorteio, do jeito que o chip preenche. */
+export type MonthOption = {
+  key: string;
+  label: string;
+  startDate: string;
+  endDate: string;
+  raffleTitle: string;
+};
+
+const MONTH_NAMES = [
+  "Janeiro",
+  "Fevereiro",
+  "Março",
+  "Abril",
+  "Maio",
+  "Junho",
+  "Julho",
+  "Agosto",
+  "Setembro",
+  "Outubro",
+  "Novembro",
+  "Dezembro",
+];
+
+function pad(value: number): string {
+  return String(value).padStart(2, "0");
+}
+
+/**
+ * Os próximos `count` meses a partir do mês de `from`, cada um como janela fechada
+ * (dia 1 ao último dia). O ano só aparece no rótulo quando o mês cai fora do ano de
+ * referência — "Setembro" chega mais rápido que "Setembro 2026", e "Janeiro 2027"
+ * evita a dúvida de quem monta a campanha em dezembro.
+ *
+ * `new Date(ano, mês + 1, 0)` é o último dia do mês pedido, incluindo fevereiro bissexto.
+ */
+export function monthOptions(from: Date, count = 12): MonthOption[] {
+  const baseYear = from.getFullYear();
+  return Array.from({ length: count }, (_, index) => {
+    const first = new Date(from.getFullYear(), from.getMonth() + index, 1);
+    const year = first.getFullYear();
+    const month = first.getMonth();
+    const lastDay = new Date(year, month + 1, 0).getDate();
+    const name = MONTH_NAMES[month] ?? "";
+    const sameYear = year === baseYear;
+    return {
+      key: `${year}-${pad(month + 1)}`,
+      label: sameYear ? name : `${name} ${year}`,
+      startDate: `${year}-${pad(month + 1)}-01`,
+      endDate: `${year}-${pad(month + 1)}-${pad(lastDay)}`,
+      raffleTitle: sameYear
+        ? `Sorteio de ${name.toLowerCase()}`
+        : `Sorteio de ${name.toLowerCase()} de ${year}`,
+    };
+  });
+}
+
+/**
+ * Chave do mês quando a janela é exatamente um mês (dia 1 ao último dia), senão `null`.
+ * É o que deixa o chip marcado e o que o desmarca assim que alguém mexe no datepicker.
+ */
+export function monthKeyOfWindow(startDate: string, endDate: string): string | null {
+  if (!startDate || !endDate) return null;
+  const [startYear, startMonth, startDay] = startDate.split("-").map(Number);
+  const [endYear, endMonth, endDay] = endDate.split("-").map(Number);
+  if (!startYear || !startMonth || !endYear || !endMonth) return null;
+  if (startDay !== 1 || startYear !== endYear || startMonth !== endMonth) return null;
+  if (endDay !== new Date(endYear, endMonth, 0).getDate()) return null;
+  return `${startYear}-${pad(startMonth)}`;
+}
+
+/** Sorteio em edição: um por card do passo "Sorteios" e um por formulário do painel. */
+export type RaffleDraft = {
+  id: string;
+  title: string;
+  startDate: string;
+  endDate: string;
+  centsPerNumberInput: string;
+  prizes: PrizeDraft[];
+};
+
+export type RafflePayload = {
+  title: string;
+  centsPerNumber: number;
+  startsAt?: string;
+  endsAt: string | null;
+  prizes: PrizePayload[];
+};
+
+let raffleSeq = 0;
+export function emptyRaffle(): RaffleDraft {
+  raffleSeq += 1;
+  return {
+    id: `raffle-${raffleSeq}`,
+    title: "",
+    startDate: "",
+    endDate: "",
+    centsPerNumberInput: maskAmountInput("1000"),
+    prizes: [emptyPrize()],
+  };
+}
+
+/**
+ * Sorteio pronto para a API, ou a mensagem do que falta. Mesma validação na criação da
+ * campanha e no painel — quando ela morava nos dois lugares, o wizard aceitava sorteio sem
+ * nome (mandava "Sorteio") e o painel não.
+ */
+export function buildRafflePayload(
+  draft: RaffleDraft,
+): { payload: RafflePayload } | { error: string } {
+  if (draft.title.trim().length < 2) {
+    return { error: "Dê um nome ao sorteio: por exemplo, “Sorteio de setembro”." };
+  }
+  const centsPerNumber = parseAmount(draft.centsPerNumberInput);
+  if (centsPerNumber === null || centsPerNumber < RAFFLE_MIN_CENTS_PER_NUMBER) {
+    return { error: "Diga quanto custa um número: no mínimo R$ 1,00." };
+  }
+  if (
+    draft.startDate &&
+    draft.endDate &&
+    dayEndIso(draft.endDate) <= dayStartIso(draft.startDate)
+  ) {
+    return { error: "O fim da janela tem de ser depois do início." };
+  }
+  const built = buildPrizes(draft.prizes);
+  if ("error" in built) return built;
+  return {
+    payload: {
+      title: draft.title.trim(),
+      centsPerNumber,
+      ...(draft.startDate && { startsAt: dayStartIso(draft.startDate) }),
+      endsAt: draft.endDate ? dayEndIso(draft.endDate) : null,
+      prizes: built.prizes,
+    },
+  };
 }
 
 export function buildPrizes(drafts: PrizeDraft[]): { prizes: PrizePayload[] } | { error: string } {

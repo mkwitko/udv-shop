@@ -74,6 +74,18 @@ export type GetCampaign200 = {
     */
     coverImageUrl: string | null;
     /**
+     * @type array
+    */
+    images: string[];
+    /**
+     * @type array
+    */
+    imageUrls: string[];
+    /**
+     * @type string
+    */
+    archivedAt: string | null;
+    /**
      * @minLength -9007199254740991
      * @maxLength 9007199254740991
      * @type integer

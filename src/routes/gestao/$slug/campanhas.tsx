@@ -1,58 +1,30 @@
-import { zodResolver } from "@hookform/resolvers/zod";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
-import { Ban, Pencil, Plus, RotateCcw, Ticket } from "lucide-react";
+import { Archive, ArchiveRestore, Pencil, Plus, Ticket, Trash2 } from "lucide-react";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { AiCampaignStory } from "#/components/store/ai-text";
-import { RaffleFields } from "#/components/store/raffle-fields";
+import { CampaignForm } from "#/components/store/campaign-form";
+import { RafflePanel } from "#/components/store/raffle-panel";
 import { Button } from "#/components/ui/button";
 import { ConfirmDialog } from "#/components/ui/confirm";
 import { EmptyState } from "#/components/ui/empty-state";
-import { Field, FormError, Input, Select, Textarea } from "#/components/ui/field";
-import { ImagePicker, type PickedImage } from "#/components/ui/image-picker";
-import { MoneyInput } from "#/components/ui/money-input";
-import { Skeleton, SkeletonRows } from "#/components/ui/skeleton";
+import { FormError } from "#/components/ui/field";
+import { ShareButton } from "#/components/ui/share-button";
+import { SkeletonRows } from "#/components/ui/skeleton";
 import { Tag } from "#/components/ui/tag";
 import { useToast } from "#/components/ui/toast";
 import { errorMessage } from "#/lib/api/error-message";
-import { createCampaign } from "#/lib/api/gen/clients/createCampaign";
-import { createRaffle } from "#/lib/api/gen/clients/createRaffle";
-import { drawRaffle } from "#/lib/api/gen/clients/drawRaffle";
-import { putRaffle } from "#/lib/api/gen/clients/putRaffle";
+import { archiveCampaign } from "#/lib/api/gen/clients/archiveCampaign";
+import { deleteCampaign } from "#/lib/api/gen/clients/deleteCampaign";
 import { updateCampaignStatus } from "#/lib/api/gen/clients/updateCampaignStatus";
-import { updateRaffleStatus } from "#/lib/api/gen/clients/updateRaffleStatus";
 import { listCampaignsQueryKey, useListCampaigns } from "#/lib/api/gen/hooks/useListCampaigns";
-import { useListRaffles } from "#/lib/api/gen/hooks/useListRaffles";
 import type { ListCampaigns200 } from "#/lib/api/gen/types/ListCampaigns";
-import type { ListRaffles200 } from "#/lib/api/gen/types/ListRaffles";
+import { campaignShareText, remainingCents } from "#/lib/campaign";
 import { money, percent } from "#/lib/format";
-import { maskAmountInput, parseAmount } from "#/lib/pay/amount";
-import {
-  buildPrizes,
-  dayEndIso,
-  dayStartIso,
-  emptyPrize,
-  isoEndToLocalDate,
-  isoToLocalDate,
-  type PrizeDraft,
-  RAFFLE_MIN_CENTS_PER_NUMBER,
-} from "#/lib/raffle";
-import { slugify } from "#/lib/slug";
 
 export const Route = createFileRoute("/gestao/$slug/campanhas")({
   component: CampaignsAdmin,
 });
 
 type Campaign = ListCampaigns200["items"][number];
-
-const CampaignSchema = z.object({
-  title: z.string().min(3, "Título muito curto").max(140),
-  story: z.string().max(5000).optional(),
-  goal: z.string().optional(),
-  acceptedTypes: z.enum(["one_time", "monthly", "both"]),
-});
-type CampaignFormValues = z.infer<typeof CampaignSchema>;
 
 const STATUS_META: Record<string, { label: string; tone: "brand" | "accent" | "neutral" }> = {
   draft: { label: "rascunho", tone: "neutral" },
@@ -64,27 +36,39 @@ const STATUS_META: Record<string, { label: string; tone: "brand" | "accent" | "n
 // `all` porque campanha nasce rascunho: sem isso a tela de gestão não mostrava a
 // campanha que a pessoa acabou de criar — só apareceria depois de publicada.
 const LIST_QUERY = { limit: 50, all: "true" } as const;
+const ARCHIVED_QUERY = { limit: 50, all: "true", archived: "true" } as const;
 
 function CampaignsAdmin() {
   const { slug } = Route.useParams();
   const { queryClient } = useRouter().options.context;
-  const { data, isPending } = useListCampaigns(slug, LIST_QUERY);
+  const [showArchived, setShowArchived] = useState(false);
+  const query = showArchived ? ARCHIVED_QUERY : LIST_QUERY;
+  const { data, isPending } = useListCampaigns(slug, query);
   const [creating, setCreating] = useState(false);
+  const [editingSlug, setEditingSlug] = useState<string | null>(null);
   const campaigns = data?.items ?? [];
+  const editing = campaigns.find((campaign) => campaign.slug === editingSlug);
 
   async function refresh() {
+    // as duas listas mudam ao arquivar: invalidar só a atual deixaria a outra mentindo
     await queryClient.invalidateQueries({ queryKey: listCampaignsQueryKey(slug, LIST_QUERY) });
+    await queryClient.invalidateQueries({ queryKey: listCampaignsQueryKey(slug, ARCHIVED_QUERY) });
   }
 
-  if (creating) {
+  if (creating || editing) {
     return (
-      <CampaignCreate
+      <CampaignForm
         slug={slug}
+        campaign={editing}
         onDone={async () => {
           await refresh();
           setCreating(false);
+          setEditingSlug(null);
         }}
-        onCancel={() => setCreating(false)}
+        onCancel={() => {
+          setCreating(false);
+          setEditingSlug(null);
+        }}
       />
     );
   }
@@ -92,11 +76,21 @@ function CampaignsAdmin() {
   return (
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="font-display text-lg font-semibold tracking-tight">Campanhas</h2>
-        <Button size="sm" onClick={() => setCreating(true)}>
-          <Plus className="h-4 w-4" aria-hidden />
-          Nova campanha
-        </Button>
+        <h2 className="font-display text-lg font-semibold tracking-tight">
+          {showArchived ? "Campanhas arquivadas" : "Campanhas"}
+        </h2>
+        <div className="flex flex-wrap gap-2">
+          <Button size="sm" variant="secondary" onClick={() => setShowArchived((v) => !v)}>
+            <Archive className="h-4 w-4" aria-hidden />
+            {showArchived ? "Ver as ativas" : "Ver arquivadas"}
+          </Button>
+          {!showArchived && (
+            <Button size="sm" onClick={() => setCreating(true)}>
+              <Plus className="h-4 w-4" aria-hidden />
+              Nova campanha
+            </Button>
+          )}
+        </div>
       </div>
 
       {isPending ? (
@@ -104,16 +98,31 @@ function CampaignsAdmin() {
       ) : campaigns.length === 0 ? (
         <EmptyState
           className="mt-6"
-          title="Sua primeira campanha começa aqui."
-          action={<Button onClick={() => setCreating(true)}>Criar campanha</Button>}
+          title={showArchived ? "Nada arquivado por aqui." : "Sua primeira campanha começa aqui."}
+          action={
+            showArchived ? (
+              <Button variant="secondary" onClick={() => setShowArchived(false)}>
+                Ver as ativas
+              </Button>
+            ) : (
+              <Button onClick={() => setCreating(true)}>Criar campanha</Button>
+            )
+          }
         >
-          Crie uma meta e convide sua comunidade para participar. Dá para ligar um sorteio entre
-          quem doa.
+          {showArchived
+            ? "Campanha encerrada pode ser arquivada para sair da lista principal. Ela continua aqui e o link dela segue abrindo."
+            : "Crie uma meta e convide sua comunidade para participar. Dá para ligar um sorteio entre quem doa."}
         </EmptyState>
       ) : (
         <ul className="mt-6 grid gap-3">
           {campaigns.map((campaign) => (
-            <CampaignRow key={campaign.id} slug={slug} campaign={campaign} onChanged={refresh} />
+            <CampaignRow
+              key={campaign.id}
+              slug={slug}
+              campaign={campaign}
+              onChanged={refresh}
+              onEdit={() => setEditingSlug(campaign.slug)}
+            />
           ))}
         </ul>
       )}
@@ -125,15 +134,18 @@ function CampaignRow({
   slug,
   campaign,
   onChanged,
+  onEdit,
 }: {
   slug: string;
   campaign: Campaign;
   onChanged: () => Promise<void>;
+  onEdit: () => void;
 }) {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [showRaffle, setShowRaffle] = useState(false);
   const [confirmFinish, setConfirmFinish] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const toast = useToast();
   const meta = STATUS_META[campaign.status] ?? { label: campaign.status, tone: "neutral" as const };
   const pct = campaign.goalCents ? percent(campaign.raisedCents, campaign.goalCents) : null;
@@ -151,6 +163,35 @@ function CampaignRow({
             ? "Campanha pausada."
             : "Campanha encerrada.",
       );
+    } catch (cause) {
+      setError(errorMessage(cause));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function setArchived(archived: boolean) {
+    setBusy(true);
+    setError(null);
+    try {
+      await archiveCampaign(slug, campaign.slug, { archived });
+      await onChanged();
+      toast(archived ? "Campanha arquivada." : "Campanha de volta à lista.");
+    } catch (cause) {
+      setError(errorMessage(cause));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function remove() {
+    setConfirmDelete(false);
+    setBusy(true);
+    setError(null);
+    try {
+      await deleteCampaign(slug, campaign.slug);
+      await onChanged();
+      toast("Campanha apagada.");
     } catch (cause) {
       setError(errorMessage(cause));
     } finally {
@@ -206,10 +247,52 @@ function CampaignRow({
             Encerrar
           </Button>
         )}
+        {/* arquivar é só encerrada: campanha que ainda recebe doação sumindo da lista
+            esconderia dinheiro entrando */}
+        {campaign.archivedAt ? (
+          <Button size="sm" variant="secondary" disabled={busy} onClick={() => setArchived(false)}>
+            <ArchiveRestore className="h-4 w-4" aria-hidden />
+            Desarquivar
+          </Button>
+        ) : (
+          campaign.status === "finished" && (
+            <Button size="sm" variant="ghost" disabled={busy} onClick={() => setArchived(true)}>
+              <Archive className="h-4 w-4" aria-hidden />
+              Arquivar
+            </Button>
+          )
+        )}
+        {/* rascunho não tem página pública: compartilhar o link daria 404 em quem recebesse */}
+        {campaign.status !== "draft" && (
+          <ShareButton
+            size="sm"
+            variant="secondary"
+            title={campaign.title}
+            text={campaignShareText(
+              campaign.title,
+              campaign.store.name,
+              remainingCents(campaign.raisedCents, campaign.goalCents),
+            )}
+            path={`/loja/${slug}/campanhas/${campaign.slug}`}
+            label="Compartilhar"
+          />
+        )}
+        <Button size="sm" variant="secondary" onClick={onEdit}>
+          <Pencil className="h-4 w-4" aria-hidden />
+          Editar
+        </Button>
         <Button size="sm" variant="secondary" onClick={() => setShowRaffle((v) => !v)}>
           <Ticket className="h-4 w-4" aria-hidden />
           Sorteio
         </Button>
+        {/* apagar de vez só no rascunho: campanha que foi ao ar tem link compartilhado e
+            doação atrás — para ela o caminho é encerrar */}
+        {campaign.status === "draft" && (
+          <Button size="sm" variant="ghost" disabled={busy} onClick={() => setConfirmDelete(true)}>
+            <Trash2 className="h-4 w-4" aria-hidden />
+            Excluir
+          </Button>
+        )}
       </div>
 
       {showRaffle && (
@@ -229,556 +312,18 @@ function CampaignRow({
       >
         Ela sai do ar e deixa de aceitar doações. O que já foi arrecadado continua valendo.
       </ConfirmDialog>
-    </li>
-  );
-}
-
-function RafflePanel({
-  slug,
-  campaignSlug,
-  campaignTitle,
-}: {
-  slug: string;
-  campaignSlug: string;
-  campaignTitle: string;
-}) {
-  const { queryClient } = useRouter().options.context;
-  const { data, isPending, refetch } = useListRaffles(slug, campaignSlug, {
-    query: { retry: false },
-  });
-  const [creating, setCreating] = useState(false);
-  const raffles = data?.items ?? [];
-
-  async function refresh() {
-    await refetch();
-    await queryClient.invalidateQueries();
-  }
-
-  if (isPending) return <Skeleton className="mt-4 h-16" />;
-
-  return (
-    <div className="mt-4 grid gap-3 rounded-lg border border-line bg-surface p-4">
-      {raffles.length === 0 && !creating && (
-        <p className="text-sm text-muted">
-          Esta campanha ainda não tem sorteio. Cada doação vira números da sorte no sorteio da
-          janela em que ela foi paga — campanha longa pode ter um por mês.
-        </p>
-      )}
-
-      {raffles.map((raffle) => (
-        <RaffleCard
-          key={raffle.sequence}
-          slug={slug}
-          campaignSlug={campaignSlug}
-          campaignTitle={campaignTitle}
-          raffle={raffle}
-          onChanged={refresh}
-        />
-      ))}
-
-      {creating ? (
-        <RaffleForm
-          slug={slug}
-          campaignSlug={campaignSlug}
-          campaignTitle={campaignTitle}
-          raffle={null}
-          onDone={async () => {
-            await refresh();
-            setCreating(false);
-          }}
-          onCancel={() => setCreating(false)}
-        />
-      ) : (
-        <Button size="sm" variant="secondary" onClick={() => setCreating(true)}>
-          <Plus className="h-4 w-4" aria-hidden />
-          {raffles.length === 0 ? "Ligar sorteio" : "Novo sorteio"}
-        </Button>
-      )}
-    </div>
-  );
-}
-
-type Raffle = ListRaffles200["items"][number];
-
-/** "ago 01 – set 01" ou "desde ago 01" quando não tem fim. */
-function raffleWindowLabel(raffle: Raffle): string {
-  const fmt = (iso: string) =>
-    new Date(iso).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" });
-  // O fim guardado é exclusivo (meia-noite do dia seguinte): mostrar o último dia incluído
-  // é o que bate com o que a pessoa digitou.
-  return raffle.endsAt
-    ? `${fmt(raffle.startsAt)} – ${fmt(dayStartIso(isoEndToLocalDate(raffle.endsAt)))}`
-    : `desde ${fmt(raffle.startsAt)}`;
-}
-
-function RaffleCard({
-  slug,
-  campaignSlug,
-  campaignTitle,
-  raffle,
-  onChanged,
-}: {
-  slug: string;
-  campaignSlug: string;
-  campaignTitle: string;
-  raffle: Raffle;
-  onChanged: () => Promise<void>;
-}) {
-  const [editing, setEditing] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [confirmDraw, setConfirmDraw] = useState(false);
-  const [confirmCancel, setConfirmCancel] = useState(false);
-
-  async function setStatus(status: "open" | "cancelled") {
-    setConfirmCancel(false);
-    setBusy(true);
-    setError(null);
-    try {
-      await updateRaffleStatus(slug, campaignSlug, raffle.sequence, { status });
-      await onChanged();
-    } catch (cause) {
-      setError(errorMessage(cause));
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function draw() {
-    setConfirmDraw(false);
-    setBusy(true);
-    setError(null);
-    try {
-      await drawRaffle(slug, campaignSlug, raffle.sequence);
-      await onChanged();
-    } catch (cause) {
-      setError(errorMessage(cause));
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  if (editing) {
-    return (
-      <RaffleForm
-        slug={slug}
-        campaignSlug={campaignSlug}
-        campaignTitle={campaignTitle}
-        raffle={raffle}
-        onDone={async () => {
-          await onChanged();
-          setEditing(false);
-        }}
-        onCancel={() => setEditing(false)}
-      />
-    );
-  }
-
-  return (
-    <div className="rounded-[1rem] border border-line bg-elevated p-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="kicker">{raffle.sequence}º sorteio</span>
-          <h4 className="font-display font-semibold">{raffle.title}</h4>
-          <Tag tone={raffle.status === "open" ? "brand" : "neutral"}>
-            {raffle.status === "open"
-              ? "no ar"
-              : raffle.status === "drawn"
-                ? "realizado"
-                : "cancelado"}
-          </Tag>
-        </div>
-        <p className="text-muted text-sm tabular-nums">{raffleWindowLabel(raffle)}</p>
-      </div>
-
-      <p className="mt-2 text-muted text-sm tabular-nums">
-        1 número a cada {money(raffle.centsPerNumber)} · {raffle.totalEntries} números com{" "}
-        {raffle.totalParticipants} participantes
-      </p>
-
-      <ul className="mt-3 grid gap-3 text-sm">
-        {raffle.prizes.map((prize) => (
-          <li key={prize.position} className="flex gap-3">
-            {prize.imageUrls[0] ? (
-              <img
-                src={prize.imageUrls[0]}
-                alt=""
-                className="h-14 w-14 shrink-0 rounded-md border border-line bg-surface object-cover"
-              />
-            ) : null}
-            <div className="min-w-0">
-              <p className="flex flex-wrap items-center gap-2">
-                <span className="text-muted">{prize.position}º</span>
-                <span className="font-medium">{prize.title}</span>
-                {prize.winner && <Tag tone="brand">número sorteado: {prize.winner.number}</Tag>}
-              </p>
-              {prize.description && <p className="text-muted">{prize.description}</p>}
-            </div>
-          </li>
-        ))}
-      </ul>
-
-      <FormError>{error}</FormError>
-
-      {raffle.status === "open" && (
-        <div className="mt-3 flex flex-wrap gap-2">
-          <Button size="sm" disabled={busy} onClick={() => setConfirmDraw(true)}>
-            Sortear
-          </Button>
-          <Button size="sm" variant="secondary" disabled={busy} onClick={() => setEditing(true)}>
-            <Pencil className="h-4 w-4" aria-hidden />
-            Editar
-          </Button>
-          <Button size="sm" variant="ghost" disabled={busy} onClick={() => setConfirmCancel(true)}>
-            <Ban className="h-4 w-4" aria-hidden />
-            Cancelar sorteio
-          </Button>
-        </div>
-      )}
-
-      {raffle.status === "cancelled" && (
-        <div className="mt-3 flex flex-wrap gap-2">
-          <Button size="sm" variant="secondary" disabled={busy} onClick={() => setStatus("open")}>
-            <RotateCcw className="h-4 w-4" aria-hidden />
-            Reabrir
-          </Button>
-        </div>
-      )}
-
-      {raffle.seed && (
-        <p className="mt-3 break-all text-muted text-xs">
-          Código de auditoria: {raffle.seed} · algoritmo {raffle.algorithm}
-          <span className="block">
-            Usado para tornar o sorteio verificável por qualquer pessoa.
-          </span>
-        </p>
-      )}
 
       <ConfirmDialog
-        open={confirmCancel}
-        title="Cancelar este sorteio?"
-        confirmLabel="Cancelar sorteio"
+        open={confirmDelete}
+        title="Excluir este rascunho?"
+        confirmLabel="Excluir campanha"
         dismissLabel="Voltar"
         busy={busy}
-        onCancel={() => setConfirmCancel(false)}
-        onConfirm={() => void setStatus("cancelled")}
+        onCancel={() => setConfirmDelete(false)}
+        onConfirm={remove}
       >
-        Os {raffle.totalEntries} números somem e quem doou volta a concorrer no próximo sorteio que
-        cobrir a data da doação. Dá para reabrir depois, se o período ainda estiver livre.
+        Some com a campanha e com os sorteios que você montou nela. Não dá para desfazer.
       </ConfirmDialog>
-
-      <ConfirmDialog
-        open={confirmDraw}
-        title="Sortear agora?"
-        confirmLabel="Realizar sorteio"
-        busy={busy}
-        onCancel={() => setConfirmDraw(false)}
-        onConfirm={draw}
-      >
-        {raffle.totalParticipants} participantes · {raffle.totalEntries} números ·{" "}
-        {raffle.prizes.length} prêmios. Depois de realizado, o resultado não pode ser alterado.
-      </ConfirmDialog>
-    </div>
-  );
-}
-
-function RaffleForm({
-  slug,
-  campaignSlug,
-  campaignTitle,
-  raffle,
-  onDone,
-  onCancel,
-}: {
-  slug: string;
-  campaignSlug: string;
-  campaignTitle: string;
-  raffle: Raffle | null;
-  onDone: () => Promise<void>;
-  onCancel: () => void;
-}) {
-  const [title, setTitle] = useState(raffle?.title ?? "");
-  const [startDate, setStartDate] = useState(isoToLocalDate(raffle?.startsAt));
-  const [endDate, setEndDate] = useState(isoEndToLocalDate(raffle?.endsAt));
-  const [centsPerNumberInput, setCentsPerNumberInput] = useState(
-    maskAmountInput(String(raffle?.centsPerNumber ?? 1000)),
-  );
-  const [prizes, setPrizes] = useState<PrizeDraft[]>(
-    raffle
-      ? raffle.prizes.map((prize, index) => ({
-          id: `prize-current-${index}`,
-          title: prize.title,
-          description: prize.description ?? "",
-          images: prize.images.map((key, i) => ({ key, url: prize.imageUrls[i] ?? "" })),
-        }))
-      : [emptyPrize()],
-  );
-  const [busy, setBusy] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  async function save() {
-    if (title.trim().length < 2) {
-      setError("Dê um nome ao sorteio: por exemplo, “Sorteio de setembro”.");
-      return;
-    }
-    const per = parseAmount(centsPerNumberInput);
-    if (per === null || per < RAFFLE_MIN_CENTS_PER_NUMBER) {
-      setError("Diga quanto custa um número: no mínimo R$ 1,00.");
-      return;
-    }
-    if (startDate && endDate && dayEndIso(endDate) <= dayStartIso(startDate)) {
-      setError("O fim da janela tem de ser depois do início.");
-      return;
-    }
-    const built = buildPrizes(prizes);
-    if ("error" in built) {
-      setError(built.error);
-      return;
-    }
-    const payload = {
-      title: title.trim(),
-      centsPerNumber: per,
-      ...(startDate && { startsAt: dayStartIso(startDate) }),
-      endsAt: endDate ? dayEndIso(endDate) : null,
-      prizes: built.prizes,
-    };
-    setBusy(true);
-    setError(null);
-    try {
-      if (raffle) await putRaffle(slug, campaignSlug, raffle.sequence, payload);
-      else await createRaffle(slug, campaignSlug, payload);
-      await onDone();
-    } catch (cause) {
-      setError(errorMessage(cause));
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  return (
-    <div className="grid gap-5 rounded-[1rem] border border-line bg-elevated p-4">
-      <RaffleFields
-        slug={slug}
-        idPrefix={raffle ? `s${raffle.sequence}` : "novo"}
-        campaignTitle={campaignTitle}
-        title={title}
-        onTitleChange={setTitle}
-        startDate={startDate}
-        onStartDateChange={setStartDate}
-        endDate={endDate}
-        onEndDateChange={setEndDate}
-        centsPerNumberInput={centsPerNumberInput}
-        onCentsPerNumberChange={setCentsPerNumberInput}
-        prizes={prizes}
-        onPrizesChange={setPrizes}
-        onUploadingChange={setUploading}
-        onError={setError}
-      />
-      <FormError>{error}</FormError>
-      <div className="flex flex-wrap gap-2">
-        <Button size="sm" disabled={busy || uploading} onClick={save}>
-          {raffle ? "Salvar sorteio" : "Ligar sorteio"}
-        </Button>
-        <Button size="sm" variant="ghost" disabled={busy} onClick={onCancel}>
-          Cancelar
-        </Button>
-      </div>
-    </div>
-  );
-}
-
-function CampaignCreate({
-  slug,
-  onDone,
-  onCancel,
-}: {
-  slug: string;
-  onDone: () => Promise<void>;
-  onCancel: () => void;
-}) {
-  const [formError, setFormError] = useState<string | null>(null);
-  const [cover, setCover] = useState<PickedImage[]>([]);
-  const [uploading, setUploading] = useState(false);
-  const [raffleOn, setRaffleOn] = useState(false);
-  const [raffleTitle, setRaffleTitle] = useState("");
-  const [raffleStart, setRaffleStart] = useState("");
-  const [raffleEnd, setRaffleEnd] = useState("");
-  const [centsPerNumberInput, setCentsPerNumberInput] = useState(maskAmountInput("1000"));
-  const [prizes, setPrizes] = useState<PrizeDraft[]>([emptyPrize()]);
-  const {
-    register,
-    handleSubmit,
-    watch,
-    setValue,
-    formState: { errors, isSubmitting },
-  } = useForm<CampaignFormValues>({
-    resolver: zodResolver(CampaignSchema),
-    defaultValues: { acceptedTypes: "both" },
-  });
-
-  async function submit(values: CampaignFormValues) {
-    setFormError(null);
-    const goalCents = values.goal ? parseAmount(values.goal) : null;
-    if (values.goal && goalCents === null) {
-      setFormError("Coloque uma meta maior que zero.");
-      return;
-    }
-
-    let raffle: Parameters<typeof createCampaign>[1]["raffle"];
-    if (raffleOn) {
-      const per = parseAmount(centsPerNumberInput);
-      if (per === null || per < RAFFLE_MIN_CENTS_PER_NUMBER) {
-        setFormError("No sorteio, diga quanto custa um número: no mínimo R$ 1,00.");
-        return;
-      }
-      if (raffleStart && raffleEnd && dayEndIso(raffleEnd) <= dayStartIso(raffleStart)) {
-        setFormError("No sorteio, o fim da janela tem de ser depois do início.");
-        return;
-      }
-      const built = buildPrizes(prizes);
-      if ("error" in built) {
-        setFormError(built.error);
-        return;
-      }
-      raffle = {
-        // Sem nome digitado o sorteio ainda precisa de um: é o que aparece na vitrine.
-        title: raffleTitle.trim() || "Sorteio",
-        centsPerNumber: per,
-        ...(raffleStart && { startsAt: dayStartIso(raffleStart) }),
-        endsAt: raffleEnd ? dayEndIso(raffleEnd) : null,
-        prizes: built.prizes,
-      };
-    }
-
-    try {
-      await createCampaign(slug, {
-        slug: slugify(values.title),
-        title: values.title,
-        story: values.story || undefined,
-        coverImage: cover[0]?.key,
-        goalCents: goalCents ?? undefined,
-        acceptedTypes: values.acceptedTypes,
-        raffle,
-      });
-      await onDone();
-    } catch (error) {
-      setFormError(errorMessage(error));
-    }
-  }
-
-  return (
-    <div>
-      <div className="flex items-center justify-between gap-3">
-        <h2 className="font-display text-lg font-semibold tracking-tight">Nova campanha</h2>
-        <Button variant="ghost" size="sm" onClick={onCancel}>
-          Voltar
-        </Button>
-      </div>
-
-      <form onSubmit={handleSubmit(submit)} className="mt-6 grid gap-8">
-        <section className="grid gap-5">
-          <h3 className="kicker">Sobre a campanha</h3>
-
-          <Field label="Título" htmlFor="title" error={errors.title?.message}>
-            <Input id="title" placeholder="Reforma da cozinha" {...register("title")} />
-          </Field>
-
-          <Field
-            label="História (opcional)"
-            htmlFor="story"
-            hint="Conte para onde vai o dinheiro — quem entende a causa doa mais."
-            error={errors.story?.message}
-          >
-            <Textarea id="story" rows={4} {...register("story")} />
-          </Field>
-
-          <AiCampaignStory
-            slug={slug}
-            title={watch("title") ?? ""}
-            story={watch("story") ?? ""}
-            onApply={(text) => setValue("story", text, { shouldDirty: true, shouldValidate: true })}
-          />
-
-          <div className="grid gap-2">
-            <span className="font-medium text-sm">Foto de capa (opcional)</span>
-            <ImagePicker
-              storeSlug={slug}
-              images={cover}
-              onChange={setCover}
-              max={1}
-              multiple={false}
-              onUploadingChange={setUploading}
-              onError={setFormError}
-              label="Arraste a foto de capa"
-            />
-          </div>
-        </section>
-
-        <section className="grid gap-5">
-          <h3 className="kicker">Meta e doações</h3>
-
-          <div className="grid gap-5 md:grid-cols-2">
-            <Field label="Meta (opcional)" htmlFor="goal" error={errors.goal?.message}>
-              <MoneyInput id="goal" placeholder="R$ 20.000,00" {...register("goal")} />
-            </Field>
-
-            <Field label="Tipos de doação aceitos" htmlFor="acceptedTypes" error={undefined}>
-              <Select id="acceptedTypes" {...register("acceptedTypes")}>
-                <option value="both">Única e mensal</option>
-                <option value="one_time">Só doação única</option>
-                <option value="monthly">Só doação mensal</option>
-              </Select>
-            </Field>
-          </div>
-        </section>
-
-        <section className="grid gap-5">
-          <h3 className="kicker">Sorteio</h3>
-
-          <label className="flex items-start gap-3 text-sm">
-            <input
-              type="checkbox"
-              className="mt-0.5 h-5 w-5 accent-(--brand)"
-              checked={raffleOn}
-              onChange={(event) => setRaffleOn(event.target.checked)}
-            />
-            <span>
-              <span className="font-medium text-ink">Sortear prêmios entre quem doar</span>
-              <span className="block text-muted">
-                Cada doação vira números da sorte. Você decide quanto custa um número e o que entra
-                na lista de prêmios — dá para mudar tudo enquanto o sorteio não for realizado.
-              </span>
-            </span>
-          </label>
-
-          {raffleOn && (
-            <RaffleFields
-              slug={slug}
-              idPrefix="nova-campanha"
-              campaignTitle={watch("title") ?? ""}
-              title={raffleTitle}
-              onTitleChange={setRaffleTitle}
-              startDate={raffleStart}
-              onStartDateChange={setRaffleStart}
-              endDate={raffleEnd}
-              onEndDateChange={setRaffleEnd}
-              centsPerNumberInput={centsPerNumberInput}
-              onCentsPerNumberChange={setCentsPerNumberInput}
-              prizes={prizes}
-              onPrizesChange={setPrizes}
-              onUploadingChange={setUploading}
-              onError={setFormError}
-            />
-          )}
-        </section>
-
-        <FormError>{formError}</FormError>
-
-        <Button size="lg" type="submit" disabled={isSubmitting || uploading}>
-          {isSubmitting ? "Criando…" : "Criar campanha (começa como rascunho)"}
-        </Button>
-      </form>
-    </div>
+    </li>
   );
 }

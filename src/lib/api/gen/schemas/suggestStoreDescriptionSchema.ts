@@ -16,7 +16,8 @@ export const suggestStoreDescription200Schema = z.object({
 export const suggestStoreDescriptionMutationRequestSchema = z.object({
     "name": z.string().min(2).max(120),
 "draft": z.optional(z.string().max(4000)),
-"mode": z.optional(z.enum(["create", "improve"]).default("create"))
+"mode": z.optional(z.enum(["create", "improve"]).default("create")),
+"instruction": z.optional(z.string().max(300))
     }) as unknown as z.ZodType<SuggestStoreDescriptionMutationRequest>
 
 export const suggestStoreDescriptionMutationResponseSchema = z.lazy(() => suggestStoreDescription200Schema) as unknown as z.ZodType<SuggestStoreDescriptionMutationResponse>

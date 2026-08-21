@@ -1,9 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Button } from "#/components/ui/button";
 import { EmptyState } from "#/components/ui/empty-state";
+import { ShareButton } from "#/components/ui/share-button";
 import { Tag } from "#/components/ui/tag";
 import { listCampaignsQueryOptions, useListCampaigns } from "#/lib/api/gen/hooks/useListCampaigns";
 import { publicRequest } from "#/lib/api/public";
+import { campaignShareText, remainingCents } from "#/lib/campaign";
 import { money, percent } from "#/lib/format";
 import { seo } from "#/lib/seo";
 
@@ -29,7 +31,7 @@ function CampaignList() {
   return (
     <section className="shell py-14">
       <p className="kicker">Campanhas</p>
-      <h1 className="mt-4 text-title">Veja onde sua ajuda faz diferença.</h1>
+      <h1 className="mt-4 text-title">Veja onde seu auxílio faz diferença.</h1>
 
       {campaigns.length === 0 ? (
         <EmptyState
@@ -49,11 +51,13 @@ function CampaignList() {
       ) : (
         <ul className="mt-10 grid gap-4 md:grid-cols-2">
           {campaigns.map((campaign) => (
-            <li key={campaign.id}>
+            // o card é o <li> e não o <Link>: com o link envolvendo tudo, o botão de
+            // compartilhar ficaria dentro de uma âncora — HTML inválido e clique roubado
+            <li key={campaign.id} className="card card-hover group overflow-hidden">
               <Link
                 to="/loja/$slug/campanhas/$campanha"
                 params={{ slug, campanha: campaign.slug }}
-                className="card card-hover group block overflow-hidden"
+                className="block"
               >
                 {campaign.coverImageUrl && (
                   <img
@@ -78,11 +82,25 @@ function CampaignList() {
                   />
                   {campaign.status === "active" && (
                     <p className="mt-4 inline-flex items-center gap-1.5 font-semibold text-brand-deep text-sm">
-                      Quero ajudar →
+                      Quero auxiliar →
                     </p>
                   )}
                 </div>
               </Link>
+              <div className="border-line border-t px-6 py-3">
+                <ShareButton
+                  title={campaign.title}
+                  text={campaignShareText(
+                    campaign.title,
+                    campaign.store.name,
+                    remainingCents(campaign.raisedCents, campaign.goalCents),
+                  )}
+                  path={`/loja/${slug}/campanhas/${campaign.slug}`}
+                  label="Compartilhar"
+                  variant="ghost"
+                  size="sm"
+                />
+              </div>
             </li>
           ))}
         </ul>

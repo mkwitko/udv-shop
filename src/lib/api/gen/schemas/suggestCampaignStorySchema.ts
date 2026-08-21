@@ -20,7 +20,8 @@ export const suggestCampaignStory200Schema = z.object({
 export const suggestCampaignStoryMutationRequestSchema = z.object({
     "title": z.string().min(2).max(160),
 "draft": z.optional(z.string().max(4000)),
-"mode": z.optional(z.enum(["create", "improve"]).default("create"))
+"mode": z.optional(z.enum(["create", "improve"]).default("create")),
+"instruction": z.optional(z.string().max(300))
     }) as unknown as z.ZodType<SuggestCampaignStoryMutationRequest>
 
 export const suggestCampaignStoryMutationResponseSchema = z.lazy(() => suggestCampaignStory200Schema) as unknown as z.ZodType<SuggestCampaignStoryMutationResponse>

@@ -45,6 +45,11 @@ export type SuggestProductDescriptionMutationRequest = {
      * @type string | undefined
     */
     mode?: SuggestProductDescriptionMutationRequestModeEnumKey;
+    /**
+     * @maxLength 300
+     * @type string | undefined
+    */
+    instruction?: string;
 };
 
 export type SuggestProductDescriptionMutationResponse = SuggestProductDescription200;

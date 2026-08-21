@@ -50,6 +50,11 @@ export type SuggestPrizeDescriptionMutationRequest = {
      * @type string | undefined
     */
     mode?: SuggestPrizeDescriptionMutationRequestModeEnumKey;
+    /**
+     * @maxLength 300
+     * @type string | undefined
+    */
+    instruction?: string;
 };
 
 export type SuggestPrizeDescriptionMutationResponse = SuggestPrizeDescription200;

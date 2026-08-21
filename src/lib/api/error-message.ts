@@ -25,6 +25,13 @@ const MESSAGES: Record<string, string> = {
   product_not_found: "Este produto não existe mais.",
   store_not_found: "Esta loja não existe mais.",
   campaign_not_found: "Esta campanha não existe mais.",
+  // o endereço da campanha sai do título: sem esta mensagem, repetir o título virava
+  // "Não deu para concluir agora." e não havia como adivinhar que era o nome
+  campaign_slug_taken: "Já existe uma campanha com esse título nesta loja. Mude o título.",
+  campaign_not_draft:
+    "Só dá para excluir campanha que ainda é rascunho. Esta já foi ao ar — encerre em vez de excluir.",
+  campaign_has_donations:
+    "Esta campanha já tem doação registrada e por isso não pode ser excluída. Encerre-a.",
   campaign_not_open: "Esta campanha já foi encerrada.",
   donation_type_not_accepted: "Esta campanha não aceita esse tipo de doação.",
 
@@ -47,8 +54,8 @@ const MESSAGES: Record<string, string> = {
     "Doação mensal não está disponível nessa forma de pagamento. Tente a outra opção.",
   subscription_already_cancelled: "Essa contribuição mensal já estava cancelada.",
 
-  // ajuda de IA na descrição — nenhum desses erros impede salvar o produto
-  ai_not_configured: "A ajuda de IA está desligada nesta plataforma.",
+  // auxílio de IA na descrição — nenhum desses erros impede salvar o produto
+  ai_not_configured: "O auxílio de IA está desligado nesta plataforma.",
   ai_quota_exceeded: "A cota de IA do dia acabou. Tente amanhã ou escreva você mesmo.",
   ai_unavailable: "A IA não respondeu agora. Tente de novo em instantes.",
   ai_empty_response: "A IA não conseguiu escrever nada útil. Tente de novo.",

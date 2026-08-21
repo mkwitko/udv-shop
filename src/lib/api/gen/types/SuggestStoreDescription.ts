@@ -38,6 +38,11 @@ export type SuggestStoreDescriptionMutationRequest = {
      * @type string | undefined
     */
     mode?: SuggestStoreDescriptionMutationRequestModeEnumKey;
+    /**
+     * @maxLength 300
+     * @type string | undefined
+    */
+    instruction?: string;
 };
 
 export type SuggestStoreDescriptionMutationResponse = SuggestStoreDescription200;

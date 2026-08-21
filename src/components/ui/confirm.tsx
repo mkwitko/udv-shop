@@ -53,10 +53,10 @@ export function ConfirmDialog({
             <h2 className="font-bold font-display text-lg tracking-tight">{title}</h2>
             {children && <div className="mt-2 text-[0.95rem] text-muted">{children}</div>}
             <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-              <Button variant="ghost" onClick={onCancel} disabled={busy}>
+              <Button type="button" variant="ghost" onClick={onCancel} disabled={busy}>
                 {dismissLabel}
               </Button>
-              <Button variant="danger" onClick={onConfirm} disabled={busy}>
+              <Button type="button" variant="danger" onClick={onConfirm} disabled={busy}>
                 {busy ? "Um momento…" : confirmLabel}
               </Button>
             </div>

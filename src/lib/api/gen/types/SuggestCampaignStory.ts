@@ -45,6 +45,11 @@ export type SuggestCampaignStoryMutationRequest = {
      * @type string | undefined
     */
     mode?: SuggestCampaignStoryMutationRequestModeEnumKey;
+    /**
+     * @maxLength 300
+     * @type string | undefined
+    */
+    instruction?: string;
 };
 
 export type SuggestCampaignStoryMutationResponse = SuggestCampaignStory200;

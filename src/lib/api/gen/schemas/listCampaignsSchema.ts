@@ -13,7 +13,8 @@ export const listCampaignsPathParamsSchema = z.object({
 export const listCampaignsQueryParamsSchema = z.object({
     "limit": z.coerce.number().int().min(1).max(50).default(20),
 "cursor": z.optional(z.string()),
-"all": z.optional(z.enum(["true", "false"]))
+"all": z.optional(z.enum(["true", "false"])),
+"archived": z.optional(z.enum(["true", "false"]))
     }) as unknown as z.ZodType<ListCampaignsQueryParams>
 
 /**
@@ -31,6 +32,9 @@ export const listCampaigns200Schema = z.object({
 "story": z.nullable(z.string()),
 "coverImage": z.nullable(z.string()),
 "coverImageUrl": z.nullable(z.string()),
+"images": z.array(z.string()),
+"imageUrls": z.array(z.string()),
+"archivedAt": z.nullable(z.string()),
 "goalCents": z.nullable(z.int().min(-9007199254740991).max(9007199254740991)),
 "raisedCents": z.int().min(-9007199254740991).max(9007199254740991),
 "donationCount": z.int().min(-9007199254740991).max(9007199254740991),

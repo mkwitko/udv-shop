@@ -42,7 +42,7 @@ function DonationsAdmin() {
             </Button>
           }
         >
-          Quando alguém apoiar sua loja, o apoio aparece aqui. Uma campanha com meta ajuda a
+          Quando alguém apoiar sua loja, o apoio aparece aqui. Uma campanha com meta auxilia a
           comunidade a entender para onde vai o dinheiro.
         </EmptyState>
       ) : (

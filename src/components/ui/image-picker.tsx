@@ -2,6 +2,7 @@ import { ImagePlus, X } from "lucide-react";
 import { useRef, useState } from "react";
 import { errorMessage } from "#/lib/api/error-message";
 import { presignUpload } from "#/lib/api/gen/clients/presignUpload";
+import { cn } from "#/lib/utils";
 
 export const ACCEPTED_IMAGE_TYPES = [
   "image/jpeg",
@@ -28,6 +29,8 @@ export function ImagePicker({
   onUploadingChange,
   onError,
   label = "Arraste as fotos aqui",
+  coverKey,
+  onCoverChange,
 }: {
   storeSlug: string;
   images: PickedImage[];
@@ -37,6 +40,9 @@ export function ImagePicker({
   onUploadingChange?: (uploading: boolean) => void;
   onError?: (message: string | null) => void;
   label?: string;
+  /** Com `onCoverChange`, cada foto ganha o botão de virar capa. Só a campanha usa. */
+  coverKey?: string | null;
+  onCoverChange?: (key: string) => void;
 }) {
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
@@ -97,23 +103,48 @@ export function ImagePicker({
     <div className="grid gap-3">
       {images.length > 0 && (
         <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6">
-          {images.map((image) => (
-            <span key={image.key} className="relative">
-              <img
-                src={image.url}
-                alt=""
-                className="aspect-square w-full rounded-[0.9rem] border border-line bg-surface object-cover"
-              />
-              <button
-                type="button"
-                aria-label="Remover foto"
-                onClick={() => onChange(images.filter((candidate) => candidate.key !== image.key))}
-                className="-top-2 -right-2 absolute inline-grid h-7 w-7 place-items-center rounded-full border border-line bg-elevated text-muted shadow-sm hover:text-danger"
-              >
-                <X className="h-3.5 w-3.5" aria-hidden />
-              </button>
-            </span>
-          ))}
+          {images.map((image) => {
+            const isCover = onCoverChange !== undefined && image.key === coverKey;
+            return (
+              <span key={image.key} className="relative">
+                <img
+                  src={image.url}
+                  alt=""
+                  className={cn(
+                    "aspect-square w-full rounded-[0.9rem] border bg-surface object-cover",
+                    isCover ? "border-brand ring-2 ring-brand/30" : "border-line",
+                  )}
+                />
+                <button
+                  type="button"
+                  aria-label="Remover foto"
+                  onClick={() =>
+                    onChange(images.filter((candidate) => candidate.key !== image.key))
+                  }
+                  className="-top-2 -right-2 absolute inline-grid h-7 w-7 place-items-center rounded-full border border-line bg-elevated text-muted shadow-sm hover:text-danger"
+                >
+                  <X className="h-3.5 w-3.5" aria-hidden />
+                </button>
+                {/* a capa é a foto que viaja no link compartilhado, então ela precisa ser
+                    escolhida na mão — a primeira que subiu raramente é a melhor */}
+                {onCoverChange !== undefined && (
+                  <button
+                    type="button"
+                    onClick={() => onCoverChange(image.key)}
+                    aria-pressed={isCover}
+                    className={cn(
+                      "absolute inset-x-1 bottom-1 rounded-full px-2 py-1 text-[0.7rem] font-medium",
+                      isCover
+                        ? "bg-brand text-brand-ink"
+                        : "bg-elevated/90 text-muted hover:text-ink",
+                    )}
+                  >
+                    {isCover ? "Capa" : "Usar de capa"}
+                  </button>
+                )}
+              </span>
+            );
+          })}
         </div>
       )}
 

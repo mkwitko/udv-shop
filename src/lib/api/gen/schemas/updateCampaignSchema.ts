@@ -25,6 +25,9 @@ export const updateCampaign200Schema = z.object({
 "story": z.nullable(z.string()),
 "coverImage": z.nullable(z.string()),
 "coverImageUrl": z.nullable(z.string()),
+"images": z.array(z.string()),
+"imageUrls": z.array(z.string()),
+"archivedAt": z.nullable(z.string()),
 "goalCents": z.nullable(z.int().min(-9007199254740991).max(9007199254740991)),
 "raisedCents": z.int().min(-9007199254740991).max(9007199254740991),
 "donationCount": z.int().min(-9007199254740991).max(9007199254740991),
@@ -38,6 +41,7 @@ export const updateCampaignMutationRequestSchema = z.object({
     "title": z.optional(z.string().min(2).max(160)),
 "story": z.string().max(10000).nullish(),
 "coverImage": z.string().max(300).regex(/^stores\/.*/).nullish(),
+"images": z.optional(z.array(z.string().max(300).regex(/^stores\/.*/)).max(8)),
 "goalCents": z.int().max(1000000000).gt(0).nullish(),
 "acceptedTypes": z.optional(z.enum(["one_time", "monthly", "both"])),
 "endsAt": z.iso.datetime().nullish()

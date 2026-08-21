@@ -1,4 +1,5 @@
 export { adminListStores } from "./adminListStores.ts";
+export { archiveCampaign } from "./archiveCampaign.ts";
 export { archiveProduct } from "./archiveProduct.ts";
 export { cancelDonationSubscription } from "./cancelDonationSubscription.ts";
 export { cancelInterest } from "./cancelInterest.ts";
@@ -17,6 +18,7 @@ export { createStripeAccountLink } from "./createStripeAccountLink.ts";
 export { createStripeAccountSession } from "./createStripeAccountSession.ts";
 export { createStripeDashboardLink } from "./createStripeDashboardLink.ts";
 export { createSupplier } from "./createSupplier.ts";
+export { deleteCampaign } from "./deleteCampaign.ts";
 export { deleteStoreDomain } from "./deleteStoreDomain.ts";
 export { drawRaffle } from "./drawRaffle.ts";
 export { forgotPassword } from "./forgotPassword.ts";

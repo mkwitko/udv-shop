@@ -1,5 +1,6 @@
 export type { AdminListStoresQueryKey } from "./useAdminListStores.ts";
 export type { AdminListStoresSuspenseQueryKey } from "./useAdminListStoresSuspense.ts";
+export type { ArchiveCampaignMutationKey } from "./useArchiveCampaign.ts";
 export type { ArchiveProductMutationKey } from "./useArchiveProduct.ts";
 export type { CancelDonationSubscriptionMutationKey } from "./useCancelDonationSubscription.ts";
 export type { CancelInterestMutationKey } from "./useCancelInterest.ts";
@@ -18,6 +19,7 @@ export type { CreateStripeAccountLinkMutationKey } from "./useCreateStripeAccoun
 export type { CreateStripeAccountSessionMutationKey } from "./useCreateStripeAccountSession.ts";
 export type { CreateStripeDashboardLinkMutationKey } from "./useCreateStripeDashboardLink.ts";
 export type { CreateSupplierMutationKey } from "./useCreateSupplier.ts";
+export type { DeleteCampaignMutationKey } from "./useDeleteCampaign.ts";
 export type { DeleteStoreDomainMutationKey } from "./useDeleteStoreDomain.ts";
 export type { DrawRaffleMutationKey } from "./useDrawRaffle.ts";
 export type { ForgotPasswordMutationKey } from "./useForgotPassword.ts";
@@ -116,6 +118,9 @@ export { useAdminListStores } from "./useAdminListStores.ts";
 export { adminListStoresSuspenseQueryKey } from "./useAdminListStoresSuspense.ts";
 export { adminListStoresSuspenseQueryOptions } from "./useAdminListStoresSuspense.ts";
 export { useAdminListStoresSuspense } from "./useAdminListStoresSuspense.ts";
+export { archiveCampaignMutationKey } from "./useArchiveCampaign.ts";
+export { archiveCampaignMutationOptions } from "./useArchiveCampaign.ts";
+export { useArchiveCampaign } from "./useArchiveCampaign.ts";
 export { archiveProductMutationKey } from "./useArchiveProduct.ts";
 export { archiveProductMutationOptions } from "./useArchiveProduct.ts";
 export { useArchiveProduct } from "./useArchiveProduct.ts";
@@ -170,6 +175,9 @@ export { useCreateStripeDashboardLink } from "./useCreateStripeDashboardLink.ts"
 export { createSupplierMutationKey } from "./useCreateSupplier.ts";
 export { createSupplierMutationOptions } from "./useCreateSupplier.ts";
 export { useCreateSupplier } from "./useCreateSupplier.ts";
+export { deleteCampaignMutationKey } from "./useDeleteCampaign.ts";
+export { deleteCampaignMutationOptions } from "./useDeleteCampaign.ts";
+export { useDeleteCampaign } from "./useDeleteCampaign.ts";
 export { deleteStoreDomainMutationKey } from "./useDeleteStoreDomain.ts";
 export { deleteStoreDomainMutationOptions } from "./useDeleteStoreDomain.ts";
 export { useDeleteStoreDomain } from "./useDeleteStoreDomain.ts";

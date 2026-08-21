@@ -26,6 +26,8 @@ import { seo } from "#/lib/seo";
 
 const SearchSchema = z.object({
   campanha: z.string().optional(),
+  /** Valor em centavos escolhido na página da campanha, para já chegar aqui decidido. */
+  valor: z.coerce.number().int().positive().optional(),
 });
 
 const PRESETS_CENTS = [2000, 5000, 10000];
@@ -64,7 +66,10 @@ function DonatePage() {
 
   const reduceMotion = useReducedMotion();
   const [phase, setPhase] = useState<Phase>("form");
-  const [amountCents, setAmountCents] = useState<number>(5000);
+  // valor vindo da página da campanha manda, desde que caiba nos limites da doação
+  const [amountCents, setAmountCents] = useState<number>(
+    search.valor && search.valor >= MIN_CENTS && search.valor <= MAX_CENTS ? search.valor : 5000,
+  );
   const [customValue, setCustomValue] = useState("");
   const [type, setType] = useState<DonationType>("one_time");
   const [provider, setProvider] = useState<Provider>("woovi");
@@ -111,6 +116,15 @@ function DonatePage() {
     if (!allowOneTime) setType("monthly");
   }, [allowOneTime]);
 
+  // Pix não faz cobrança recorrente: a Woovi não tem split em assinatura, então o
+  // dinheiro da mensal não chegaria na conta de quem organiza. Mensal é só cartão —
+  // o backend recusa com `monthly_not_supported_for_provider`, e o doador descobrir
+  // isso depois de preencher tudo é pior do que não poder escolher.
+  const pixAvailable = type !== "monthly";
+  useEffect(() => {
+    if (!pixAvailable) setProvider("stripe");
+  }, [pixAvailable]);
+
   async function submit(event: React.FormEvent) {
     event.preventDefault();
     setFormError(null);
@@ -151,7 +165,7 @@ function DonatePage() {
             <GlyphEstrela className="h-7 w-7" />
           </span>
           <h1 className="rise rise-2 mt-6 font-bold font-display text-3xl tracking-tight">
-            Obrigado por ajudar!
+            Obrigado por auxiliar!
           </h1>
           <p className="rise rise-3 mt-4 text-lede text-muted">
             {type === "monthly"
@@ -330,8 +344,11 @@ function DonatePage() {
             <TypeChoice
               checked={type === "monthly"}
               onSelect={() => setType("monthly")}
+              disabled={!cardAvailable}
               title="Todo mês"
-              detail="Cancele quando quiser"
+              detail={
+                cardAvailable ? "No cartão, cancele quando quiser" : "Indisponível: só no cartão"
+              }
             />
           </fieldset>
         )}
@@ -341,9 +358,14 @@ function DonatePage() {
           <PayChoice
             checked={provider === "woovi"}
             onSelect={() => setProvider("woovi")}
+            disabled={!pixAvailable}
             icon={<QrCode className="h-5 w-5" aria-hidden />}
             title="Pix"
-            detail="Aprovado na hora, direto do app do seu banco"
+            detail={
+              pixAvailable
+                ? "Aprovado na hora, direto do app do seu banco"
+                : "O Pix não faz cobrança automática todo mês"
+            }
           />
           <PayChoice
             checked={provider === "stripe"}
@@ -387,9 +409,22 @@ function DonatePage() {
           </p>
         )}
 
+        {/* campanha só-mensal numa loja sem cartão: não há forma de pagar, e deixar o
+            botão ativo só rende um 400 depois de tudo preenchido */}
+        {type === "monthly" && !cardAvailable && (
+          <p className="rounded-[1rem] bg-warning-soft px-4 py-3 text-[0.95rem]">
+            Esta campanha aceita só doação mensal, e a doação mensal precisa de cartão — que esta
+            loja ainda não tem ativo. Fale com quem organiza.
+          </p>
+        )}
+
         <FormError>{formError}</FormError>
 
-        <Button size="lg" type="submit" disabled={submitting || effectiveCents === null}>
+        <Button
+          size="lg"
+          type="submit"
+          disabled={submitting || effectiveCents === null || (type === "monthly" && !cardAvailable)}
+        >
           {submitting
             ? "Preparando…"
             : `Continuar — ${effectiveCents !== null ? money(effectiveCents) : "escolha o valor"}${type === "monthly" ? "/mês" : ""}`}
@@ -405,19 +440,28 @@ function TypeChoice({
   onSelect,
   title,
   detail,
+  disabled,
 }: {
   checked: boolean;
   onSelect: () => void;
   title: string;
   detail: string;
+  disabled?: boolean;
 }) {
   return (
     <label
       className={`cursor-pointer rounded-lg border p-3.5 transition-colors [transition-duration:var(--dur)] ${
         checked ? "border-brand bg-brand-pale" : "border-line bg-elevated hover:border-line-strong"
-      }`}
+      } ${disabled ? "cursor-not-allowed opacity-55" : ""}`}
     >
-      <input type="radio" name="type" className="sr-only" checked={checked} onChange={onSelect} />
+      <input
+        type="radio"
+        name="type"
+        className="sr-only"
+        checked={checked}
+        disabled={disabled}
+        onChange={onSelect}
+      />
       <span className="block font-medium">{title}</span>
       <span className="block text-sm text-muted">{detail}</span>
     </label>

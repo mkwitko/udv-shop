@@ -1,4 +1,5 @@
 export { adminListStores200Schema, adminListStoresQueryParamsSchema, adminListStoresQueryResponseSchema } from "./adminListStoresSchema.ts";
+export { archiveCampaign200Schema, archiveCampaignMutationRequestSchema, archiveCampaignMutationResponseSchema, archiveCampaignPathParamsSchema } from "./archiveCampaignSchema.ts";
 export { archiveProduct204Schema, archiveProductMutationResponseSchema, archiveProductPathParamsSchema } from "./archiveProductSchema.ts";
 export { cancelDonationSubscription202Schema, cancelDonationSubscriptionMutationResponseSchema, cancelDonationSubscriptionPathParamsSchema } from "./cancelDonationSubscriptionSchema.ts";
 export { cancelInterest200Schema, cancelInterestMutationResponseSchema, cancelInterestPathParamsSchema } from "./cancelInterestSchema.ts";
@@ -17,6 +18,7 @@ export { createStripeAccountLink201Schema, createStripeAccountLinkMutationRespon
 export { createStripeAccountSession201Schema, createStripeAccountSessionMutationResponseSchema, createStripeAccountSessionPathParamsSchema } from "./createStripeAccountSessionSchema.ts";
 export { createStripeDashboardLink201Schema, createStripeDashboardLinkMutationResponseSchema, createStripeDashboardLinkPathParamsSchema } from "./createStripeDashboardLinkSchema.ts";
 export { createSupplier201Schema, createSupplierMutationRequestSchema, createSupplierMutationResponseSchema, createSupplierPathParamsSchema } from "./createSupplierSchema.ts";
+export { deleteCampaign204Schema, deleteCampaignMutationResponseSchema, deleteCampaignPathParamsSchema } from "./deleteCampaignSchema.ts";
 export { deleteStoreDomain200Schema, deleteStoreDomainMutationResponseSchema, deleteStoreDomainPathParamsSchema } from "./deleteStoreDomainSchema.ts";
 export { drawRaffle202Schema, drawRaffleMutationResponseSchema, drawRafflePathParamsSchema } from "./drawRaffleSchema.ts";
 export { forgotPassword204Schema, forgotPasswordMutationRequestSchema, forgotPasswordMutationResponseSchema } from "./forgotPasswordSchema.ts";

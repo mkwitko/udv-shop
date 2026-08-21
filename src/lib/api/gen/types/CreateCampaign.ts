@@ -70,6 +70,18 @@ export type CreateCampaign201 = {
     */
     coverImageUrl: string | null;
     /**
+     * @type array
+    */
+    images: string[];
+    /**
+     * @type array
+    */
+    imageUrls: string[];
+    /**
+     * @type string
+    */
+    archivedAt: string | null;
+    /**
      * @minLength -9007199254740991
      * @maxLength 9007199254740991
      * @type integer
@@ -138,6 +150,10 @@ export type CreateCampaignMutationRequest = {
      * @type string | undefined
     */
     coverImage?: string;
+    /**
+     * @type array | undefined
+    */
+    images?: string[];
     /**
      * @maxLength 1000000000
      * @type integer | undefined

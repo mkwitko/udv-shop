@@ -1,6 +1,7 @@
 import { Sparkles } from "lucide-react";
-import { useState } from "react";
+import { useId, useState } from "react";
 import { Button } from "#/components/ui/button";
+import { Input } from "#/components/ui/field";
 import { errorMessage } from "#/lib/api/error-message";
 import { ApiError } from "#/lib/api/fetch-client";
 import { suggestCampaignStory } from "#/lib/api/gen/clients/suggestCampaignStory";
@@ -8,14 +9,31 @@ import { suggestPrizeDescription } from "#/lib/api/gen/clients/suggestPrizeDescr
 import { suggestProductDescription } from "#/lib/api/gen/clients/suggestProductDescription";
 import { suggestStoreDescription } from "#/lib/api/gen/clients/suggestStoreDescription";
 
-type AskInput = { mode: "create" | "improve"; draft?: string };
+type AskInput = { mode: "create" | "improve"; draft?: string; instruction?: string };
+
+const INSTRUCTION_MAX = 300;
 
 /**
- * Ajuda de IA para texto que a loja escreve (descrição de produto, história de
+ * Auxílio de IA para texto que a loja escreve (descrição de produto, história de
  * campanha). A IA nunca escreve direto no campo: propõe e quem aplica é a pessoa — o
  * texto é da loja, não da plataforma. Se a plataforma está sem credencial, o bloco some
  * em vez de virar erro na cara de quem só queria cadastrar.
  */
+/**
+ * Atalhos de pedido: um toque escreve o que quase todo mundo ia digitar. O que vai para
+ * a IA é mais explícito que o rótulo — "Mais curto" sozinho o modelo ignora, já "corte
+ * pela metade" ele obedece.
+ */
+const SHORTCUTS = [
+  { label: "Mais curto", text: "Deixe bem mais curto, cortando o que não é essencial." },
+  { label: "Mais caloroso", text: "Deixe mais caloroso e próximo, como quem fala com um vizinho." },
+  {
+    label: "Foque no que a pessoa leva",
+    text: "Comece pelo que a pessoa leva ou ganha, logo na primeira frase.",
+  },
+  { label: "Menos formal", text: "Escreva menos formal, com palavras do dia a dia." },
+] as const;
+
 function AiText({
   subject,
   draft,
@@ -34,14 +52,18 @@ function AiText({
   ask: (input: AskInput) => Promise<{ text: string }>;
   onApply: (text: string) => void;
 }) {
-  const [suggestion, setSuggestion] = useState<string | null>(null);
+  const [suggestion, setSuggestion] = useState<{ text: string; instruction: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [off, setOff] = useState(false);
+  const [instruction, setInstruction] = useState("");
+  const [asking, setAsking] = useState(false);
+  const instructionId = useId();
 
   const clean = draft.trim();
   // texto curto é anotação, não rascunho: aí a IA escreve em vez de "melhorar" duas linhas
   const mode: AskInput["mode"] = clean.length >= 12 ? "improve" : "create";
+  const wish = instruction.trim();
 
   if (off) return null;
 
@@ -49,8 +71,13 @@ function AiText({
     setBusy(true);
     setError(null);
     try {
-      const result = await ask(clean ? { mode, draft: clean } : { mode });
-      setSuggestion(result.text);
+      const result = await ask({
+        mode,
+        ...(clean && { draft: clean }),
+        ...(wish && { instruction: wish }),
+      });
+      // guardado junto do texto: é o que deixa a tela dizer qual pedido gerou aquilo
+      setSuggestion({ text: result.text, instruction: wish });
     } catch (err) {
       // feature desligada na plataforma: esconde o bloco, não culpa a loja
       if (err instanceof ApiError && err.code === "ai_not_configured") {
@@ -63,14 +90,54 @@ function AiText({
     }
   }
 
+  function addShortcut(text: string) {
+    setInstruction((current) => (current.trim() ? `${current.trim()}. ${text}` : text));
+  }
+
+  const verb = mode === "improve" ? "Melhorar" : "Escrever";
   const label = busy
     ? "Escrevendo…"
-    : mode === "improve"
-      ? `Melhorar ${subject} com IA`
-      : `Escrever ${subject} com IA`;
+    : wish
+      ? `${verb} com esta orientação`
+      : `${verb} ${subject} com IA`;
+
+  /** Campo de pedido e atalhos. Aparece antes de gerar (a pedido) e junto da sugestão. */
+  const instructionBox = (
+    <div className="grid gap-2">
+      <label className="font-medium text-sm" htmlFor={instructionId}>
+        O que você quer nesse texto?
+      </label>
+      <Input
+        id={instructionId}
+        value={instruction}
+        maxLength={INSTRUCTION_MAX}
+        placeholder="Mais curto e sem drama. Cite a horta."
+        onChange={(event) => setInstruction(event.target.value)}
+        onKeyDown={(event) => {
+          // Enter aqui é "gerar", não "enviar o formulário da página"
+          if (event.key === "Enter") {
+            event.preventDefault();
+            if (!busy && canAsk) void run();
+          }
+        }}
+      />
+      <div className="flex flex-wrap gap-2">
+        {SHORTCUTS.map((shortcut) => (
+          <button
+            key={shortcut.label}
+            type="button"
+            className="h-8 rounded-full border border-line bg-surface px-3 text-muted text-xs transition-colors hover:border-line-strong hover:text-ink"
+            onClick={() => addShortcut(shortcut.text)}
+          >
+            {shortcut.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
 
   return (
-    <div className="grid gap-2">
+    <div className="grid gap-3">
       <div className="flex flex-wrap items-center gap-2">
         <Button
           type="button"
@@ -83,31 +150,72 @@ function AiText({
           <Sparkles className="h-3.5 w-3.5" aria-hidden />
           {label}
         </Button>
+        {canAsk && !asking && !suggestion && (
+          <Button type="button" variant="ghost" size="sm" onClick={() => setAsking(true)}>
+            Orientar a IA
+          </Button>
+        )}
         <span className="text-muted text-xs">{canAsk ? hint : blockedHint}</span>
       </div>
+
+      {/* antes de gerar o campo só aparece a pedido; depois da sugestão ele mora no bloco
+          "Quer ajustar?", que é onde a vontade de mudar aparece de verdade */}
+      {asking && !suggestion && instructionBox}
 
       {error && <p className="text-danger text-sm">{error}</p>}
 
       {suggestion && (
-        <div className="grid gap-3 rounded-[1rem] border border-brand/25 bg-brand-pale p-4">
-          <p className="whitespace-pre-line text-[0.95rem]">{suggestion}</p>
+        <div className="grid gap-4 rounded-[1rem] border border-brand/25 bg-brand-pale p-4">
+          <div className="grid gap-2">
+            <span className="kicker">Sugestão da IA</span>
+            {suggestion.instruction && (
+              <p className="text-muted text-xs">Seu pedido: {suggestion.instruction}</p>
+            )}
+            <p className="whitespace-pre-line text-[0.95rem]">{suggestion.text}</p>
+          </div>
+
           <div className="flex flex-wrap gap-2">
             <Button
               type="button"
               size="sm"
               onClick={() => {
-                onApply(suggestion);
+                onApply(suggestion.text);
                 setSuggestion(null);
+                setInstruction("");
+                setAsking(false);
               }}
             >
               Usar este texto
             </Button>
-            <Button type="button" variant="secondary" size="sm" onClick={run} disabled={busy}>
-              Tentar outro
-            </Button>
-            <Button type="button" variant="ghost" size="sm" onClick={() => setSuggestion(null)}>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setSuggestion(null);
+                setAsking(false);
+              }}
+            >
               Descartar
             </Button>
+          </div>
+
+          <div className="grid gap-3 border-line border-t pt-4">
+            <p className="font-medium text-sm">Quer ajustar?</p>
+            {instructionBox}
+            <div>
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                onClick={run}
+                disabled={busy || !wish}
+                title={wish ? undefined : "Escreva o ajuste ou toque num atalho."}
+              >
+                <Sparkles className="h-3.5 w-3.5" aria-hidden />
+                {busy ? "Refazendo…" : "Refazer com o ajuste"}
+              </Button>
+            </div>
           </div>
         </div>
       )}

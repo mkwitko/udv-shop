@@ -18,6 +18,13 @@ export const listCampaignsQueryParamsAllEnum = {
 
 export type ListCampaignsQueryParamsAllEnumKey = (typeof listCampaignsQueryParamsAllEnum)[keyof typeof listCampaignsQueryParamsAllEnum];
 
+export const listCampaignsQueryParamsArchivedEnum = {
+    true: "true",
+    false: "false"
+} as const;
+
+export type ListCampaignsQueryParamsArchivedEnumKey = (typeof listCampaignsQueryParamsArchivedEnum)[keyof typeof listCampaignsQueryParamsArchivedEnum];
+
 export type ListCampaignsQueryParams = {
     /**
      * @minLength 1
@@ -34,6 +41,10 @@ export type ListCampaignsQueryParams = {
      * @type string | undefined
     */
     all?: ListCampaignsQueryParamsAllEnumKey;
+    /**
+     * @type string | undefined
+    */
+    archived?: ListCampaignsQueryParamsArchivedEnumKey;
 };
 
 export const itemsAcceptedTypesEnum = {
@@ -98,6 +109,18 @@ export type ListCampaigns200 = {
          * @type string
         */
         coverImageUrl: string | null;
+        /**
+         * @type array
+        */
+        images: string[];
+        /**
+         * @type array
+        */
+        imageUrls: string[];
+        /**
+         * @type string
+        */
+        archivedAt: string | null;
         /**
          * @minLength -9007199254740991
          * @maxLength 9007199254740991

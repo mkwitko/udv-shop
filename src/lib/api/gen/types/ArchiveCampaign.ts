@@ -4,7 +4,7 @@
 */
 
 
-export type UpdateCampaignStatusPathParams = {
+export type ArchiveCampaignPathParams = {
     /**
      * @type string
     */
@@ -15,27 +15,27 @@ export type UpdateCampaignStatusPathParams = {
     campaignSlug: string;
 };
 
-export const updateCampaignStatus200AcceptedTypesEnum = {
+export const archiveCampaign200AcceptedTypesEnum = {
     one_time: "one_time",
     monthly: "monthly",
     both: "both"
 } as const;
 
-export type UpdateCampaignStatus200AcceptedTypesEnumKey = (typeof updateCampaignStatus200AcceptedTypesEnum)[keyof typeof updateCampaignStatus200AcceptedTypesEnum];
+export type ArchiveCampaign200AcceptedTypesEnumKey = (typeof archiveCampaign200AcceptedTypesEnum)[keyof typeof archiveCampaign200AcceptedTypesEnum];
 
-export const updateCampaignStatus200StatusEnum = {
+export const archiveCampaign200StatusEnum = {
     draft: "draft",
     active: "active",
     paused: "paused",
     finished: "finished"
 } as const;
 
-export type UpdateCampaignStatus200StatusEnumKey = (typeof updateCampaignStatus200StatusEnum)[keyof typeof updateCampaignStatus200StatusEnum];
+export type ArchiveCampaign200StatusEnumKey = (typeof archiveCampaign200StatusEnum)[keyof typeof archiveCampaign200StatusEnum];
 
 /**
  * @description Default Response
 */
-export type UpdateCampaignStatus200 = {
+export type ArchiveCampaign200 = {
     /**
      * @type string
     */
@@ -106,11 +106,11 @@ export type UpdateCampaignStatus200 = {
     /**
      * @type string
     */
-    acceptedTypes: UpdateCampaignStatus200AcceptedTypesEnumKey;
+    acceptedTypes: ArchiveCampaign200AcceptedTypesEnumKey;
     /**
      * @type string
     */
-    status: UpdateCampaignStatus200StatusEnumKey;
+    status: ArchiveCampaign200StatusEnumKey;
     /**
      * @type string
     */
@@ -121,27 +121,18 @@ export type UpdateCampaignStatus200 = {
     createdAt: string;
 };
 
-export const updateCampaignStatusMutationRequestStatusEnum = {
-    draft: "draft",
-    active: "active",
-    paused: "paused",
-    finished: "finished"
-} as const;
-
-export type UpdateCampaignStatusMutationRequestStatusEnumKey = (typeof updateCampaignStatusMutationRequestStatusEnum)[keyof typeof updateCampaignStatusMutationRequestStatusEnum];
-
-export type UpdateCampaignStatusMutationRequest = {
+export type ArchiveCampaignMutationRequest = {
     /**
-     * @type string
+     * @type boolean
     */
-    status: UpdateCampaignStatusMutationRequestStatusEnumKey;
+    archived: boolean;
 };
 
-export type UpdateCampaignStatusMutationResponse = UpdateCampaignStatus200;
+export type ArchiveCampaignMutationResponse = ArchiveCampaign200;
 
-export type UpdateCampaignStatusMutation = {
-    Response: UpdateCampaignStatus200;
-    Request: UpdateCampaignStatusMutationRequest;
-    PathParams: UpdateCampaignStatusPathParams;
+export type ArchiveCampaignMutation = {
+    Response: ArchiveCampaign200;
+    Request: ArchiveCampaignMutationRequest;
+    PathParams: ArchiveCampaignPathParams;
     Errors: any;
 };

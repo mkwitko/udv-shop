@@ -1,4 +1,5 @@
 export type { AdminListStores200, AdminListStoresQuery, AdminListStoresQueryParams, AdminListStoresQueryParamsStatusEnumKey, AdminListStoresQueryResponse, ItemsStatusEnum2Key } from "./AdminListStores.ts";
+export type { ArchiveCampaign200, ArchiveCampaign200AcceptedTypesEnumKey, ArchiveCampaign200StatusEnumKey, ArchiveCampaignMutation, ArchiveCampaignMutationRequest, ArchiveCampaignMutationResponse, ArchiveCampaignPathParams } from "./ArchiveCampaign.ts";
 export type { ArchiveProduct204, ArchiveProduct204EnumKey, ArchiveProductMutation, ArchiveProductMutationResponse, ArchiveProductPathParams } from "./ArchiveProduct.ts";
 export type { CancelDonationSubscription202, CancelDonationSubscription202StatusEnumKey, CancelDonationSubscriptionMutation, CancelDonationSubscriptionMutationResponse, CancelDonationSubscriptionPathParams } from "./CancelDonationSubscription.ts";
 export type { CancelInterest200, CancelInterestMutation, CancelInterestMutationResponse, CancelInterestPathParams } from "./CancelInterest.ts";
@@ -17,6 +18,7 @@ export type { CreateStripeAccountLink201, CreateStripeAccountLinkMutation, Creat
 export type { CreateStripeAccountSession201, CreateStripeAccountSessionMutation, CreateStripeAccountSessionMutationResponse, CreateStripeAccountSessionPathParams } from "./CreateStripeAccountSession.ts";
 export type { CreateStripeDashboardLink201, CreateStripeDashboardLinkMutation, CreateStripeDashboardLinkMutationResponse, CreateStripeDashboardLinkPathParams } from "./CreateStripeDashboardLink.ts";
 export type { CreateSupplier201, CreateSupplierMutation, CreateSupplierMutationRequest, CreateSupplierMutationResponse, CreateSupplierPathParams } from "./CreateSupplier.ts";
+export type { DeleteCampaign204, DeleteCampaign204EnumKey, DeleteCampaignMutation, DeleteCampaignMutationResponse, DeleteCampaignPathParams } from "./DeleteCampaign.ts";
 export type { DeleteStoreDomain200, DeleteStoreDomainMutation, DeleteStoreDomainMutationResponse, DeleteStoreDomainPathParams } from "./DeleteStoreDomain.ts";
 export type { DrawRaffle202, DrawRaffleMutation, DrawRaffleMutationResponse, DrawRafflePathParams } from "./DrawRaffle.ts";
 export type { ForgotPassword204, ForgotPassword204EnumKey, ForgotPasswordMutation, ForgotPasswordMutationRequest, ForgotPasswordMutationResponse } from "./ForgotPassword.ts";
@@ -35,7 +37,7 @@ export type { GetStatement200, GetStatementPathParams, GetStatementQuery, GetSta
 export type { GetStore200, GetStore200StatusEnumKey, GetStorePathParams, GetStoreQuery, GetStoreQueryResponse } from "./GetStore.ts";
 export type { GetStoreDomain200, GetStoreDomainPathParams, GetStoreDomainQuery, GetStoreDomainQueryResponse } from "./GetStoreDomain.ts";
 export type { GetWooviBalance200, GetWooviBalancePathParams, GetWooviBalanceQuery, GetWooviBalanceQueryResponse } from "./GetWooviBalance.ts";
-export type { ItemsAcceptedTypesEnumKey, ItemsStatusEnum4Key, ListCampaigns200, ListCampaignsPathParams, ListCampaignsQuery, ListCampaignsQueryParams, ListCampaignsQueryParamsAllEnumKey, ListCampaignsQueryResponse } from "./ListCampaigns.ts";
+export type { ItemsAcceptedTypesEnumKey, ItemsStatusEnum4Key, ListCampaigns200, ListCampaignsPathParams, ListCampaignsQuery, ListCampaignsQueryParams, ListCampaignsQueryParamsAllEnumKey, ListCampaignsQueryParamsArchivedEnumKey, ListCampaignsQueryResponse } from "./ListCampaigns.ts";
 export type { ItemsTypeEnumKey, ListMyDonations200, ListMyDonationsQuery, ListMyDonationsQueryParams, ListMyDonationsQueryParamsStatusEnumKey, ListMyDonationsQueryResponse } from "./ListMyDonations.ts";
 export type { ListMyInterests200, ListMyInterestsQuery, ListMyInterestsQueryParams, ListMyInterestsQueryParamsStatusEnumKey, ListMyInterestsQueryResponse } from "./ListMyInterests.ts";
 export type { ListMyOrders200, ListMyOrdersQuery, ListMyOrdersQueryParams, ListMyOrdersQueryResponse } from "./ListMyOrders.ts";
@@ -81,6 +83,8 @@ export type { WithdrawWoovi200, WithdrawWoovi200StatusEnumKey, WithdrawWooviMuta
 export type { WooviWebhook200, WooviWebhookMutation, WooviWebhookMutationResponse } from "./WooviWebhook.ts";
 export { adminListStoresQueryParamsStatusEnum } from "./AdminListStores.ts";
 export { itemsStatusEnum2 } from "./AdminListStores.ts";
+export { archiveCampaign200AcceptedTypesEnum } from "./ArchiveCampaign.ts";
+export { archiveCampaign200StatusEnum } from "./ArchiveCampaign.ts";
 export { cancelDonationSubscription202StatusEnum } from "./CancelDonationSubscription.ts";
 export { checkoutMutationRequestProviderEnum } from "./Checkout.ts";
 export { paymentProviderEnum4 } from "./Checkout.ts";
@@ -112,6 +116,7 @@ export { getStore200StatusEnum } from "./GetStore.ts";
 export { itemsAcceptedTypesEnum } from "./ListCampaigns.ts";
 export { itemsStatusEnum4 } from "./ListCampaigns.ts";
 export { listCampaignsQueryParamsAllEnum } from "./ListCampaigns.ts";
+export { listCampaignsQueryParamsArchivedEnum } from "./ListCampaigns.ts";
 export { itemsTypeEnum } from "./ListMyDonations.ts";
 export { listMyDonationsQueryParamsStatusEnum } from "./ListMyDonations.ts";
 export { listMyInterestsQueryParamsStatusEnum } from "./ListMyInterests.ts";
