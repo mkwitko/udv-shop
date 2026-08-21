@@ -32,6 +32,15 @@ test("dono configura endereço próprio e recebe as instruções de DNS", async 
     timeout: 15_000,
   });
 
+  // Endereço próprio depende de Cloudflare for SaaS na plataforma. Sem isso a API responde
+  // `enabled: false` e a seção só explica que o recurso não está liberado — pular com motivo é
+  // honesto; falhar sempre treina todo mundo a ignorar a suíte.
+  const desligado = page.getByText("Ainda não liberamos endereço próprio");
+  test.skip(
+    await desligado.isVisible().catch(() => false),
+    "endereço próprio desligado nesta plataforma (falta Cloudflare for SaaS)",
+  );
+
   // a loja de demonstração pode já ter um endereço: solta antes de configurar de novo
   const field = page.getByRole("textbox", { name: "Endereço da loja" });
   await clearDomain(page, field);

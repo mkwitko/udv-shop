@@ -2,8 +2,8 @@ import { expect, test } from "@playwright/test";
 import { login, STORE_SLUG } from "./helpers";
 
 /**
- * Repasse: cadastra um parceiro, combina quanto do preço é dele e confere que a
- * prévia mostra as três linhas (parceiro, taxa, loja) antes de salvar.
+ * Repasse: cadastra um parceiro, combina quanto do preço é dele e confere que a prévia mostra
+ * para onde vai o dinheiro antes de salvar.
  */
 test("dono cadastra parceiro e combina repasse num produto", async ({ page }) => {
   await login(page, "dono@nucleo.local");
@@ -32,11 +32,12 @@ test("dono cadastra parceiro e combina repasse num produto", async ({ page }) =>
   await page.getByLabel("Como combinar").selectOption("percent");
   await page.getByRole("textbox", { name: "Porcentagem" }).fill("50");
 
-  // R$ 60,00 com 50% e taxa de 5%: parceiro 30,00, taxa 3,00, loja 27,00
+  // A plataforma cobra mensalidade, não comissão: com a taxa em zero são duas linhas, e a loja
+  // fica com tudo o que não é do parceiro. R$ 60,00 com 50% → parceiro 30,00, loja 30,00.
   const preview = page.locator("dl");
+  await expect(preview).toContainText("R$ 60,00");
   await expect(preview).toContainText("R$ 30,00");
-  await expect(preview).toContainText("R$ 3,00");
-  await expect(preview).toContainText("R$ 27,00");
+  await expect(preview).not.toContainText("Taxa da plataforma");
 
   await page.getByRole("button", { name: "Publicar produto" }).click();
 
