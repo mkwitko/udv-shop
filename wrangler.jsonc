@@ -8,9 +8,8 @@
   "observability": { "enabled": true, "head_sampling_rate": 1 },
   // O SSR chama a API no Brasil a cada página; deixar a Cloudflare aproximar o Worker da
   // origem corta uma volta de latência por requisição.
-  "placement": { "mode": "smart" }
-  // Domínio da plataforma: quando existir, acrescentar aqui e fazer deploy —
-  //   "routes": [{ "pattern": "SEU-DOMINIO", "custom_domain": true }]
-  // Rota apontando para zona que não está na conta faz o `wrangler deploy` falhar, então
-  // fica fora até o domínio existir de verdade.
+  "placement": { "mode": "smart" },
+  // Zona colheita.app ativa na conta desde 2026-08-21. custom_domain cria o DNS e o
+  // certificado sozinho no primeiro deploy.
+  "routes": [{ "pattern": "colheita.app", "custom_domain": true }]
 }
