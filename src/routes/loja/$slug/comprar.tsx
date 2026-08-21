@@ -5,19 +5,27 @@ import { motion, useReducedMotion } from "motion/react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { RequireSession } from "#/components/auth/require-session";
 import { PayChoice } from "#/components/pay/pay-choice";
 import { PixPanel } from "#/components/pay/pix-panel";
 import { StepHeading } from "#/components/pay/steps";
 import { StripePanel } from "#/components/pay/stripe-panel";
+import {
+  EMPTY_CONTACT,
+  type GuestContact,
+  GuestContactFields,
+  toContactPayload,
+  validateGuestContact,
+} from "#/components/store/guest-contact-fields";
 import { Button } from "#/components/ui/button";
 import { Field, FormError, Input, Textarea } from "#/components/ui/field";
 import { errorMessage } from "#/lib/api/error-message";
 import { checkout } from "#/lib/api/gen/clients/checkout";
 import { useGetMyOrder } from "#/lib/api/gen/hooks/useGetMyOrder";
+import { useGetOrderReceipt } from "#/lib/api/gen/hooks/useGetOrderReceipt";
 import { getProductQueryOptions, useGetProduct } from "#/lib/api/gen/hooks/useGetProduct";
 import type { Checkout201 } from "#/lib/api/gen/types/Checkout";
 import { publicRequest } from "#/lib/api/public";
+import { useSession } from "#/lib/auth/session";
 import { formatPhone, money } from "#/lib/format";
 import { stripePublishableKey } from "#/lib/pay/stripe";
 import { seo } from "#/lib/seo";
@@ -27,11 +35,12 @@ const SearchSchema = z.object({
   qtd: z.coerce.number().int().min(1).max(99).catch(1),
 });
 
+/**
+ * `contactPhone` é opcional aqui porque quem compra sem conta manda o telefone junto do resto
+ * do contato, num campo só. A validação do caminho logado acontece no submit.
+ */
 const BuySchema = z.object({
-  contactPhone: z
-    .string()
-    .min(8, "Coloque um telefone com DDD para a loja falar com você")
-    .max(20, "Telefone muito longo"),
+  contactPhone: z.string().max(20, "Telefone muito longo").optional(),
   note: z.string().max(500).optional(),
 });
 type BuyForm = z.infer<typeof BuySchema>;
@@ -50,16 +59,9 @@ export const Route = createFileRoute("/loja/$slug/comprar")({
   component: BuyRoute,
 });
 
+/** Comprar não pede conta: nome e telefone bastam — a loja liga para combinar a entrega. */
 function BuyRoute() {
-  const { slug } = Route.useParams();
-  const search = Route.useSearch();
-  return (
-    <RequireSession
-      redirectTo={`/loja/${slug}/comprar?produto=${search.produto}&qtd=${search.qtd}`}
-    >
-      <BuyPage />
-    </RequireSession>
-  );
+  return <BuyPage />;
 }
 
 function BuyPage() {
@@ -67,6 +69,13 @@ function BuyPage() {
   const search = Route.useSearch();
   const { data: product } = useGetProduct(slug, search.produto, { client: publicRequest });
 
+  const { status } = useSession();
+  // `guest` decide o que é enviado; `visitor` decide o que a tela mostra. Enquanto a sessão
+  // carrega, quem está logado não pode ver campos de convidado.
+  const guest = status !== "authenticated";
+  const visitor = status === "anonymous";
+  const [contact, setContact] = useState<GuestContact>(EMPTY_CONTACT);
+  const [receiptToken, setReceiptToken] = useState<string | null>(null);
   const [phase, setPhase] = useState<Phase>("form");
   const [qty, setQty] = useState(search.qtd);
   const [provider, setProvider] = useState<Provider>("woovi");
@@ -82,13 +91,30 @@ function BuyPage() {
   // enquanto o Pix ou o cartão está na tela, a página pergunta ao servidor se o
   // pagamento chegou — a pessoa não precisa apertar nada
   const orderId = result?.order.id;
-  const { data: liveOrder } = useGetMyOrder(orderId, {
+  const polling = phase === "pay" && Boolean(orderId);
+  function pollInterval(order: { status: string } | undefined) {
+    return !order || order.status === "pending_payment" ? 4000 : false;
+  }
+  const { data: mine } = useGetMyOrder(orderId, {
     query: {
-      enabled: phase === "pay" && Boolean(orderId),
-      refetchInterval: (query) =>
-        query.state.data?.status === "pending_payment" || !query.state.data ? 4000 : false,
+      enabled: polling && !guest,
+      refetchInterval: (query) => pollInterval(query.state.data),
     },
   });
+  // Quem comprou sem conta não tem sessão para consultar o pedido: acompanha pelo recibo, cuja
+  // chave nasceu junto com o pagamento. Sem isso o Pix ficaria num QR code sem resposta.
+  const { data: receipt } = useGetOrderReceipt(
+    orderId,
+    { token: receiptToken ?? "" },
+    {
+      client: publicRequest,
+      query: {
+        enabled: polling && guest && Boolean(receiptToken),
+        refetchInterval: (query) => pollInterval(query.state.data),
+      },
+    },
+  );
+  const liveOrder = guest ? receipt : mine;
 
   useEffect(() => {
     if (phase !== "pay" || !liveOrder) return;
@@ -104,15 +130,26 @@ function BuyPage() {
 
   async function submit(values: BuyForm) {
     setFormError(null);
+    if (guest) {
+      const problem = validateGuestContact(contact);
+      if (problem) {
+        setFormError(problem);
+        return;
+      }
+    } else if (!values.contactPhone || values.contactPhone.replace(/\D/g, "").length < 10) {
+      setFormError("Coloque um telefone com DDD para a loja falar com você.");
+      return;
+    }
     try {
       const response = await checkout({
         storeSlug: slug,
         provider,
         items: [{ productSlug: search.produto, qty }],
-        contactPhone: values.contactPhone,
+        ...(guest ? { contact: toContactPayload(contact) } : { contactPhone: values.contactPhone }),
         note: values.note || undefined,
       });
       setResult(response);
+      setReceiptToken(response.receiptToken);
       setPhase("pay");
     } catch (error) {
       setFormError(errorMessage(error));
@@ -137,16 +174,20 @@ function BuyPage() {
                 <StepNum n={2} /> {result?.order.store.name} vai falar com você pelo telefone que
                 deixou, para combinar a entrega.
               </li>
-              <li className="flex gap-2.5">
-                <StepNum n={3} /> Acompanhe tudo em Minha conta.
-              </li>
+              {!guest && (
+                <li className="flex gap-2.5">
+                  <StepNum n={3} /> Acompanhe tudo em Minha conta.
+                </li>
+              )}
             </ol>
           </div>
           <div className="rise rise-4 mt-8 grid gap-3">
-            <Button asChild size="lg">
-              <Link to="/conta">Ver meus pedidos</Link>
-            </Button>
-            <Button asChild size="lg" variant="secondary">
+            {!guest && (
+              <Button asChild size="lg">
+                <Link to="/conta">Ver meus pedidos</Link>
+              </Button>
+            )}
+            <Button asChild size="lg" variant={guest ? "primary" : "secondary"}>
               <Link to="/loja/$slug" params={{ slug }}>
                 Voltar para a loja
               </Link>
@@ -267,26 +308,34 @@ function BuyPage() {
           </div>
         </div>
 
-        <Field
-          label="Telefone com DDD"
-          htmlFor="contactPhone"
-          hint="A loja usa este número para combinar a entrega com você."
-          error={errors.contactPhone?.message}
-        >
-          <Input
-            id="contactPhone"
-            type="tel"
-            inputMode="tel"
-            autoComplete="tel"
-            placeholder="(11) 98765-4321"
-            aria-invalid={Boolean(errors.contactPhone)}
-            {...register("contactPhone", {
-              onChange: (event) => {
-                event.target.value = formatPhone(event.target.value);
-              },
-            })}
+        {visitor ? (
+          <GuestContactFields
+            value={contact}
+            onChange={setContact}
+            emailHint="Com e-mail, o comprovante do pedido chega sozinho."
           />
-        </Field>
+        ) : (
+          <Field
+            label="Telefone com DDD"
+            htmlFor="contactPhone"
+            hint="A loja usa este número para combinar a entrega com você."
+            error={errors.contactPhone?.message}
+          >
+            <Input
+              id="contactPhone"
+              type="tel"
+              inputMode="tel"
+              autoComplete="tel"
+              placeholder="(11) 98765-4321"
+              aria-invalid={Boolean(errors.contactPhone)}
+              {...register("contactPhone", {
+                onChange: (event) => {
+                  event.target.value = formatPhone(event.target.value);
+                },
+              })}
+            />
+          </Field>
+        )}
 
         <Field label="Recado para a loja (opcional)" htmlFor="note" error={errors.note?.message}>
           <Textarea
