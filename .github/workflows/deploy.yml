@@ -3,6 +3,14 @@ name: Deploy
 # Cloudflare Workers via wrangler.
 # Secrets: CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID
 # Variables (Settings > Variables): VITE_API_URL, VITE_SITE_URL, VITE_STRIPE_PUBLISHABLE_KEY
+#
+# Build e deploy ficam no MESMO job de propósito. O `@cloudflare/vite-plugin` escreve
+# `.wrangler/deploy/config.json` apontando para `dist/server/wrangler.json`, e é esse
+# redirect que faz o `wrangler deploy` usar o bundle já construído (`no_bundle: true`)
+# em vez de tentar empacotar `src/server.ts` do zero. Passando só `dist` por artifact
+# entre jobs, o redirect não viaja e o deploy morre em
+# `Could not resolve "#tanstack-router-entry"` — imports virtuais que só o plugin do
+# TanStack Start resolve, durante o build do Vite.
 on:
   push:
     branches: [main]
@@ -13,7 +21,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
+  # PR: sobe uma versão de preview (URL exclusiva, não muda produção)
+  preview:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -28,28 +38,6 @@ jobs:
           VITE_API_URL: ${{ vars.VITE_API_URL }}
           VITE_SITE_URL: ${{ vars.VITE_SITE_URL }}
           VITE_STRIPE_PUBLISHABLE_KEY: ${{ vars.VITE_STRIPE_PUBLISHABLE_KEY }}
-      - uses: actions/upload-artifact@v4
-        with:
-          name: dist
-          path: dist
-
-  # PR: sobe uma versão de preview (URL exclusiva, não muda produção)
-  preview:
-    if: github.event_name == 'pull_request'
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - uses: actions/download-artifact@v4
-        with:
-          name: dist
-          path: dist
       - run: pnpm exec wrangler versions upload
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -58,7 +46,6 @@ jobs:
   # main: produção
   production:
     if: github.ref == 'refs/heads/main'
-    needs: build
     runs-on: ubuntu-latest
     environment: production
     steps:
@@ -69,10 +56,15 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - uses: actions/download-artifact@v4
-        with:
-          name: dist
-          path: dist
+      - run: pnpm build
+        env:
+          VITE_API_URL: ${{ vars.VITE_API_URL }}
+          VITE_SITE_URL: ${{ vars.VITE_SITE_URL }}
+          VITE_STRIPE_PUBLISHABLE_KEY: ${{ vars.VITE_STRIPE_PUBLISHABLE_KEY }}
+      # Trava o motivo do build e deploy estarem juntos: sem este arquivo o wrangler
+      # ignora o bundle e tenta empacotar o fonte, que não compila fora do Vite.
+      - name: confirma o redirect de deploy gerado pelo build
+        run: test -f .wrangler/deploy/config.json
       - run: pnpm exec wrangler deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
