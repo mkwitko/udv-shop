@@ -51,7 +51,7 @@ function InterestsAdmin() {
 
   return (
     <div>
-      <h2 className="font-display text-lg font-semibold tracking-tight">Encomendas</h2>
+      <h2 className="font-display text-lg font-semibold tracking-tight">Fila de espera</h2>
       <p className="mt-1 text-sm text-muted">
         Quem pediu um produto sob encomenda — ou avisou que quer um esgotado — entra nesta fila.
         Quando o produto chegar, um botão avisa por e-mail todo mundo de uma vez. Quem entrou sem

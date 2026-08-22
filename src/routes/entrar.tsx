@@ -6,6 +6,7 @@ import { z } from "zod";
 import { AuthShell } from "#/components/site/auth-shell";
 import { Button } from "#/components/ui/button";
 import { Field, FormError, Input } from "#/components/ui/field";
+import { PasswordInput } from "#/components/ui/password-field";
 import { errorMessage } from "#/lib/api/error-message";
 import { useSession } from "#/lib/auth/session";
 import { seo } from "#/lib/seo";
@@ -73,7 +74,11 @@ function LoginPage() {
       footer={
         <>
           Ainda não tem conta?{" "}
-          <Link to="/criar-conta" className="text-brand-deep underline underline-offset-4">
+          <Link
+            to="/criar-conta"
+            search={redirect ? { redirect } : {}}
+            className="text-brand-deep underline underline-offset-4"
+          >
             criar conta
           </Link>
         </>
@@ -94,9 +99,10 @@ function LoginPage() {
         </Field>
 
         <Field label="Senha" htmlFor="password" error={errors.password?.message}>
-          <Input
+          {/* com revelar, como no cadastro: leigo erra senha no teclado do celular e
+              precisa conferir o que digitou antes de culpar a conta */}
+          <PasswordInput
             id="password"
-            type="password"
             autoComplete="current-password"
             aria-invalid={Boolean(errors.password)}
             {...register("password")}

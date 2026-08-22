@@ -22,6 +22,7 @@ import {
   getWooviBalanceQueryKey,
   useGetWooviBalance,
 } from "#/lib/api/gen/hooks/useGetWooviBalance";
+import { useListMyStores } from "#/lib/api/gen/hooks/useListMyStores";
 import { longDate, money } from "#/lib/format";
 import { stripePublishableKey } from "#/lib/pay/stripe";
 import { cn } from "#/lib/utils";
@@ -388,11 +389,17 @@ const BILLING_LABEL: Record<
 
 function BillingBlock({ slug }: { slug: string }) {
   const { data: billing } = useGetBillingStatus(slug);
+  const { data: stores } = useListMyStores();
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const status = billing?.status ?? "none";
   const meta = BILLING_LABEL[status] ?? { text: status, tone: "neutral" as const };
   const hasSubscription = status !== "none";
+  // A liberação da loja sai desta assinatura, não de aprovação manual. Dizer isso aqui,
+  // no botão, é o que evita a pessoa esperar por alguém que não vai vir.
+  const store = stores?.items.find((candidate) => candidate.slug === slug);
+  const offline = store !== undefined && store.status !== "active";
+  const unlocks = offline && store.suspensionReason !== "platform";
 
   async function open() {
     setBusy(true);
@@ -422,10 +429,23 @@ function BillingBlock({ slug }: { slug: string }) {
         </div>
         <Tag tone={meta.tone}>{meta.text}</Tag>
       </header>
+      {unlocks && (
+        <p className="mt-3 rounded-[0.9rem] bg-brand-soft px-4 py-3 text-[0.95rem] text-brand-deep">
+          {status === "active" || status === "trialing"
+            ? "Pagamento confirmado. Sua loja abre para o público em alguns minutos, sem precisar pedir nada a ninguém."
+            : "Sua loja abre para o público sozinha assim que este pagamento for confirmado. Ninguém precisa aprovar."}
+        </p>
+      )}
       {billing?.currentPeriodEnd && (
         <p className="mt-3 text-sm text-muted">
           {billing.cancelAtPeriodEnd ? "Termina em" : "Renova em"}{" "}
           {longDate(billing.currentPeriodEnd)}.
+        </p>
+      )}
+      {billing?.cancelAtPeriodEnd && (
+        <p className="mt-1 text-sm text-muted">
+          Depois dessa data a loja sai do ar. Nada é apagado: retomando a assinatura ela volta como
+          estava.
         </p>
       )}
       <FormError>{error}</FormError>
@@ -456,18 +476,58 @@ function FeeNote({ slug }: { slug: string }) {
       ? null
       : (bps / 100).toLocaleString("pt-BR", { maximumFractionDigits: 2 });
 
+  const providerFees = connect?.providerFees;
+  const declared = [
+    providerFees?.pix ? { label: "Pix", value: providerFees.pix, who: "Woovi" } : null,
+    providerFees?.card ? { label: "Cartão", value: providerFees.card, who: "Stripe" } : null,
+  ].filter((row): row is { label: string; value: string; who: string } => row !== null);
+
   return (
-    <p className="rounded-[1rem] border border-line bg-surface px-4 py-3 text-[0.95rem]">
-      <span className="font-semibold">O pagamento vai direto para a conta da sua loja.</span>{" "}
-      <span className="text-muted">
-        O dinheiro não fica parado na plataforma.
-        {fee
-          ? ` Taxa da plataforma: ${fee}% por venda, descontada na hora.`
-          : // Quem paga o Stripe/Woovi é a plataforma (fees.payer: application, ADR-024 +
-            // comissão zero, ADR-027): a loja recebe o valor integral. Dizer que existe a
-            // taxa e que ela não sai da venda é mais honesto — e mais forte — que omitir.
-            " Cartão e Pix têm taxa de quem processa o pagamento, e ela é paga pela Colheita: não sai da sua venda. Da sua parte, só a mensalidade da plataforma."}
-      </span>
-    </p>
+    <div className="rounded-[1rem] border border-line bg-surface px-4 py-3 text-[0.95rem]">
+      <p>
+        <span className="font-semibold">O pagamento vai direto para a conta da sua loja.</span>{" "}
+        <span className="text-muted">
+          O dinheiro não fica parado na plataforma.
+          {fee
+            ? ` Taxa da plataforma: ${fee}% por venda, descontada na hora.`
+            : // Quem paga o Stripe/Woovi é a plataforma (fees.payer: application, ADR-024 +
+              // comissão zero, ADR-027): a loja recebe o valor integral. Dizer que existe a
+              // taxa e que ela não sai da venda é mais honesto — e mais forte — que omitir.
+              " Da sua parte, só a mensalidade da plataforma."}
+        </span>
+      </p>
+
+      {/* "Zero taxa" seria propaganda. Receber pagamento custa dinheiro para alguém: aqui
+          está quanto, quem cobra e quem paga. Números só aparecem quando a plataforma os
+          declarou (PROVIDER_FEE_*_TEXT) — inventar percentual seria pior que não dizer. */}
+      <details className="mt-2 [&_summary]:cursor-pointer">
+        <summary className="text-brand-deep text-sm underline underline-offset-4">
+          E as taxas do Pix e do cartão?
+        </summary>
+        <div className="mt-2 grid gap-2 text-muted text-sm">
+          <p>
+            Receber pagamento tem custo: quem processa o Pix e o cartão cobra por transação. Nenhuma
+            dessas taxas é descontada da sua venda —{" "}
+            <span className="font-medium text-ink">quem paga é a Colheita</span>, com a sua
+            mensalidade. Você recebe o valor cheio que o cliente pagou.
+          </p>
+          {declared.length > 0 && (
+            <ul className="grid gap-1">
+              {declared.map((row) => (
+                <li key={row.label} className="flex flex-wrap items-baseline gap-x-2">
+                  <span className="font-medium text-ink">{row.label}:</span>
+                  <span className="tabular-nums">{row.value}</span>
+                  <span className="text-xs">cobrado pela {row.who}, pago pela Colheita</span>
+                </li>
+              ))}
+            </ul>
+          )}
+          <p>
+            É por isso que a plataforma cobra mensalidade em vez de comissão: o custo é o mesmo todo
+            mês, e não cresce quando a sua loja vende mais.
+          </p>
+        </div>
+      </details>
+    </div>
   );
 }

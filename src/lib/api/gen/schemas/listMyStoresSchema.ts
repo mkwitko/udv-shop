@@ -16,6 +16,9 @@ export const listMyStores200Schema = z.object({
 "name": z.string(),
 "description": z.nullable(z.string()),
 "status": z.enum(["pending", "active", "suspended"]),
+"suspensionReason": z.nullable(z.enum(["billing", "platform"])),
+"deliveryNote": z.nullable(z.string()),
+"whatsapp": z.nullable(z.string()),
 "branding": z.nullable(z.object({
     "logoKey": z.nullable(z.string()),
 "coverKey": z.nullable(z.string()),

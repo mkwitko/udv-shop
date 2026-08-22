@@ -59,6 +59,19 @@ export type PutWooviConnect200 = {
      * @type integer
     */
     applicationFeeBps: number;
+    /**
+     * @type object
+    */
+    providerFees: {
+        /**
+         * @type string
+        */
+        pix: string | null;
+        /**
+         * @type string
+        */
+        card: string | null;
+    };
 };
 
 export type PutWooviConnectMutationRequest = {

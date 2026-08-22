@@ -105,6 +105,23 @@ export type UpdateProduct200 = {
     /**
      * @type object
     */
+    event: {
+        /**
+         * @type string
+        */
+        at: string;
+        /**
+         * @type string
+        */
+        endsAt: string | null;
+        /**
+         * @type string
+        */
+        location: string | null;
+    } | null;
+    /**
+     * @type object
+    */
     payout: {
         /**
          * @type string
@@ -182,6 +199,19 @@ export type UpdateProductMutationRequest = {
      * @type string, uuid
     */
     categoryId?: string | null;
+    /**
+     * @type string, date-time
+    */
+    eventAt?: string | null;
+    /**
+     * @type string, date-time
+    */
+    eventEndsAt?: string | null;
+    /**
+     * @maxLength 200
+     * @type string
+    */
+    eventLocation?: string | null;
     /**
      * @type string, uuid
     */

@@ -19,6 +19,9 @@ export const updateStore200Schema = z.object({
 "name": z.string(),
 "description": z.nullable(z.string()),
 "status": z.enum(["pending", "active", "suspended"]),
+"suspensionReason": z.nullable(z.enum(["billing", "platform"])),
+"deliveryNote": z.nullable(z.string()),
+"whatsapp": z.nullable(z.string()),
 "branding": z.nullable(z.object({
     "logoKey": z.nullable(z.string()),
 "coverKey": z.nullable(z.string()),
@@ -31,6 +34,8 @@ export const updateStore200Schema = z.object({
 export const updateStoreMutationRequestSchema = z.object({
     "name": z.optional(z.string().min(2).max(120)),
 "description": z.string().max(2000).nullish(),
+"deliveryNote": z.string().max(280).nullish(),
+"whatsapp": z.string().max(20).nullish(),
 "branding": z.optional(z.object({
     "logoKey": z.string().max(300).regex(/^stores\/.*/).nullish(),
 "coverKey": z.string().max(300).regex(/^stores\/.*/).nullish()

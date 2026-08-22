@@ -38,6 +38,11 @@ const API_FIELDS: Record<string, keyof RegisterForm> = {
 };
 
 export const Route = createFileRoute("/criar-conta")({
+  // Mesma leitura de `/entrar`: quem chegou aqui tentando comprar, doar ou abrir a gestão
+  // volta para onde estava. Sem isto, todo cadastro caía em "vamos abrir a sua loja",
+  // inclusive o de quem só queria pagar.
+  validateSearch: (search: Record<string, unknown>): { redirect?: string } =>
+    typeof search.redirect === "string" ? { redirect: search.redirect } : {},
   head: () =>
     seo({
       title: "Criar conta",
@@ -50,7 +55,12 @@ export const Route = createFileRoute("/criar-conta")({
 function RegisterPage() {
   const { register: createAccount } = useSession();
   const navigate = useNavigate();
+  const { redirect } = Route.useSearch();
   const [formError, setFormError] = useState<string | null>(null);
+  // só caminho interno entra, senão vira redirect aberto para fora do site
+  const target = (
+    redirect?.startsWith("/") && !redirect.startsWith("//") ? redirect : "/nova-loja"
+  ) as "/nova-loja";
 
   const {
     register,
@@ -73,7 +83,7 @@ function RegisterPage() {
         email: values.email,
         password: values.password,
       });
-      await navigate({ to: "/nova-loja", replace: true });
+      await navigate({ to: target, replace: true });
     } catch (error) {
       // 400 de validação vira erro no campo, não aviso solto no topo
       const fields = fieldErrors(error);
@@ -94,11 +104,19 @@ function RegisterPage() {
   return (
     <AuthShell
       title="Criar conta"
-      subtitle="Leva um minuto. Depois você escolhe o endereço da loja."
+      subtitle={
+        redirect
+          ? "Leva um minuto. Depois você volta para onde estava."
+          : "Leva um minuto. Depois você escolhe o endereço da loja."
+      }
       footer={
         <>
           Já tem conta?{" "}
-          <Link to="/entrar" className="text-brand-deep underline underline-offset-4">
+          <Link
+            to="/entrar"
+            search={redirect ? { redirect } : {}}
+            className="text-brand-deep underline underline-offset-4"
+          >
             entrar
           </Link>
         </>

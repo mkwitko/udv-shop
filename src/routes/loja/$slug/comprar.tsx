@@ -1,10 +1,11 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Check, CreditCard, Minus, Plus, QrCode } from "lucide-react";
+import { Check, CreditCard, MessageCircle, Minus, Plus, QrCode } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { KeepReceipt } from "#/components/pay/keep-receipt";
 import { PayChoice } from "#/components/pay/pay-choice";
 import { PixPanel } from "#/components/pay/pix-panel";
 import { StepHeading } from "#/components/pay/steps";
@@ -24,12 +25,14 @@ import { checkout } from "#/lib/api/gen/clients/checkout";
 import { useGetMyOrder } from "#/lib/api/gen/hooks/useGetMyOrder";
 import { useGetOrderReceipt } from "#/lib/api/gen/hooks/useGetOrderReceipt";
 import { getProductQueryOptions, useGetProduct } from "#/lib/api/gen/hooks/useGetProduct";
+import { useGetStore } from "#/lib/api/gen/hooks/useGetStore";
 import type { Checkout201 } from "#/lib/api/gen/types/Checkout";
 import { publicRequest } from "#/lib/api/public";
 import { useSession } from "#/lib/auth/session";
 import { formatPhone, money } from "#/lib/format";
 import { stripePublishableKey } from "#/lib/pay/stripe";
 import { seo } from "#/lib/seo";
+import { whatsappUrl } from "#/lib/whatsapp";
 
 const SearchSchema = z.object({
   produto: z.string().min(1),
@@ -75,6 +78,7 @@ function BuyPage() {
   const { slug } = Route.useParams();
   const search = Route.useSearch();
   const { data: product } = useGetProduct(slug, search.produto, { client: publicRequest });
+  const { data: store } = useGetStore(slug, { client: publicRequest });
 
   const { status } = useSession();
   // Enquanto a sessão não respondeu não se sabe de quem é este pedido, e nem os campos de
@@ -190,6 +194,14 @@ function BuyPage() {
   }
 
   if (phase === "done") {
+    const storeName = result?.order.store.name ?? receipt?.store.name ?? "A loja";
+    // O número que a loja vai chamar, devolvido para conferência: dígito errado aqui é
+    // pedido pago e entrega que nunca acontece. Depois de um F5 vem parcial, do recibo.
+    const phone = result?.order.contactPhone
+      ? formatPhone(result.order.contactPhone)
+      : receipt?.contactPhoneMasked;
+    const delivery = receipt?.deliveryNote ?? store?.deliveryNote;
+    const orderTotal = result?.order.totalCents ?? receipt?.totalCents ?? totalCents;
     return (
       <section className="halo-top relative">
         <div className="shell mx-auto max-w-md py-16 text-center md:py-24">
@@ -204,19 +216,65 @@ function BuyPage() {
                 <StepNum n={1} /> O pagamento foi confirmado.
               </li>
               <li className="flex gap-2.5">
-                {/* depois de um F5 `result` é nulo: o nome vem do recibo, senão a frase começa
-                    com um vazio */}
-                <StepNum n={2} /> {result?.order.store.name ?? receipt?.store.name ?? "A loja"} vai
-                falar com você pelo telefone que deixou, para combinar a entrega.
+                <span>
+                  <StepNum n={2} /> {storeName} vai falar com você
+                  {phone ? (
+                    <>
+                      {" "}
+                      no <span className="font-semibold tabular-nums">{phone}</span>
+                    </>
+                  ) : (
+                    " pelo telefone que deixou"
+                  )}{" "}
+                  para combinar a entrega.
+                  {phone && (
+                    <span className="mt-1 block text-muted text-sm">
+                      Confira o número: é por aí que a loja vai chamar.
+                      {store?.whatsapp ? " Errado? Fale com a loja aqui embaixo." : ""}
+                    </span>
+                  )}
+                </span>
               </li>
+              {delivery && (
+                <li className="flex gap-2.5">
+                  <span>
+                    <StepNum n={3} /> Como {storeName} entrega:{" "}
+                    <span className="text-ink">{delivery}</span>
+                  </span>
+                </li>
+              )}
               {status === "authenticated" && (
                 <li className="flex gap-2.5">
-                  <StepNum n={3} /> Acompanhe tudo em Minha conta.
+                  <StepNum n={delivery ? 4 : 3} /> Acompanhe tudo em Minha conta.
                 </li>
               )}
             </ol>
           </div>
+
+          {/* Quem comprou sem conta não tem "meus pedidos": este link É o pedido dela.
+              Sem um jeito de guardar, fechar a aba apagava o único acesso que existia. */}
+          {receiptToken && status !== "authenticated" && (
+            <KeepReceipt kind="pedido" className="rise rise-4" />
+          )}
+
           <div className="rise rise-4 mt-8 grid gap-3">
+            {/* O canal de volta: até agora quem pagava dependia de a loja ligar primeiro.
+                A mensagem já vai escrita — a pessoa não precisa explicar de novo. */}
+            {store?.whatsapp && (
+              <Button asChild size="lg" variant="secondary">
+                <a
+                  href={whatsappUrl(
+                    store.whatsapp,
+                    `Olá! Acabei de fazer um pedido de ${money(orderTotal)} na ${storeName}.`,
+                  )}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <MessageCircle className="h-4 w-4" aria-hidden />
+                  Falar com a loja no WhatsApp
+                </a>
+              </Button>
+            )}
             {status === "authenticated" && (
               <Button asChild size="lg">
                 <Link to="/conta">Ver meus pedidos</Link>
@@ -242,10 +300,20 @@ function BuyPage() {
       <section className="shell mx-auto max-w-md py-16 md:py-24">
         <h1 className="font-bold font-display text-2xl tracking-tight">O pagamento expirou</h1>
         <p className="mt-3 text-muted">
-          Este código Pix não pode mais ser usado. Nada foi cobrado.
+          Este código Pix não pode mais ser usado. Nada foi cobrado — é só fazer o pedido de novo.
         </p>
-        <Button size="lg" className="mt-6 w-full" onClick={() => setPhase("form")}>
-          Voltar para o pagamento
+        {/* O botão dizia "voltar para o pagamento" e caía no formulário, deixando na URL o
+            pedido morto: um F5 depois disso voltava direto para esta tela. Limpar a URL é
+            o que fecha o ciclo. */}
+        <Button
+          size="lg"
+          className="mt-6 w-full"
+          onClick={() => {
+            void navigate({ search: { ...search, pedido: undefined, recibo: undefined } });
+            setPhase("form");
+          }}
+        >
+          Fazer o pedido de novo
         </Button>
       </section>
     );
@@ -324,12 +392,9 @@ function BuyPage() {
           <span className="h-2 w-2 animate-pulse rounded-full bg-accent" aria-hidden />
           Esperando o banco confirmar…
         </p>
-        {receiptToken && (
-          <p className="mt-4 text-center text-muted text-sm">
-            Pode fechar esta página: guarde o link e volte quando quiser para ver se o pagamento
-            caiu.
-          </p>
-        )}
+        {/* "guarde o link" sem dizer como não guarda nada: aqui o link tem botão de copiar
+            e de mandar no WhatsApp, que é onde essa pessoa guarda as coisas. */}
+        {receiptToken && <KeepReceipt kind="pedido" className="mt-6" />}
       </section>
     );
   }
@@ -413,6 +478,15 @@ function BuyPage() {
               })}
             />
           </Field>
+        )}
+
+        {/* Antes de pagar, o que acontece depois: quem compra pela primeira vez não sabe se
+            recebe em casa, se retira, nem quando. */}
+        {store?.deliveryNote && (
+          <p className="rounded-[1rem] border border-line bg-surface px-4 py-3 text-[0.95rem]">
+            <span className="font-semibold">Como a loja entrega:</span>{" "}
+            <span className="text-muted">{store.deliveryNote}</span>
+          </p>
         )}
 
         <Field label="Recado para a loja (opcional)" htmlFor="note" error={errors.note?.message}>

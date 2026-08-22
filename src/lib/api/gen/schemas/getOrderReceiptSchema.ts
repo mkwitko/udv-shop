@@ -36,6 +36,8 @@ export const getOrderReceipt200Schema = z.object({
 "qrCodeImageUrl": z.string(),
 "expiresAt": z.string()
     })),
+"contactPhoneMasked": z.nullable(z.string()),
+"deliveryNote": z.nullable(z.string()),
 "createdAt": z.string()
     }) as unknown as z.ZodType<GetOrderReceipt200>
 

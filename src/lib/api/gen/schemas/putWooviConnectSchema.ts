@@ -25,7 +25,11 @@ export const putWooviConnect200Schema = z.object({
     "connected": z.boolean(),
 "pixKeyMasked": z.nullable(z.string())
     }),
-"applicationFeeBps": z.int().min(-9007199254740991).max(9007199254740991)
+"applicationFeeBps": z.int().min(-9007199254740991).max(9007199254740991),
+"providerFees": z.object({
+    "pix": z.nullable(z.string()),
+"card": z.nullable(z.string())
+    })
     }) as unknown as z.ZodType<PutWooviConnect200>
 
 export const putWooviConnectMutationRequestSchema = z.object({

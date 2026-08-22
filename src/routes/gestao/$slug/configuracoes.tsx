@@ -1,9 +1,17 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
-import { Check, Copy, Globe, Image as ImageIcon, RefreshCw } from "lucide-react";
+import {
+  Check,
+  Copy,
+  Globe,
+  Image as ImageIcon,
+  MessageCircle,
+  RefreshCw,
+  Truck,
+} from "lucide-react";
 import { useState } from "react";
 import { Button } from "#/components/ui/button";
 import { ConfirmDialog } from "#/components/ui/confirm";
-import { Field, FormError, Input } from "#/components/ui/field";
+import { Field, FormError, Input, Textarea } from "#/components/ui/field";
 import { ImagePicker, type PickedImage } from "#/components/ui/image-picker";
 import { SkeletonRows } from "#/components/ui/skeleton";
 import { Tag } from "#/components/ui/tag";
@@ -15,7 +23,7 @@ import { updateStore } from "#/lib/api/gen/clients/updateStore";
 import { verifyStoreDomain } from "#/lib/api/gen/clients/verifyStoreDomain";
 import { getStoreQueryKey, useGetStore } from "#/lib/api/gen/hooks/useGetStore";
 import { getStoreDomainQueryKey, useGetStoreDomain } from "#/lib/api/gen/hooks/useGetStoreDomain";
-import { longDate } from "#/lib/format";
+import { formatPhone, formatStoredPhone, longDate } from "#/lib/format";
 
 export const Route = createFileRoute("/gestao/$slug/configuracoes")({
   component: SettingsAdmin,
@@ -28,13 +36,158 @@ function SettingsAdmin() {
       <div>
         <h2 className="font-display font-semibold text-lg tracking-tight">Configurações</h2>
         <p className="mt-1 text-muted text-sm">
-          A cara da loja e o endereço dela na internet. Para preço, produto e recebimento, use as
-          outras abas.
+          A cara da loja, como você entrega e o endereço dela na internet. Para preço, produto e
+          recebimento, use as outras abas.
         </p>
       </div>
+      <ContactBlock slug={slug} />
+      <DeliveryBlock slug={slug} />
       <BrandingBlock slug={slug} />
       <DomainBlock slug={slug} />
     </div>
+  );
+}
+
+/**
+ * WhatsApp da loja. Era o buraco do fluxo: quem comprava pagava e não tinha caminho de
+ * volta — falar com a loja dependia de a loja ligar primeiro. Aparece na página da loja,
+ * na do produto e na confirmação do pedido.
+ */
+function ContactBlock({ slug }: { slug: string }) {
+  const { queryClient } = useRouter().options.context;
+  const { data: store, isPending } = useGetStore(slug);
+  const [value, setValue] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const toast = useToast();
+  // null = ainda não editou nesta tela: mostra o número salvo, já formatado
+  const text = value ?? formatStoredPhone(store?.whatsapp ?? "");
+
+  async function save() {
+    setBusy(true);
+    setError(null);
+    try {
+      await updateStore(slug, { whatsapp: text.trim() || null });
+      await queryClient.invalidateQueries({ queryKey: getStoreQueryKey(slug) });
+      setValue(null);
+      toast(text.trim() ? "WhatsApp salvo." : "WhatsApp removido.");
+    } catch (cause) {
+      setError(errorMessage(cause));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (isPending) return <SkeletonRows rows={2} />;
+
+  return (
+    <section className="card p-5">
+      <div className="flex items-start gap-3">
+        <span className="inline-grid h-11 w-11 shrink-0 place-items-center rounded-[0.9rem] bg-brand-soft text-brand-deep">
+          <MessageCircle className="h-5 w-5" aria-hidden />
+        </span>
+        <div className="min-w-0 flex-1">
+          <h3 className="font-display font-semibold tracking-tight">Como falam com você</h3>
+          <p className="mt-0.5 text-muted text-sm">
+            O número aparece na sua loja e na confirmação do pedido, com um botão que abre a
+            conversa. Quem compra precisa de um jeito de te achar.
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-4" />
+      <Field
+        label="WhatsApp da loja"
+        htmlFor="whatsapp"
+        hint="Com DDD. Deixe em branco para não publicar número nenhum."
+        error={undefined}
+      >
+        <Input
+          id="whatsapp"
+          type="tel"
+          inputMode="tel"
+          value={text}
+          onChange={(event) => setValue(formatPhone(event.target.value))}
+          placeholder="(11) 98765-4321"
+        />
+      </Field>
+      <FormError>{error}</FormError>
+      <Button className="mt-4" onClick={save} disabled={busy}>
+        {busy ? "Salvando…" : "Salvar"}
+      </Button>
+    </section>
+  );
+}
+
+/**
+ * Como a loja entrega. A vitrine prometia "combinado com a loja" e não havia lugar para a
+ * loja dizer o quê: quem compra ficava esperando um telefonema para saber se retira ou
+ * recebe. Texto livre e curto, porque combinação de entrega em comunidade não cabe em
+ * lista fechada — e o que a loja escreve aqui aparece no produto e no recibo.
+ */
+function DeliveryBlock({ slug }: { slug: string }) {
+  const { queryClient } = useRouter().options.context;
+  const { data: store, isPending } = useGetStore(slug);
+  const [value, setValue] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const toast = useToast();
+  // null = ainda não editou nesta tela: mostra o que está salvo
+  const text = value ?? store?.deliveryNote ?? "";
+
+  async function save() {
+    setBusy(true);
+    setError(null);
+    try {
+      await updateStore(slug, { deliveryNote: text.trim() || null });
+      await queryClient.invalidateQueries({ queryKey: getStoreQueryKey(slug) });
+      setValue(null);
+      toast("Combinação de entrega salva.");
+    } catch (cause) {
+      setError(errorMessage(cause));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (isPending) return <SkeletonRows rows={2} />;
+
+  return (
+    <section className="card p-5">
+      <div className="flex items-start gap-3">
+        <span className="inline-grid h-11 w-11 shrink-0 place-items-center rounded-[0.9rem] bg-sand/35 text-brand-deep">
+          <Truck className="h-5 w-5" aria-hidden />
+        </span>
+        <div className="min-w-0 flex-1">
+          <h3 className="font-display font-semibold tracking-tight">Como você entrega</h3>
+          <p className="mt-0.5 text-muted text-sm">
+            Aparece na página do produto e no recibo de quem compra. Sem isso, a pessoa só descobre
+            no telefonema.
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-4" />
+      <Field
+        label="Escreva com as suas palavras"
+        htmlFor="deliveryNote"
+        hint="Ex.: retirada no núcleo, sábado de manhã · combino a entrega pelo WhatsApp · entrego no bairro"
+        error={undefined}
+      >
+        <Textarea
+          id="deliveryNote"
+          rows={2}
+          maxLength={280}
+          value={text}
+          onChange={(event) => setValue(event.target.value)}
+          placeholder="Retirada no núcleo, sábado de manhã. Entrega combinada pelo WhatsApp."
+        />
+      </Field>
+      <FormError>{error}</FormError>
+      <Button className="mt-4" onClick={save} disabled={busy}>
+        {busy ? "Salvando…" : "Salvar"}
+      </Button>
+    </section>
   );
 }
 

@@ -21,6 +21,13 @@ export const resolveStoreDomain200StatusEnum = {
 
 export type ResolveStoreDomain200StatusEnumKey = (typeof resolveStoreDomain200StatusEnum)[keyof typeof resolveStoreDomain200StatusEnum];
 
+export const resolveStoreDomain200SuspensionReasonEnum = {
+    billing: "billing",
+    platform: "platform"
+} as const;
+
+export type ResolveStoreDomain200SuspensionReasonEnumKey = (typeof resolveStoreDomain200SuspensionReasonEnum)[keyof typeof resolveStoreDomain200SuspensionReasonEnum];
+
 /**
  * @description Default Response
 */
@@ -45,6 +52,18 @@ export type ResolveStoreDomain200 = {
      * @type string
     */
     status: ResolveStoreDomain200StatusEnumKey;
+    /**
+     * @type string
+    */
+    suspensionReason: ResolveStoreDomain200SuspensionReasonEnumKey | null;
+    /**
+     * @type string
+    */
+    deliveryNote: string | null;
+    /**
+     * @type string
+    */
+    whatsapp: string | null;
     /**
      * @type object
     */

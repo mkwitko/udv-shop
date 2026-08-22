@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, Check, Copy, HandCoins, Plus } from "lucide-react";
+import { ArrowRight, Check, Copy, HandCoins, Loader2, Plus } from "lucide-react";
 import { useState } from "react";
 import { Button } from "#/components/ui/button";
 import {
@@ -22,6 +22,17 @@ export const Route = createFileRoute("/gestao/$slug/")({
   component: Overview,
 });
 
+type Step = {
+  done: boolean;
+  label: string;
+  to: "/gestao/$slug/produtos" | "/gestao/$slug/recebimento" | null;
+  /** O que é e por que importa, em uma frase, para quem nunca vendeu on-line. */
+  why: string;
+  cta?: string;
+  /** Passo esperando o servidor, não a pessoa: aparece em andamento, sem botão. */
+  waiting?: boolean;
+};
+
 /**
  * A home da gestão é orientada a tarefas (§25 do brief): primeiro o que a pessoa
  * quer fazer, depois quanto falta para a loja estar pronta.
@@ -30,10 +41,23 @@ function Overview() {
   const { slug } = Route.useParams();
   const { data: connect } = useGetConnectStatus(slug);
   const { data: billing } = useGetBillingStatus(slug);
+  const billingOk = billing?.status === "active" || billing?.status === "trialing";
   // cliente autenticado de propósito: a listagem pública devolve 404 em loja `pending`,
   // e era isso que deixava "Adicionar um produto" pendente para sempre depois de cadastrar.
   const { data: products } = useListProducts(slug, { limit: 1 });
-  const { data: stores } = useListMyStores();
+  const { data: stores } = useListMyStores({
+    query: {
+      // Quem libera a loja é o webhook da assinatura, não esta tela. Sem o repique, a
+      // pessoa paga e continua vendo "sua loja ainda não está no ar" até dar F5.
+      refetchInterval: (query) =>
+        billingOk &&
+        query.state.data?.items.some(
+          (candidate) => candidate.slug === slug && candidate.status !== "active",
+        )
+          ? 5000
+          : false,
+    },
+  });
   const myStore = stores?.items.find((candidate) => candidate.slug === slug);
   const role = myStore?.role;
   const canSeePayouts = role === "owner" || role === "admin";
@@ -46,45 +70,56 @@ function Overview() {
 
   const hasPayment = Boolean(connect?.stripe.connected || connect?.woovi.connected);
   const hasProduct = (products?.items.length ?? 0) > 0;
-  const billingOk = billing?.status === "active" || billing?.status === "trialing";
+  const storeStatus = myStore?.status;
+  const onAir = storeStatus === "active";
+  const suspendedByPlatform =
+    storeStatus === "suspended" && myStore?.suspensionReason === "platform";
 
-  type Step = {
-    done: boolean;
-    label: string;
-    to: "/gestao/$slug/produtos" | "/gestao/$slug/recebimento" | null;
-    why?: string;
-    cta?: string;
-  };
   const steps: Step[] = [
-    { done: true, label: "Criar conta e loja", to: null },
     {
-      // a liberação é da plataforma, não da loja: entra como passo para o dono entender
-      // por que a vitrine pública ainda não mostra a loja dele.
-      done: myStore?.status === "active",
-      label: "Loja liberada pela plataforma",
+      done: true,
+      label: "Criar sua conta e sua loja",
       to: null,
-      why: "Enquanto a liberação não sai, só quem é da loja consegue abrir as páginas dela.",
+      why: "Feito. O nome e o endereço da loja já são seus.",
     },
     {
       done: hasProduct,
-      label: "Adicionar um produto",
+      label: "Cadastrar o primeiro produto",
       to: "/gestao/$slug/produtos",
-      why: "Sem produto na vitrine, quem abre o link não tem o que comprar.",
-      cta: "Adicionar produto",
+      why: "Uma foto, um nome e o preço bastam. Sem produto, quem abre o link não tem o que comprar.",
+      cta: "Cadastrar produto",
     },
     {
       done: hasPayment,
-      label: "Configurar recebimento",
+      label: "Dizer para onde vai o dinheiro",
       to: "/gestao/$slug/recebimento",
-      why: "É onde o dinheiro cai: sua chave Pix ou sua conta de pagamentos.",
+      why: "Sua chave Pix ou sua conta de cartão. O dinheiro das vendas cai direto aí, sem passar pela plataforma.",
       cta: "Configurar recebimento",
     },
     {
       done: billingOk,
-      label: "Ativar assinatura",
+      label: "Ativar a assinatura da plataforma",
       to: "/gestao/$slug/recebimento",
-      why: "A assinatura mantém a loja no ar e libera as vendas.",
-      cta: "Ver assinatura",
+      why: "É a mensalidade da loja — paga por você, nunca por quem compra. Ativar a assinatura já abre a loja.",
+      cta: "Ativar assinatura",
+    },
+    // A liberação não é um passo manual de ninguém: sai do próprio pagamento. O passo
+    // existe para a pessoa entender por que a vitrine pública ainda não mostra a loja.
+    {
+      done: onAir,
+      label: onAir ? "Loja no ar" : "Abrir a loja para o público",
+      to: billingOk ? null : "/gestao/$slug/recebimento",
+      waiting: billingOk && !onAir && !suspendedByPlatform,
+      cta: billingOk ? undefined : "Ativar assinatura",
+      why: onAir
+        ? "Sua loja está aberta: qualquer pessoa com o link já consegue comprar e doar."
+        : suspendedByPlatform
+          ? "A loja está fora do ar por decisão da plataforma. Fale com a equipe da Colheita para saber o que precisa mudar."
+          : billingOk
+            ? "Pagamento confirmado. A abertura é automática e leva alguns minutos — esta página avisa sozinha."
+            : storeStatus === "suspended"
+              ? "A loja saiu do ar quando a assinatura parou. Retomando o pagamento ela volta sozinha, sem perder nada."
+              : "A loja abre sozinha assim que a assinatura estiver ativa. Até lá, só quem é da loja consegue abrir as páginas dela.",
     },
   ];
   // sobre o total de passos, sem `+1`: com o denominador inflado a barra travava em 80%
@@ -97,35 +132,32 @@ function Overview() {
 
   return (
     <div className="grid gap-8">
-      {/* próximo passo: onboarding contextual, não tutorial */}
-      <section className="card p-5 md:p-6">
-        <p className="kicker">{next ? "Próximo passo" : "Tudo certo por aqui"}</p>
-        <h2 className="mt-2 font-bold font-display text-xl tracking-tight md:text-2xl">
-          {next ? next.label : "Compartilhe sua loja"}
-        </h2>
-        <p className="mt-2 max-w-[52ch] text-muted">
-          {next
-            ? next.why
-            : "Mais pessoas podem conhecer seus produtos e campanhas. Mande o link no grupo."}
-        </p>
-        <div className="mt-5 flex flex-wrap gap-3">
-          {next?.to ? (
-            <Button asChild>
-              <Link to={next.to} params={{ slug }}>
-                {next.cta}
-                <ArrowRight className="h-4 w-4" aria-hidden />
-              </Link>
-            </Button>
-          ) : (
+      {/* Com a loja pronta, o cartão de topo é o convite a divulgar. Enquanto não está, o
+          guia abaixo já é o "próximo passo" — os dois juntos repetiam o mesmo texto e o
+          mesmo botão em sequência, e dois botões iguais leem como dois passos diferentes. */}
+      {!next && (
+        <section className="card p-5 md:p-6">
+          <p className="kicker">Tudo certo por aqui</p>
+          <h2 className="mt-2 font-bold font-display text-xl tracking-tight md:text-2xl">
+            Compartilhe sua loja
+          </h2>
+          <p className="mt-2 max-w-[52ch] text-muted">
+            Mais pessoas podem conhecer seus produtos e campanhas. Mande o link no grupo.
+          </p>
+          <div className="mt-5 flex flex-wrap gap-3">
             <ShareButton
               title="Minha loja"
               path={`/loja/${slug}`}
               label="Compartilhar loja"
               variant="primary"
             />
-          )}
-        </div>
-      </section>
+          </div>
+        </section>
+      )}
+
+      {/* guia de abertura: fica acima das ações enquanto a loja não está pronta, porque
+          quem chega aqui pela primeira vez não sabe o que vem antes do quê */}
+      {next && <StartGuide steps={steps} pct={pct} slug={slug} nextLabel={next.label} />}
 
       {/* o que você quer fazer hoje */}
       <section>
@@ -220,54 +252,94 @@ function Overview() {
           </section>
         )}
 
-        {/* quanto falta */}
-        {pct < 100 && (
-          <section className="card p-5 md:p-6">
-            <div className="flex items-baseline justify-between gap-3">
-              <h2 className="font-bold font-display text-lg tracking-tight">
-                Sua loja está {pct}% pronta
-              </h2>
-              <p className="text-muted text-sm tabular-nums">{pct}%</p>
-            </div>
-            <div className="mt-3 h-2.5 w-full overflow-hidden rounded-full bg-surface">
-              <div
-                className="progress-fill h-full rounded-full bg-brand"
-                style={{ width: `${pct}%` }}
-              />
-            </div>
-            <ul className="mt-5 grid gap-2.5">
-              {steps.map((step) => (
-                <li key={step.label} className="flex items-center gap-3 text-[0.95rem]">
-                  <span
-                    className={`inline-grid h-6 w-6 shrink-0 place-items-center rounded-full ${
-                      step.done
-                        ? "bg-success text-white"
-                        : "border border-line-strong text-transparent"
-                    }`}
-                  >
-                    <Check className="h-3.5 w-3.5" aria-hidden />
-                  </span>
-                  {step.to && !step.done ? (
-                    <Link
-                      to={step.to}
-                      params={{ slug }}
-                      className="inline-flex items-center gap-1.5 font-medium text-ink hover:text-brand-deep"
-                    >
-                      {step.label}
-                      <ArrowRight className="h-3.5 w-3.5" aria-hidden />
-                    </Link>
-                  ) : (
-                    <span className={step.done ? "text-muted line-through" : ""}>{step.label}</span>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
-
         <ShareCard storeUrl={storeUrl} />
       </div>
     </div>
+  );
+}
+
+/**
+ * O caminho todo, em ordem, com o porquê de cada passo escrito para quem não é do mundo
+ * digital. Um botão por vez: só o passo atual tem ação, os seguintes ficam legíveis mas
+ * quietos — lista com cinco botões faz a pessoa escolher errado e travar.
+ */
+function StartGuide({
+  steps,
+  pct,
+  slug,
+  nextLabel,
+}: {
+  steps: Step[];
+  pct: number;
+  slug: string;
+  nextLabel?: string;
+}) {
+  return (
+    <section className="card p-5 md:p-6">
+      <p className="kicker">Para abrir sua loja</p>
+      <div className="mt-2 flex items-baseline justify-between gap-3">
+        <h2 className="font-bold font-display text-lg tracking-tight md:text-xl">
+          Sua loja está {pct}% pronta
+        </h2>
+        <p className="text-muted text-sm tabular-nums">{pct}%</p>
+      </div>
+      <div className="mt-3 h-2.5 w-full overflow-hidden rounded-full bg-surface">
+        <div className="progress-fill h-full rounded-full bg-brand" style={{ width: `${pct}%` }} />
+      </div>
+
+      <ol className="mt-6 grid gap-5">
+        {steps.map((step, index) => {
+          const current = step.label === nextLabel;
+          return (
+            <li key={step.label} className="flex gap-3.5">
+              <span
+                aria-hidden
+                className={`inline-grid h-7 w-7 shrink-0 place-items-center rounded-full font-semibold text-xs tabular-nums ${
+                  step.done
+                    ? "bg-success text-white"
+                    : current
+                      ? "bg-brand text-white"
+                      : "border border-line-strong text-muted"
+                }`}
+              >
+                {step.done ? <Check className="h-4 w-4" /> : index + 1}
+              </span>
+              <div className="min-w-0 flex-1">
+                <p
+                  className={`font-semibold text-[0.98rem] leading-tight ${
+                    step.done ? "text-muted" : "text-ink"
+                  }`}
+                >
+                  {step.label}
+                  {step.done && <span className="sr-only"> (concluído)</span>}
+                </p>
+                {/* o porquê só aparece onde ajuda: no passo atual e nos que ainda vêm */}
+                {!step.done && <p className="mt-1 max-w-[52ch] text-muted text-sm">{step.why}</p>}
+                {current && step.to && (
+                  <Button className="mt-3" asChild>
+                    <Link to={step.to} params={{ slug }}>
+                      {step.cta}
+                      <ArrowRight className="h-4 w-4" aria-hidden />
+                    </Link>
+                  </Button>
+                )}
+                {current && step.waiting && (
+                  <p className="mt-2 inline-flex items-center gap-2 text-brand-deep text-sm">
+                    <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+                    Confirmando com o banco…
+                  </p>
+                )}
+              </div>
+            </li>
+          );
+        })}
+      </ol>
+
+      <p className="mt-6 border-line border-t pt-4 text-muted text-sm">
+        Travou em algum passo? Fale com quem te convidou para a Colheita — dá para retomar de onde
+        parou, nada do que você cadastrou é perdido.
+      </p>
+    </section>
   );
 }
 

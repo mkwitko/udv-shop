@@ -18,6 +18,7 @@ import {
 } from "#/lib/api/gen/hooks/useListStoreOrders";
 import type { ListStoreOrders200 } from "#/lib/api/gen/types/ListStoreOrders";
 import { formatPhone, longDate, money } from "#/lib/format";
+import { whatsappUrl } from "#/lib/whatsapp";
 
 export const Route = createFileRoute("/gestao/$slug/pedidos")({
   component: OrdersAdmin,
@@ -42,12 +43,6 @@ const STATUS_META: Record<
 const OPEN_STATUSES = new Set(["pending_payment", "paid", "delivery_arranged", "refund_requested"]);
 
 type OrderFilter = "all" | "open" | "done";
-
-function whatsappUrl(rawPhone: string) {
-  const digits = rawPhone.replace(/\D/g, "");
-  const full = digits.startsWith("55") && digits.length >= 12 ? digits : `55${digits}`;
-  return `https://wa.me/${full}`;
-}
 
 function FilterPill({
   active,

@@ -106,6 +106,10 @@ export type ListStoreOrders200 = {
             /**
              * @type string
             */
+            productSlug: string;
+            /**
+             * @type string
+            */
             name: string;
             /**
              * @minLength -9007199254740991
@@ -119,6 +123,23 @@ export type ListStoreOrders200 = {
              * @type integer
             */
             qty: number;
+            /**
+             * @type object
+            */
+            event: {
+                /**
+                 * @type string
+                */
+                at: string;
+                /**
+                 * @type string
+                */
+                location: string | null;
+            } | null;
+            /**
+             * @type string
+            */
+            checkedInAt: string | null;
         }[];
         /**
          * @type object

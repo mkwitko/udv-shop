@@ -22,6 +22,7 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as GestaoSlugRouteImport } from './routes/gestao/$slug'
 import { Route as LojaSlugRouteImport } from './routes/loja/$slug'
 import { Route as GestaoSlugIndexRouteImport } from './routes/gestao/$slug/index'
+import { Route as GestaoSlugAgendaRouteImport } from './routes/gestao/$slug/agenda'
 import { Route as GestaoSlugCampanhasRouteImport } from './routes/gestao/$slug/campanhas'
 import { Route as GestaoSlugConfiguracoesRouteImport } from './routes/gestao/$slug/configuracoes'
 import { Route as GestaoSlugDoacoesRouteImport } from './routes/gestao/$slug/doacoes'
@@ -101,6 +102,11 @@ const LojaSlugRoute = LojaSlugRouteImport.update({
 const GestaoSlugIndexRoute = GestaoSlugIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => GestaoSlugRoute,
+} as any)
+const GestaoSlugAgendaRoute = GestaoSlugAgendaRouteImport.update({
+  id: '/agenda',
+  path: '/agenda',
   getParentRoute: () => GestaoSlugRoute,
 } as any)
 const GestaoSlugCampanhasRoute = GestaoSlugCampanhasRouteImport.update({
@@ -193,6 +199,7 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/gestao/$slug': typeof GestaoSlugRouteWithChildren
   '/loja/$slug': typeof LojaSlugRouteWithChildren
+  '/gestao/$slug/agenda': typeof GestaoSlugAgendaRoute
   '/gestao/$slug/campanhas': typeof GestaoSlugCampanhasRoute
   '/gestao/$slug/configuracoes': typeof GestaoSlugConfiguracoesRoute
   '/gestao/$slug/doacoes': typeof GestaoSlugDoacoesRoute
@@ -221,6 +228,7 @@ export interface FileRoutesByTo {
   '/recuperar-senha': typeof RecuperarSenhaRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/gestao/$slug/agenda': typeof GestaoSlugAgendaRoute
   '/gestao/$slug/campanhas': typeof GestaoSlugCampanhasRoute
   '/gestao/$slug/configuracoes': typeof GestaoSlugConfiguracoesRoute
   '/gestao/$slug/doacoes': typeof GestaoSlugDoacoesRoute
@@ -252,6 +260,7 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/gestao/$slug': typeof GestaoSlugRouteWithChildren
   '/loja/$slug': typeof LojaSlugRouteWithChildren
+  '/gestao/$slug/agenda': typeof GestaoSlugAgendaRoute
   '/gestao/$slug/campanhas': typeof GestaoSlugCampanhasRoute
   '/gestao/$slug/configuracoes': typeof GestaoSlugConfiguracoesRoute
   '/gestao/$slug/doacoes': typeof GestaoSlugDoacoesRoute
@@ -284,6 +293,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/gestao/$slug'
     | '/loja/$slug'
+    | '/gestao/$slug/agenda'
     | '/gestao/$slug/campanhas'
     | '/gestao/$slug/configuracoes'
     | '/gestao/$slug/doacoes'
@@ -312,6 +322,7 @@ export interface FileRouteTypes {
     | '/recuperar-senha'
     | '/robots.txt'
     | '/sitemap.xml'
+    | '/gestao/$slug/agenda'
     | '/gestao/$slug/campanhas'
     | '/gestao/$slug/configuracoes'
     | '/gestao/$slug/doacoes'
@@ -342,6 +353,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/gestao/$slug'
     | '/loja/$slug'
+    | '/gestao/$slug/agenda'
     | '/gestao/$slug/campanhas'
     | '/gestao/$slug/configuracoes'
     | '/gestao/$slug/doacoes'
@@ -468,6 +480,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GestaoSlugIndexRouteImport
       parentRoute: typeof GestaoSlugRoute
     }
+    '/gestao/$slug/agenda': {
+      id: '/gestao/$slug/agenda'
+      path: '/agenda'
+      fullPath: '/gestao/$slug/agenda'
+      preLoaderRoute: typeof GestaoSlugAgendaRouteImport
+      parentRoute: typeof GestaoSlugRoute
+    }
     '/gestao/$slug/campanhas': {
       id: '/gestao/$slug/campanhas'
       path: '/campanhas'
@@ -577,6 +596,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface GestaoSlugRouteChildren {
+  GestaoSlugAgendaRoute: typeof GestaoSlugAgendaRoute
   GestaoSlugCampanhasRoute: typeof GestaoSlugCampanhasRoute
   GestaoSlugConfiguracoesRoute: typeof GestaoSlugConfiguracoesRoute
   GestaoSlugDoacoesRoute: typeof GestaoSlugDoacoesRoute
@@ -590,6 +610,7 @@ interface GestaoSlugRouteChildren {
 }
 
 const GestaoSlugRouteChildren: GestaoSlugRouteChildren = {
+  GestaoSlugAgendaRoute: GestaoSlugAgendaRoute,
   GestaoSlugCampanhasRoute: GestaoSlugCampanhasRoute,
   GestaoSlugConfiguracoesRoute: GestaoSlugConfiguracoesRoute,
   GestaoSlugDoacoesRoute: GestaoSlugDoacoesRoute,

@@ -91,8 +91,9 @@ function NewStorePage() {
           Vamos abrir a sua loja
         </h1>
         <p className="mt-2 text-muted">
-          A loja nasce aguardando liberação. Você já pode cadastrar produtos; ela aparece na vitrine
-          pública quando for aprovada.
+          São três campos. Depois disso a gestão te mostra, passo a passo, o que falta para a loja
+          abrir — cadastrar um produto, dizer onde receber e ativar a assinatura. Ninguém precisa
+          aprovar nada.
         </p>
 
         <form onSubmit={onSubmit} className="card mt-8 grid gap-5 p-6" noValidate>

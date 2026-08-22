@@ -16,7 +16,8 @@ export const listProductsQueryParamsSchema = z.object({
 "all": z.optional(z.enum(["true", "false"])),
 "category": z.optional(z.string().max(80)),
 "q": z.optional(z.string().max(80)),
-"sort": z.enum(["recent", "price_asc", "price_desc"]).default("recent")
+"sort": z.enum(["recent", "price_asc", "price_desc"]).default("recent"),
+"kind": z.enum(["produto", "evento", "todos"]).default("produto")
     }) as unknown as z.ZodType<ListProductsQueryParams>
 
 /**
@@ -40,6 +41,11 @@ export const listProducts200Schema = z.object({
     "id": z.string(),
 "slug": z.string(),
 "name": z.string()
+    })),
+"event": z.nullable(z.object({
+    "at": z.string(),
+"endsAt": z.nullable(z.string()),
+"location": z.nullable(z.string())
     })),
 "payout": z.nullable(z.object({
     "supplierId": z.string(),

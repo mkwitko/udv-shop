@@ -24,7 +24,7 @@ import { useListMyOrders } from "#/lib/api/gen/hooks/useListMyOrders";
 import { useListMyStores } from "#/lib/api/gen/hooks/useListMyStores";
 import type { ListMyStores200 } from "#/lib/api/gen/types/ListMyStores";
 import { useSession } from "#/lib/auth/session";
-import { longDate, money } from "#/lib/format";
+import { dateParts, dateTime, longDate, money, weekday } from "#/lib/format";
 import { seo } from "#/lib/seo";
 
 export const Route = createFileRoute("/conta")({
@@ -44,8 +44,8 @@ export const Route = createFileRoute("/conta")({
 
 const STATUS_LABEL: Record<string, { text: string; tone: "brand" | "accent" | "neutral" }> = {
   active: { text: "no ar", tone: "brand" },
-  pending: { text: "aguardando liberação", tone: "accent" },
-  suspended: { text: "suspensa", tone: "neutral" },
+  pending: { text: "ainda não abriu", tone: "accent" },
+  suspended: { text: "fora do ar", tone: "neutral" },
 };
 
 const ROLE_LABEL: Record<string, string> = {
@@ -130,6 +130,7 @@ function AccountPage() {
           )}
         </section>
 
+        <MyTickets />
         <MyOrders />
         <MyDonations />
         <MyInterests />
@@ -228,6 +229,56 @@ function SectionShell({
       </h2>
       {children}
     </section>
+  );
+}
+
+/**
+ * Ingressos de evento que ainda vão acontecer. Sai dos pedidos, mas vem antes deles e em
+ * bloco próprio: "sábado, 20h, salão do núcleo" é o que a pessoa vem procurar aqui, e
+ * achar isso dentro de uma linha de pedido antigo não acontece.
+ */
+function MyTickets() {
+  const { data, isPending } = useListMyOrders({ limit: 20 });
+  const now = Date.now();
+  const tickets = (data?.items ?? [])
+    .filter((order) => order.status !== "cancelled" && order.status !== "refunded")
+    .flatMap((order) =>
+      order.items
+        .filter((item) => item.event && new Date(item.event.at).getTime() >= now)
+        .map((item) => ({ order, item, at: item.event?.at ?? "" })),
+    )
+    .sort((a, b) => a.at.localeCompare(b.at));
+  if (isPending || tickets.length === 0) return null;
+
+  return (
+    <SectionShell title="Meus ingressos" count={tickets.length}>
+      <ul className="mt-6 grid gap-2.5">
+        {tickets.map(({ order, item, at }) => (
+          <li key={`${order.id}-${item.productId}`} className="card flex items-center gap-4 p-4">
+            <span className="inline-grid w-14 shrink-0 place-items-center rounded-[0.9rem] bg-brand-soft px-2 py-2 text-brand-deep">
+              <span className="font-bold font-display text-xl leading-none tabular-nums">
+                {dateParts(at).day}
+              </span>
+              <span className="mt-0.5 text-[0.7rem] uppercase tracking-[0.08em]">
+                {dateParts(at).month}
+              </span>
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="flex flex-wrap items-center gap-2 text-sm">
+                <span className="font-medium">{item.name}</span>
+                {item.qty > 1 && <Tag>{item.qty} ingressos</Tag>}
+                {order.status === "pending_payment" && <Tag tone="accent">pagamento pendente</Tag>}
+              </p>
+              <p className="mt-0.5 text-muted text-sm">
+                <span>{weekday(at)}</span>, {dateTime(at)}
+                {item.event?.location ? ` · ${item.event.location}` : ""}
+              </p>
+              <p className="mt-0.5 text-muted text-xs">{order.store.name}</p>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </SectionShell>
   );
 }
 

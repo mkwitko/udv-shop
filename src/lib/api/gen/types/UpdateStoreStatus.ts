@@ -19,6 +19,13 @@ export const updateStoreStatus200StatusEnum = {
 
 export type UpdateStoreStatus200StatusEnumKey = (typeof updateStoreStatus200StatusEnum)[keyof typeof updateStoreStatus200StatusEnum];
 
+export const updateStoreStatus200SuspensionReasonEnum = {
+    billing: "billing",
+    platform: "platform"
+} as const;
+
+export type UpdateStoreStatus200SuspensionReasonEnumKey = (typeof updateStoreStatus200SuspensionReasonEnum)[keyof typeof updateStoreStatus200SuspensionReasonEnum];
+
 /**
  * @description Default Response
 */
@@ -43,6 +50,18 @@ export type UpdateStoreStatus200 = {
      * @type string
     */
     status: UpdateStoreStatus200StatusEnumKey;
+    /**
+     * @type string
+    */
+    suspensionReason: UpdateStoreStatus200SuspensionReasonEnumKey | null;
+    /**
+     * @type string
+    */
+    deliveryNote: string | null;
+    /**
+     * @type string
+    */
+    whatsapp: string | null;
     /**
      * @type object
     */

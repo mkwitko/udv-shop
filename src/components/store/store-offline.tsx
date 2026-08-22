@@ -26,7 +26,7 @@ export function StoreOffline({
         </h1>
         <p className="mt-4 text-lede text-muted">
           {pending
-            ? "Esta loja está esperando liberação para abrir. Vale voltar em alguns dias."
+            ? "Quem organiza ainda está preparando a loja. Vale voltar em alguns dias."
             : "Ninguém pode comprar ou doar enquanto ela estiver fora do ar."}
         </p>
         <p className="mt-3 text-muted">

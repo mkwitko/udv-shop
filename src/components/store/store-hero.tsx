@@ -1,9 +1,10 @@
 import { Link } from "@tanstack/react-router";
-import { Heart, ShoppingBag } from "lucide-react";
+import { Heart, MessageCircle, ShoppingBag } from "lucide-react";
 import type { ReactNode } from "react";
 import { Button } from "#/components/ui/button";
 import { ShareButton } from "#/components/ui/share-button";
 import type { GetStore200 } from "#/lib/api/gen/types/GetStore";
+import { whatsappUrl } from "#/lib/whatsapp";
 
 type Store = GetStore200;
 
@@ -49,6 +50,23 @@ export function StoreHero({
         variant="inverse-outline"
         label="Compartilhar"
       />
+      {/* Falar com quem cuida da loja: em comunidade a conversa vem antes da compra, e
+          até agora a página não dava caminho nenhum de volta. */}
+      {store?.whatsapp && (
+        <Button asChild variant="inverse-outline">
+          <a
+            href={whatsappUrl(
+              store.whatsapp,
+              `Olá! Vi a loja ${store.name} e queria falar com você.`,
+            )}
+            target="_blank"
+            rel="noreferrer"
+          >
+            <MessageCircle className="h-4 w-4" aria-hidden />
+            Falar com a loja
+          </a>
+        </Button>
+      )}
     </div>
   );
 

@@ -94,6 +94,14 @@ export type GetOrderReceipt200 = {
     /**
      * @type string
     */
+    contactPhoneMasked: string | null;
+    /**
+     * @type string
+    */
+    deliveryNote: string | null;
+    /**
+     * @type string
+    */
     createdAt: string;
 };
 

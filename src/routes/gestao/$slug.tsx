@@ -6,6 +6,8 @@ import { SiteFooter } from "#/components/site/site-footer";
 import { SiteHeader } from "#/components/site/site-header";
 import { Tag } from "#/components/ui/tag";
 import { useListMyStores } from "#/lib/api/gen/hooks/useListMyStores";
+import { useListStoreInterests } from "#/lib/api/gen/hooks/useListStoreInterests";
+import { useListStoreOrders } from "#/lib/api/gen/hooks/useListStoreOrders";
 import { seo } from "#/lib/seo";
 
 export const Route = createFileRoute("/gestao/$slug")({
@@ -23,18 +25,25 @@ export const Route = createFileRoute("/gestao/$slug")({
   ),
 });
 
+/**
+ * Dez abas planas viravam dez palavras soltas para quem nunca vendeu: "Pedidos" ×
+ * "Encomendas" e "Repasses" × "Extrato" eram pares indistinguíveis. Continua uma fileira
+ * só (é o que funciona em 390px), agora com nome que diz o que é e um traço separando os
+ * três assuntos: vender, dinheiro, apoio.
+ */
 const TABS = [
-  { to: "/gestao/$slug", label: "Resumo", exact: true },
-  { to: "/gestao/$slug/produtos", label: "Produtos" },
-  { to: "/gestao/$slug/pedidos", label: "Pedidos" },
-  { to: "/gestao/$slug/encomendas", label: "Encomendas" },
+  { to: "/gestao/$slug", label: "Resumo", exact: true, group: "loja" },
+  { to: "/gestao/$slug/produtos", label: "Produtos", group: "vender" },
+  { to: "/gestao/$slug/pedidos", label: "Pedidos", group: "vender", badge: "orders" },
+  { to: "/gestao/$slug/agenda", label: "Agenda", group: "vender" },
+  { to: "/gestao/$slug/encomendas", label: "Fila de espera", group: "vender", badge: "interests" },
+  { to: "/gestao/$slug/campanhas", label: "Campanhas", group: "apoio" },
+  { to: "/gestao/$slug/doacoes", label: "Doações", group: "apoio" },
+  { to: "/gestao/$slug/recebimento", label: "Recebimento", group: "dinheiro" },
   // repasse é acordo comercial: a API recusa staff, então a aba nem aparece
-  { to: "/gestao/$slug/repasses", label: "Repasses", adminOnly: true },
-  { to: "/gestao/$slug/campanhas", label: "Campanhas" },
-  { to: "/gestao/$slug/doacoes", label: "Doações" },
-  { to: "/gestao/$slug/recebimento", label: "Recebimento" },
-  { to: "/gestao/$slug/extrato", label: "Extrato", adminOnly: true },
-  { to: "/gestao/$slug/configuracoes", label: "Configurações", ownerOnly: true },
+  { to: "/gestao/$slug/repasses", label: "A repassar", group: "dinheiro", adminOnly: true },
+  { to: "/gestao/$slug/extrato", label: "Extrato", group: "dinheiro", adminOnly: true },
+  { to: "/gestao/$slug/configuracoes", label: "Configurações", group: "loja", ownerOnly: true },
 ] as const;
 
 function ManageLayout() {
@@ -49,6 +58,13 @@ function ManageLayout() {
     if ("ownerOnly" in tab && tab.ownerOnly && store?.role !== "owner") return false;
     return true;
   });
+
+  // O que está esperando alguém da loja: pedido pago sem entrega combinada e gente na fila
+  // de espera. Uma página de 50 basta para um contador — acima disso mostramos "9+".
+  const { data: paidOrders } = useListStoreOrders(slug, { limit: 50, status: "paid" });
+  const { data: interests } = useListStoreInterests(slug, { limit: 50 });
+  const openOrders = paidOrders?.items.length ?? 0;
+  const openInterests = (interests?.items ?? []).filter((row) => row.status === "open").length;
 
   // quem não tem papel nesta loja não vê o painel — a API recusaria de todo jeito,
   // mas aqui a pessoa é levada de volta em vez de ver telas de erro
@@ -75,9 +91,11 @@ function ManageLayout() {
           <div className="shell pt-8 pb-0">
             <div className="flex flex-wrap items-center gap-3">
               <h1 className="font-display text-2xl font-semibold tracking-tight">{store.name}</h1>
+              {/* "aguardando liberação" prometia uma aprovação que não existe: quem abre a
+                  loja é a assinatura. O selo diz o fato, e o guia da home diz o que fazer. */}
               {store.status !== "active" && (
                 <Tag tone={store.status === "pending" ? "accent" : "danger"}>
-                  {store.status === "pending" ? "aguardando liberação" : "suspensa"}
+                  {store.status === "pending" ? "ainda não abriu" : "fora do ar"}
                 </Tag>
               )}
               <Link
@@ -90,9 +108,18 @@ function ManageLayout() {
             </div>
 
             <nav className="scroll-row mt-5 -mb-px" aria-label="Seções da gestão">
-              {visibleTabs.map((tab) => {
+              {visibleTabs.map((tab, index) => {
                 const exact = "exact" in tab && tab.exact;
                 const active = Boolean(matchRoute({ to: tab.to, params: { slug }, fuzzy: !exact }));
+                const count =
+                  "badge" in tab
+                    ? tab.badge === "orders"
+                      ? openOrders
+                      : tab.badge === "interests"
+                        ? openInterests
+                        : 0
+                    : 0;
+                const newGroup = index > 0 && visibleTabs[index - 1]?.group !== tab.group;
                 return (
                   <Link
                     key={tab.to}
@@ -100,10 +127,17 @@ function ManageLayout() {
                     params={{ slug }}
                     aria-current={active ? "page" : undefined}
                     className={`relative whitespace-nowrap px-3 pb-3 text-sm transition-colors [transition-duration:var(--dur)] ${
-                      active ? "font-semibold text-ink" : "text-muted hover:text-ink"
-                    }`}
+                      newGroup ? "ml-3 border-line border-l pl-6" : ""
+                    } ${active ? "font-semibold text-ink" : "text-muted hover:text-ink"}`}
                   >
                     {tab.label}
+                    {/* Contador é o único aviso dentro do painel de que alguém está esperando
+                        resposta. Sem ele o dono só descobria a venda abrindo a aba certa. */}
+                    {count > 0 && (
+                      <span className="ml-1.5 inline-grid h-5 min-w-5 place-items-center rounded-full bg-brand px-1.5 font-semibold text-[0.7rem] text-brand-ink tabular-nums">
+                        {count > 9 ? "9+" : count}
+                      </span>
+                    )}
                     {active && (
                       <motion.span
                         layoutId="gestao-tab-indicator"

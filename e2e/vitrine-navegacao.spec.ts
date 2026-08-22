@@ -18,8 +18,13 @@ test("visitante filtra por categoria, busca e carrega mais produtos", async ({ p
   const cards = page.locator("#produtos li");
   await expect(cards).toHaveCount(12);
 
+  // O total é o que o seed tiver (14 hoje) mais o que outros testes cadastrarem: cravar
+  // "24" aqui fazia o teste falhar por dado, não por regressão. O que importa é que o
+  // botão traz mais do que a primeira página tinha.
   await page.getByRole("button", { name: "Ver mais produtos" }).click();
-  await expect(cards).toHaveCount(24);
+  await expect(async () => {
+    expect(await cards.count()).toBeGreaterThan(12);
+  }).toPass({ timeout: 10_000 });
 
   // gaveta entra na URL: quem compartilha o link compartilha o filtro
   await pills.getByRole("button", { name: /^Casa/ }).click();

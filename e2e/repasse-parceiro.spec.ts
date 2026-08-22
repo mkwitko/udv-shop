@@ -25,7 +25,7 @@ test("dono cadastra parceiro e combina repasse num produto", async ({ page }) =>
   await page.getByRole("button", { name: "Novo produto" }).click();
   await page.getByRole("textbox", { name: "Nome do produto" }).fill(product);
   await page.getByRole("textbox", { name: "Preço" }).fill("60,00");
-  await page.getByRole("spinbutton", { name: "Quantidade em estoque" }).fill("2");
+  await page.getByRole("spinbutton", { name: "Quantos você tem agora?" }).fill("2");
   await page
     .getByLabel("Quem recebe parte deste produto")
     .selectOption({ label: partner });

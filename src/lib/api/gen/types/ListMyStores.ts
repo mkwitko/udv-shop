@@ -12,6 +12,13 @@ export const itemsStatusEnum3 = {
 
 export type ItemsStatusEnum3Key = (typeof itemsStatusEnum3)[keyof typeof itemsStatusEnum3];
 
+export const itemsSuspensionReasonEnum3 = {
+    billing: "billing",
+    platform: "platform"
+} as const;
+
+export type ItemsSuspensionReasonEnum3Key = (typeof itemsSuspensionReasonEnum3)[keyof typeof itemsSuspensionReasonEnum3];
+
 export const itemsRoleEnum = {
     owner: "owner",
     admin: "admin",
@@ -48,6 +55,18 @@ export type ListMyStores200 = {
          * @type string
         */
         status: ItemsStatusEnum3Key;
+        /**
+         * @type string
+        */
+        suspensionReason: ItemsSuspensionReasonEnum3Key | null;
+        /**
+         * @type string
+        */
+        deliveryNote: string | null;
+        /**
+         * @type string
+        */
+        whatsapp: string | null;
         /**
          * @type object
         */

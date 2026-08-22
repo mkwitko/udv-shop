@@ -14,7 +14,7 @@ test("dono arquiva um produto e restaura ele depois", async ({ page }) => {
   const name = `Caneca Arquivo ${Date.now()}`;
   await page.getByRole("textbox", { name: "Nome do produto" }).fill(name);
   await page.getByRole("textbox", { name: "Preço" }).fill("29,90");
-  await page.getByRole("spinbutton", { name: "Quantidade em estoque" }).fill("2");
+  await page.getByRole("spinbutton", { name: "Quantos você tem agora?" }).fill("2");
   await page.getByRole("button", { name: "Publicar produto" }).click();
 
   const row = page.locator("li").filter({ hasText: name });

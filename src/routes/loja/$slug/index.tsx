@@ -1,6 +1,7 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowRight, PackageSearch, SearchX } from "lucide-react";
+import { EventCard } from "#/components/store/event-card";
 import { ProductCard } from "#/components/store/product-card";
 import { StoreHero } from "#/components/store/store-hero";
 import { StoreToolbar } from "#/components/store/store-toolbar";
@@ -15,6 +16,7 @@ import {
   listCategoriesQueryOptions,
   useListCategories,
 } from "#/lib/api/gen/hooks/useListCategories";
+import { listEventsQueryOptions, useListEvents } from "#/lib/api/gen/hooks/useListEvents";
 import type { ListCampaigns200 } from "#/lib/api/gen/types/ListCampaigns";
 import { publicRequest } from "#/lib/api/public";
 import {
@@ -37,6 +39,9 @@ export const Route = createFileRoute("/loja/$slug/")({
         storeCatalogInfiniteOptions(params.slug, deps, publicRequest),
       ),
       context.queryClient.ensureQueryData(listCategoriesQueryOptions(params.slug, publicRequest)),
+      context.queryClient.ensureQueryData(
+        listEventsQueryOptions(params.slug, { limit: 20 }, publicRequest),
+      ),
       context.queryClient.ensureQueryData(
         listCampaignsQueryOptions(params.slug, { limit: 6 }, publicRequest),
       ),
@@ -82,6 +87,8 @@ function StoreCatalog() {
   } = useInfiniteQuery(storeCatalogInfiniteOptions(slug, filters, publicRequest));
 
   const products = catalog?.pages.flatMap((page) => page.items) ?? [];
+  const { data: events } = useListEvents(slug, { limit: 20 }, { client: publicRequest });
+  const upcoming = events?.items ?? [];
   const categories = categoryPage?.items ?? [];
   const campaigns = campaignPage?.items ?? [];
   const featured = campaigns.find((campaign) => campaign.status === "active");
@@ -125,9 +132,10 @@ function StoreCatalog() {
 
         {store && store.status !== "active" && (
           <p className="mt-4 rounded-[1rem] border border-accent/35 bg-warning-soft px-4 py-3 text-[0.95rem] text-ink">
-            <strong className="font-semibold">Só você está vendo esta página.</strong> A loja está{" "}
-            {store.status === "pending" ? "aguardando liberação" : "fora do ar"} — ninguém de fora
-            consegue comprar ou doar.
+            <strong className="font-semibold">Só você está vendo esta página.</strong>{" "}
+            {store.status === "pending"
+              ? "A loja ainda não abriu — ninguém de fora consegue comprar ou doar. A gestão mostra o que falta."
+              : "A loja está fora do ar — ninguém de fora consegue comprar ou doar."}
           </p>
         )}
       </section>
@@ -135,6 +143,22 @@ function StoreCatalog() {
       {featured && (
         <section className="shell mt-8">
           <FeaturedCampaign slug={slug} campaign={featured} />
+        </section>
+      )}
+
+      {/* Agenda antes da vitrine: evento tem data e vence — mel espera, sessão de sábado
+          não. Some sozinha quando a loja não tem nada marcado. */}
+      {upcoming.length > 0 && (
+        <section className="shell mt-10">
+          <h2 className="font-bold font-display text-xl tracking-tight">Agenda</h2>
+          <p className="mt-1 text-muted text-sm">O que vai acontecer no núcleo.</p>
+          <ul className="mt-4 grid gap-3">
+            {upcoming.map((event) => (
+              <li key={event.id}>
+                <EventCard event={event} storeSlug={slug} />
+              </li>
+            ))}
+          </ul>
         </section>
       )}
 

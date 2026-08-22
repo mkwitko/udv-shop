@@ -3,6 +3,7 @@ import { CreditCard, QrCode } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
+import { KeepReceipt } from "#/components/pay/keep-receipt";
 import { PayChoice } from "#/components/pay/pay-choice";
 import { PixPanel } from "#/components/pay/pix-panel";
 import { StepHeading } from "#/components/pay/steps";
@@ -409,12 +410,7 @@ function DonatePage() {
           <span className="h-2 w-2 animate-pulse rounded-full bg-accent" aria-hidden />
           Esperando o banco confirmar…
         </p>
-        {receiptToken && (
-          <p className="mt-4 text-center text-muted text-sm">
-            Pode fechar esta página: guarde o link e volte quando quiser para ver se o pagamento
-            caiu.
-          </p>
-        )}
+        {receiptToken && <KeepReceipt kind="doacao" className="mt-6" />}
       </section>
     );
   }

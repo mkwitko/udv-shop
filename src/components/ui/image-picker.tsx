@@ -28,7 +28,7 @@ export function ImagePicker({
   multiple = true,
   onUploadingChange,
   onError,
-  label = "Arraste as fotos aqui",
+  label = "Toque para escolher as fotos",
   coverKey,
   onCoverChange,
 }: {
@@ -176,7 +176,9 @@ export function ImagePicker({
           <span className="font-medium text-ink text-sm">
             {uploading ? "Enviando foto…" : label}
           </span>
-          <span className="text-muted text-xs">ou toque para escolher · JPG, PNG, WebP</span>
+          {/* No celular não existe arrastar: o gesto que a pessoa tem é tocar. Arrastar
+              continua funcionando no computador, virou a alternativa. */}
+          <span className="text-muted text-xs">ou arraste aqui · JPG, PNG, WebP</span>
           <input
             type="file"
             multiple={multiple}

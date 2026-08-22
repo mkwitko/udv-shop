@@ -10,7 +10,7 @@ test("dono cadastra um produto e ele aparece na vitrine da gestão", async ({ pa
   const name = `Caneca E2E ${Date.now()}`;
   await page.getByRole("textbox", { name: "Nome do produto" }).fill(name);
   await page.getByRole("textbox", { name: "Preço" }).fill("35,00");
-  await page.getByRole("spinbutton", { name: "Quantidade em estoque" }).fill("5");
+  await page.getByRole("spinbutton", { name: "Quantos você tem agora?" }).fill("5");
 
   await page.getByRole("button", { name: "Publicar produto" }).click();
 

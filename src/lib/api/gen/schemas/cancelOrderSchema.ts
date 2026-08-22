@@ -29,9 +29,15 @@ export const cancelOrder200Schema = z.object({
 "createdAt": z.string(),
 "items": z.array(z.object({
     "productId": z.string(),
+"productSlug": z.string(),
 "name": z.string(),
 "priceCents": z.int().min(-9007199254740991).max(9007199254740991),
-"qty": z.int().min(-9007199254740991).max(9007199254740991)
+"qty": z.int().min(-9007199254740991).max(9007199254740991),
+"event": z.nullable(z.object({
+    "at": z.string(),
+"location": z.nullable(z.string())
+    })),
+"checkedInAt": z.nullable(z.string())
     })),
 "payment": z.nullable(z.object({
     "provider": z.string(),

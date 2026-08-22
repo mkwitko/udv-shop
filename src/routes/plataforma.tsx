@@ -40,8 +40,14 @@ type StatusFilter = "all" | "pending" | "active" | "suspended";
 
 const STATUS_LABEL: Record<string, { text: string; tone: "brand" | "accent" | "neutral" }> = {
   active: { text: "no ar", tone: "brand" },
-  pending: { text: "aguardando liberação", tone: "accent" },
-  suspended: { text: "suspensa", tone: "neutral" },
+  pending: { text: "ainda não abriu", tone: "accent" },
+  suspended: { text: "fora do ar", tone: "neutral" },
+};
+
+/** Suspensa por cobrança volta sozinha quando a loja paga; a nossa, só na mão. */
+const SUSPENSION_REASON: Record<string, string> = {
+  billing: "assinatura interrompida",
+  platform: "suspensa pela plataforma",
 };
 
 const PAGE_SIZE = 50;
@@ -150,7 +156,7 @@ function PlatformStores() {
             <h2 className="font-display text-lg font-semibold">Nada por aqui</h2>
             <p className="mx-auto mt-2 max-w-sm text-muted">
               {filter === "pending"
-                ? "Nenhuma loja aguardando liberação."
+                ? "Nenhuma loja esperando para abrir."
                 : "Nenhuma loja com esse filtro."}
             </p>
           </div>
@@ -182,6 +188,9 @@ function PlatformStores() {
                           /loja/{store.slug}
                         </Link>{" "}
                         · criada em {longDate(store.createdAt)}
+                        {store.suspensionReason
+                          ? ` · ${SUSPENSION_REASON[store.suspensionReason] ?? store.suspensionReason}`
+                          : ""}
                       </p>
                     </div>
                     <div className="flex flex-wrap gap-2">
