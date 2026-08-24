@@ -105,23 +105,6 @@ export type GetProduct200 = {
     /**
      * @type object
     */
-    event: {
-        /**
-         * @type string
-        */
-        at: string;
-        /**
-         * @type string
-        */
-        endsAt: string | null;
-        /**
-         * @type string
-        */
-        location: string | null;
-    } | null;
-    /**
-     * @type object
-    */
     payout: {
         /**
          * @type string

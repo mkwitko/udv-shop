@@ -12,7 +12,7 @@ export type CheckInAttendeePathParams = {
     /**
      * @type string
     */
-    productSlug: string;
+    eventSlug: string;
     /**
      * @type string, uuid
     */

@@ -4,6 +4,13 @@
 */
 
 
+export const itemsKindEnum4 = {
+    produto: "produto",
+    evento: "evento"
+} as const;
+
+export type ItemsKindEnum4Key = (typeof itemsKindEnum4)[keyof typeof itemsKindEnum4];
+
 export const paymentProviderEnum4 = {
     stripe: "stripe"
 } as const;
@@ -78,11 +85,11 @@ export type Checkout201 = {
             /**
              * @type string
             */
-            productId: string;
+            kind: ItemsKindEnum4Key;
             /**
              * @type string
             */
-            productSlug: string;
+            slug: string;
             /**
              * @type string
             */
@@ -187,9 +194,14 @@ export type CheckoutMutationRequest = {
     items: {
         /**
          * @minLength 1
-         * @type string
+         * @type string | undefined
         */
-        productSlug: string;
+        productSlug?: string;
+        /**
+         * @minLength 1
+         * @type string | undefined
+        */
+        eventSlug?: string;
         /**
          * @minLength 1
          * @maxLength 99

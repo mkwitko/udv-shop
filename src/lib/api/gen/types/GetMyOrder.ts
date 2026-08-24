@@ -11,6 +11,13 @@ export type GetMyOrderPathParams = {
     id: string;
 };
 
+export const itemsKindEnum6 = {
+    produto: "produto",
+    evento: "evento"
+} as const;
+
+export type ItemsKindEnum6Key = (typeof itemsKindEnum6)[keyof typeof itemsKindEnum6];
+
 /**
  * @description Default Response
 */
@@ -69,11 +76,11 @@ export type GetMyOrder200 = {
         /**
          * @type string
         */
-        productId: string;
+        kind: ItemsKindEnum6Key;
         /**
          * @type string
         */
-        productSlug: string;
+        slug: string;
         /**
          * @type string
         */

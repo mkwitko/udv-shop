@@ -9,27 +9,27 @@ import type { QueryKey, QueryClient, QueryObserverOptions, UseQueryResult } from
 import { listEventAttendees } from "../clients/listEventAttendees.ts";
 import { queryOptions, useQuery } from "@tanstack/react-query";
 
-export const listEventAttendeesQueryKey = (slug: ListEventAttendeesPathParams["slug"] | undefined, productSlug: ListEventAttendeesPathParams["productSlug"] | undefined) => [{ url: '/stores/:slug/events/:productSlug/attendees', params: {slug:slug,productSlug:productSlug} }] as const
+export const listEventAttendeesQueryKey = (slug: ListEventAttendeesPathParams["slug"] | undefined, eventSlug: ListEventAttendeesPathParams["eventSlug"] | undefined) => [{ url: '/stores/:slug/events/:eventSlug/attendees', params: {slug:slug,eventSlug:eventSlug} }] as const
 
 export type ListEventAttendeesQueryKey = ReturnType<typeof listEventAttendeesQueryKey>
 
-export function listEventAttendeesQueryOptions(slug: ListEventAttendeesPathParams["slug"] | undefined, productSlug: ListEventAttendeesPathParams["productSlug"] | undefined, config: Partial<RequestConfig> & { client?: Client } = {}) {
+export function listEventAttendeesQueryOptions(slug: ListEventAttendeesPathParams["slug"] | undefined, eventSlug: ListEventAttendeesPathParams["eventSlug"] | undefined, config: Partial<RequestConfig> & { client?: Client } = {}) {
 
-        const queryKey = listEventAttendeesQueryKey(slug, productSlug)
+        const queryKey = listEventAttendeesQueryKey(slug, eventSlug)
         return queryOptions<ListEventAttendeesQueryResponse, ResponseErrorConfig<Error>, ListEventAttendeesQueryResponse, typeof queryKey>({
-         enabled: !!(slug && productSlug),
+         enabled: !!(slug && eventSlug),
          queryKey,
          queryFn: async ({ signal }) => {
-            return listEventAttendees(slug!, productSlug!, { ...config, signal: config.signal ?? signal })
+            return listEventAttendees(slug!, eventSlug!, { ...config, signal: config.signal ?? signal })
          },
         })
 
 }
 
 /**
- * {@link /stores/:slug/events/:productSlug/attendees}
+ * {@link /stores/:slug/events/:eventSlug/attendees}
  */
-export function useListEventAttendees<TData = ListEventAttendeesQueryResponse, TQueryData = ListEventAttendeesQueryResponse, TQueryKey extends QueryKey = ListEventAttendeesQueryKey>(slug: ListEventAttendeesPathParams["slug"] | undefined, productSlug: ListEventAttendeesPathParams["productSlug"] | undefined, options: 
+export function useListEventAttendees<TData = ListEventAttendeesQueryResponse, TQueryData = ListEventAttendeesQueryResponse, TQueryKey extends QueryKey = ListEventAttendeesQueryKey>(slug: ListEventAttendeesPathParams["slug"] | undefined, eventSlug: ListEventAttendeesPathParams["eventSlug"] | undefined, options: 
 {
   query?: Partial<QueryObserverOptions<ListEventAttendeesQueryResponse, ResponseErrorConfig<Error>, TData, TQueryData, TQueryKey>> & { client?: QueryClient },
   client?: Partial<RequestConfig> & { client?: Client }
@@ -38,11 +38,11 @@ export function useListEventAttendees<TData = ListEventAttendeesQueryResponse, T
 
          const { query: queryConfig = {}, client: config = {} } = options ?? {}
          const { client: queryClient, ...resolvedOptions } = queryConfig
-         const queryKey = resolvedOptions?.queryKey ?? listEventAttendeesQueryKey(slug, productSlug)
+         const queryKey = resolvedOptions?.queryKey ?? listEventAttendeesQueryKey(slug, eventSlug)
          
 
          const query = useQuery({
-          ...listEventAttendeesQueryOptions(slug, productSlug, config),
+          ...listEventAttendeesQueryOptions(slug, eventSlug, config),
           ...resolvedOptions,
           queryKey,
          } as unknown as QueryObserverOptions, queryClient) as UseQueryResult<TData, ResponseErrorConfig<Error>> & { queryKey: TQueryKey }

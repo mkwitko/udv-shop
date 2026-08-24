@@ -7,19 +7,19 @@ import fetch from "../../fetch-client.ts";
 import type { Client, RequestConfig, ResponseErrorConfig } from "../../fetch-client.ts";
 import type { CheckInAttendeeMutationRequest, CheckInAttendeeMutationResponse, CheckInAttendeePathParams } from "../types/CheckInAttendee.ts";
 
-function getCheckInAttendeeUrl(slug: CheckInAttendeePathParams["slug"], productSlug: CheckInAttendeePathParams["productSlug"], orderItemId: CheckInAttendeePathParams["orderItemId"]) {
-  const res = { method: 'PATCH', url: `/stores/${slug}/events/${productSlug}/attendees/${orderItemId}` as const }
+function getCheckInAttendeeUrl(slug: CheckInAttendeePathParams["slug"], eventSlug: CheckInAttendeePathParams["eventSlug"], orderItemId: CheckInAttendeePathParams["orderItemId"]) {
+  const res = { method: 'PATCH', url: `/stores/${slug}/events/${eventSlug}/attendees/${orderItemId}` as const }
   return res
 }
 
 /**
- * {@link /stores/:slug/events/:productSlug/attendees/:orderItemId}
+ * {@link /stores/:slug/events/:eventSlug/attendees/:orderItemId}
  */
-export async function checkInAttendee(slug: CheckInAttendeePathParams["slug"], productSlug: CheckInAttendeePathParams["productSlug"], orderItemId: CheckInAttendeePathParams["orderItemId"], data: CheckInAttendeeMutationRequest, config: Partial<RequestConfig<CheckInAttendeeMutationRequest>> & { client?: Client } = {}) {
+export async function checkInAttendee(slug: CheckInAttendeePathParams["slug"], eventSlug: CheckInAttendeePathParams["eventSlug"], orderItemId: CheckInAttendeePathParams["orderItemId"], data: CheckInAttendeeMutationRequest, config: Partial<RequestConfig<CheckInAttendeeMutationRequest>> & { client?: Client } = {}) {
   const { client: request = fetch, ...requestConfig } = config
 
   const requestData = data
 
-  const res = await request<CheckInAttendeeMutationResponse, ResponseErrorConfig<Error>, CheckInAttendeeMutationRequest>({ method : "PATCH", url : getCheckInAttendeeUrl(slug, productSlug, orderItemId).url.toString(), data : requestData, ... requestConfig })
+  const res = await request<CheckInAttendeeMutationResponse, ResponseErrorConfig<Error>, CheckInAttendeeMutationRequest>({ method : "PATCH", url : getCheckInAttendeeUrl(slug, eventSlug, orderItemId).url.toString(), data : requestData, ... requestConfig })
   return res.data
 }

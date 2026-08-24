@@ -84,3 +84,14 @@ export function formatPhone(raw: string): string {
     return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
   return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
 }
+
+/**
+ * ISO do servidor → valor de `<input type="datetime-local">`, no fuso de quem edita. O
+ * input não aceita ISO com Z; sem esta conversão o campo abre vazio ao editar um evento.
+ */
+export function toLocalInput(iso: string | null | undefined): string {
+  if (!iso) return "";
+  const date = new Date(iso);
+  const pad = (value: number) => String(value).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}

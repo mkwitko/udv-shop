@@ -8,7 +8,7 @@ import { z } from "zod/v4";
 
 export const checkInAttendeePathParamsSchema = z.object({
     "slug": z.string(),
-"productSlug": z.string(),
+"eventSlug": z.string(),
 "orderItemId": z.uuid()
     }) as unknown as z.ZodType<CheckInAttendeePathParams>
 

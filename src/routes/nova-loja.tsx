@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createFileRoute, Link, useNavigate, useRouter } from "@tanstack/react-router";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { RequireSession } from "#/components/auth/require-session";
@@ -58,6 +58,10 @@ function NewStorePage() {
   } = useForm<StoreForm>({ resolver: zodResolver(StoreSchema), defaultValues: { slug: "" } });
 
   const slug = watch("slug");
+  // enquanto ninguém mexeu no endereço, ele acompanha o nome. Comparar slug com
+  // slugify(nome) não serve: o react-hook-form já gravou o nome novo quando este
+  // onChange roda, então a comparação falharia a partir da segunda letra.
+  const slugEdited = useRef(false);
 
   const onSubmit = handleSubmit(async (values) => {
     setFormError(null);
@@ -106,8 +110,7 @@ function NewStorePage() {
               aria-invalid={Boolean(errors.name)}
               {...register("name", {
                 onChange: (event) => {
-                  // o endereço acompanha o nome até o usuário editar o endereço à mão
-                  if (!slug || slug === slugify(watch("name"))) {
+                  if (!slugEdited.current) {
                     setValue("slug", slugify(event.target.value), { shouldValidate: false });
                   }
                 },
@@ -125,7 +128,13 @@ function NewStorePage() {
               id="slug"
               placeholder="estrela-do-norte"
               aria-invalid={Boolean(errors.slug)}
-              {...register("slug")}
+              {...register("slug", {
+                // apagar o endereço devolve o campo ao automático em vez de deixar a
+                // pessoa presa num campo vazio que não volta a preencher
+                onChange: (event) => {
+                  slugEdited.current = event.target.value.trim().length > 0;
+                },
+              })}
             />
           </Field>
 

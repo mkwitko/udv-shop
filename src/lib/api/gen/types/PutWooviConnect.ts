@@ -11,6 +11,14 @@ export type PutWooviConnectPathParams = {
     slug: string;
 };
 
+export const wooviKeyStatusEnum2 = {
+    legacy: "legacy",
+    pending: "pending",
+    verified: "verified"
+} as const;
+
+export type WooviKeyStatusEnum2Key = (typeof wooviKeyStatusEnum2)[keyof typeof wooviKeyStatusEnum2];
+
 /**
  * @description Default Response
 */
@@ -52,6 +60,14 @@ export type PutWooviConnect200 = {
          * @type string
         */
         pixKeyMasked: string | null;
+        /**
+         * @type string
+        */
+        keyStatus: WooviKeyStatusEnum2Key | null;
+        /**
+         * @type string
+        */
+        ownerName: string | null;
     };
     /**
      * @minLength -9007199254740991

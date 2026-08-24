@@ -7,19 +7,19 @@ import fetch from "../../fetch-client.ts";
 import type { Client, RequestConfig, ResponseErrorConfig } from "../../fetch-client.ts";
 import type { ListEventAttendeesQueryResponse, ListEventAttendeesPathParams } from "../types/ListEventAttendees.ts";
 
-function getListEventAttendeesUrl(slug: ListEventAttendeesPathParams["slug"], productSlug: ListEventAttendeesPathParams["productSlug"]) {
-  const res = { method: 'GET', url: `/stores/${slug}/events/${productSlug}/attendees` as const }
+function getListEventAttendeesUrl(slug: ListEventAttendeesPathParams["slug"], eventSlug: ListEventAttendeesPathParams["eventSlug"]) {
+  const res = { method: 'GET', url: `/stores/${slug}/events/${eventSlug}/attendees` as const }
   return res
 }
 
 /**
- * {@link /stores/:slug/events/:productSlug/attendees}
+ * {@link /stores/:slug/events/:eventSlug/attendees}
  */
-export async function listEventAttendees(slug: ListEventAttendeesPathParams["slug"], productSlug: ListEventAttendeesPathParams["productSlug"], config: Partial<RequestConfig> & { client?: Client } = {}) {
+export async function listEventAttendees(slug: ListEventAttendeesPathParams["slug"], eventSlug: ListEventAttendeesPathParams["eventSlug"], config: Partial<RequestConfig> & { client?: Client } = {}) {
   const { client: request = fetch, ...requestConfig } = config
 
 
 
-  const res = await request<ListEventAttendeesQueryResponse, ResponseErrorConfig<Error>, unknown>({ method : "GET", url : getListEventAttendeesUrl(slug, productSlug).url.toString(), ... requestConfig })
+  const res = await request<ListEventAttendeesQueryResponse, ResponseErrorConfig<Error>, unknown>({ method : "GET", url : getListEventAttendeesUrl(slug, eventSlug).url.toString(), ... requestConfig })
   return res.data
 }

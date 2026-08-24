@@ -26,14 +26,6 @@ export const listProductsQueryParamsSortEnum = {
 
 export type ListProductsQueryParamsSortEnumKey = (typeof listProductsQueryParamsSortEnum)[keyof typeof listProductsQueryParamsSortEnum];
 
-export const listProductsQueryParamsKindEnum = {
-    produto: "produto",
-    evento: "evento",
-    todos: "todos"
-} as const;
-
-export type ListProductsQueryParamsKindEnumKey = (typeof listProductsQueryParamsKindEnum)[keyof typeof listProductsQueryParamsKindEnum];
-
 export type ListProductsQueryParams = {
     /**
      * @minLength 1
@@ -65,11 +57,6 @@ export type ListProductsQueryParams = {
      * @type string | undefined
     */
     sort?: ListProductsQueryParamsSortEnumKey;
-    /**
-     * @default "produto"
-     * @type string | undefined
-    */
-    kind?: ListProductsQueryParamsKindEnumKey;
 };
 
 export const itemsAvailabilityEnum = {
@@ -162,23 +149,6 @@ export type ListProducts200 = {
              * @type string
             */
             name: string;
-        } | null;
-        /**
-         * @type object
-        */
-        event: {
-            /**
-             * @type string
-            */
-            at: string;
-            /**
-             * @type string
-            */
-            endsAt: string | null;
-            /**
-             * @type string
-            */
-            location: string | null;
         } | null;
         /**
          * @type object

@@ -9,27 +9,27 @@ import type { QueryKey, QueryClient, UseSuspenseQueryOptions, UseSuspenseQueryRe
 import { listEventAttendees } from "../clients/listEventAttendees.ts";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 
-export const listEventAttendeesSuspenseQueryKey = (slug: ListEventAttendeesPathParams["slug"] | undefined, productSlug: ListEventAttendeesPathParams["productSlug"] | undefined) => [{ url: '/stores/:slug/events/:productSlug/attendees', params: {slug:slug,productSlug:productSlug} }] as const
+export const listEventAttendeesSuspenseQueryKey = (slug: ListEventAttendeesPathParams["slug"] | undefined, eventSlug: ListEventAttendeesPathParams["eventSlug"] | undefined) => [{ url: '/stores/:slug/events/:eventSlug/attendees', params: {slug:slug,eventSlug:eventSlug} }] as const
 
 export type ListEventAttendeesSuspenseQueryKey = ReturnType<typeof listEventAttendeesSuspenseQueryKey>
 
-export function listEventAttendeesSuspenseQueryOptions(slug: ListEventAttendeesPathParams["slug"], productSlug: ListEventAttendeesPathParams["productSlug"], config: Partial<RequestConfig> & { client?: Client } = {}) {
+export function listEventAttendeesSuspenseQueryOptions(slug: ListEventAttendeesPathParams["slug"], eventSlug: ListEventAttendeesPathParams["eventSlug"], config: Partial<RequestConfig> & { client?: Client } = {}) {
 
-        const queryKey = listEventAttendeesSuspenseQueryKey(slug, productSlug)
+        const queryKey = listEventAttendeesSuspenseQueryKey(slug, eventSlug)
         return queryOptions<ListEventAttendeesQueryResponse, ResponseErrorConfig<Error>, ListEventAttendeesQueryResponse, typeof queryKey>({
          
          queryKey,
          queryFn: async ({ signal }) => {
-            return listEventAttendees(slug, productSlug, { ...config, signal: config.signal ?? signal })
+            return listEventAttendees(slug, eventSlug, { ...config, signal: config.signal ?? signal })
          },
         })
 
 }
 
 /**
- * {@link /stores/:slug/events/:productSlug/attendees}
+ * {@link /stores/:slug/events/:eventSlug/attendees}
  */
-export function useListEventAttendeesSuspense<TData = ListEventAttendeesQueryResponse, TQueryKey extends QueryKey = ListEventAttendeesSuspenseQueryKey>(slug: ListEventAttendeesPathParams["slug"], productSlug: ListEventAttendeesPathParams["productSlug"], options: 
+export function useListEventAttendeesSuspense<TData = ListEventAttendeesQueryResponse, TQueryKey extends QueryKey = ListEventAttendeesSuspenseQueryKey>(slug: ListEventAttendeesPathParams["slug"], eventSlug: ListEventAttendeesPathParams["eventSlug"], options: 
 {
   query?: Partial<UseSuspenseQueryOptions<ListEventAttendeesQueryResponse, ResponseErrorConfig<Error>, TData, TQueryKey>> & { client?: QueryClient },
   client?: Partial<RequestConfig> & { client?: Client }
@@ -38,11 +38,11 @@ export function useListEventAttendeesSuspense<TData = ListEventAttendeesQueryRes
 
          const { query: queryConfig = {}, client: config = {} } = options ?? {}
          const { client: queryClient, ...resolvedOptions } = queryConfig
-         const queryKey = resolvedOptions?.queryKey ?? listEventAttendeesSuspenseQueryKey(slug, productSlug)
+         const queryKey = resolvedOptions?.queryKey ?? listEventAttendeesSuspenseQueryKey(slug, eventSlug)
          
 
          const query = useSuspenseQuery({
-          ...listEventAttendeesSuspenseQueryOptions(slug, productSlug, config),
+          ...listEventAttendeesSuspenseQueryOptions(slug, eventSlug, config),
           ...resolvedOptions,
           queryKey,
          } as unknown as UseSuspenseQueryOptions, queryClient) as UseSuspenseQueryResult<TData, ResponseErrorConfig<Error>> & { queryKey: TQueryKey }

@@ -4,6 +4,13 @@
 */
 
 
+export const createInterest201KindEnum = {
+    produto: "produto",
+    evento: "evento"
+} as const;
+
+export type CreateInterest201KindEnumKey = (typeof createInterest201KindEnum)[keyof typeof createInterest201KindEnum];
+
 /**
  * @description Default Response
 */
@@ -26,6 +33,10 @@ export type CreateInterest201 = {
         name: string;
     };
     /**
+     * @type string
+    */
+    kind: CreateInterest201KindEnumKey;
+    /**
      * @type object
     */
     product: {
@@ -47,7 +58,34 @@ export type CreateInterest201 = {
          * @type string
         */
         availability: string;
-    };
+    } | null;
+    /**
+     * @type object
+    */
+    event: {
+        /**
+         * @type string
+        */
+        slug: string;
+        /**
+         * @type string
+        */
+        name: string;
+        /**
+         * @minLength -9007199254740991
+         * @maxLength 9007199254740991
+         * @type integer
+        */
+        priceCents: number;
+        /**
+         * @type string
+        */
+        at: string;
+        /**
+         * @type string
+        */
+        location: string | null;
+    } | null;
     /**
      * @minLength -9007199254740991
      * @maxLength 9007199254740991
@@ -80,9 +118,14 @@ export type CreateInterestMutationRequest = {
     storeSlug: string;
     /**
      * @minLength 1
-     * @type string
+     * @type string | undefined
     */
-    productSlug: string;
+    productSlug?: string;
+    /**
+     * @minLength 1
+     * @type string | undefined
+    */
+    eventSlug?: string;
     /**
      * @minLength 1
      * @maxLength 99

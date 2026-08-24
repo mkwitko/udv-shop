@@ -14,6 +14,17 @@ const MESSAGES: Record<string, string> = {
   woovi_withdraw_blocked:
     "Ainda há saldo na chave atual e a Woovi bloqueou o saque, então a troca ficaria com dinheiro preso. Fale com quem cuida da plataforma antes de trocar.",
   woovi_unreachable: "Não conseguimos falar com a Woovi agora. Tente de novo em instantes.",
+  // a subconta da Woovi É a chave: duas lojas na mesma chave dividiriam o mesmo saldo
+  woovi_pix_key_taken:
+    "Essa chave Pix já está cadastrada em outra loja, e uma chave recebe por uma loja só. Use outra chave — se essa chave é sua, fale com quem cuida da plataforma.",
+  // a chave é conferida no Banco Central antes de gravar: quase sempre é erro de digitação
+  woovi_pix_key_not_found:
+    "O Banco Central não encontrou essa chave Pix. Confira se digitou certo — e se a chave está ativa no seu banco.",
+  woovi_pix_key_check_rate_limited:
+    "O Banco Central limitou as consultas de chave por agora. Espere alguns minutos e tente de novo.",
+  woovi_pix_key_owner_unknown:
+    "Não conseguimos consultar de quem é essa chave agora. Tente de novo em alguns minutos.",
+  pix_key_already_verified: "Essa chave já está confirmada. Não precisa fazer de novo.",
 
   // compra e doação
   payments_not_configured:

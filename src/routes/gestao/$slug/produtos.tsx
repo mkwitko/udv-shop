@@ -28,13 +28,14 @@ import { useListMyStores } from "#/lib/api/gen/hooks/useListMyStores";
 import { listProductsQueryKey, useListProducts } from "#/lib/api/gen/hooks/useListProducts";
 import { useListSuppliers } from "#/lib/api/gen/hooks/useListSuppliers";
 import type { ListProducts200 } from "#/lib/api/gen/types/ListProducts";
-import { dateTime, money } from "#/lib/format";
+import { money } from "#/lib/format";
 import { maskAmountInput, parseAmount } from "#/lib/pay/amount";
 import {
   formatPercentFromBps,
   payoutBreakdown,
   payoutUnitCents,
   payoutValueForApi,
+  payoutValueToInput,
 } from "#/lib/payout";
 import { slugify } from "#/lib/slug";
 
@@ -52,10 +53,6 @@ const ProductSchema = z.object({
   onDemand: z.boolean(),
   /** Vazio = produto sem gaveta. A vitrine mostra ele em "Tudo". */
   categoryId: z.string(),
-  /** Valor de `<input type="datetime-local">`: "2026-10-12T20:00". Vazio = não é evento. */
-  eventAt: z.string(),
-  eventEndsAt: z.string(),
-  eventLocation: z.string(),
   // repasse: parceiro vazio significa "a loja fica com tudo"
   supplierId: z.string(),
   payoutMode: z.enum(["fixed", "percent"]),
@@ -65,9 +62,8 @@ type ProductForm = z.infer<typeof ProductSchema>;
 
 // `all: "true"` traz também os arquivados — a gestão precisa ver o que tirou do ar
 // para poder trazer de volta. A vitrine pública continua chamando sem esse parâmetro.
-// `kind: "todos"` porque para quem cuida da loja evento É produto: aparece na mesma lista,
-// marcado com a data. A vitrine é que separa os dois.
-const LIST_QUERY = { limit: 50, all: "true", kind: "todos" } as const;
+// Evento não entra: tem tabela e tela próprias (Agenda).
+const LIST_QUERY = { limit: 50, all: "true" } as const;
 
 function ProductsAdmin() {
   const { slug } = Route.useParams();
@@ -156,17 +152,12 @@ function ProductsAdmin() {
                     <p className="truncate font-medium">{product.name}</p>
                     <p className="mt-0.5 flex flex-wrap items-center gap-2 text-sm text-muted tabular-nums">
                       {money(product.priceCents)}
-                      {/* Evento se identifica pela data, não pelo estoque: quem procura
-                          "a festa de sábado" na lista precisa ver a data aqui. */}
-                      {product.event && <Tag tone="brand">{dateTime(product.event.at)}</Tag>}
                       {product.availability === "on_demand" ? (
                         <Tag tone="brand">sob encomenda</Tag>
                       ) : product.stock <= 0 ? (
-                        <Tag tone="accent">{product.event ? "lotado" : "esgotado"}</Tag>
+                        <Tag tone="accent">esgotado</Tag>
                       ) : (
-                        <span>
-                          {product.stock} {product.event ? "vagas" : "em estoque"}
-                        </span>
+                        <span>{product.stock} em estoque</span>
                       )}
                     </p>
                   </div>
@@ -226,16 +217,6 @@ function ProductsAdmin() {
   );
 }
 
-/** Volta do formato da API para o que a pessoa digitou: centavos ou porcentagem. */
-function payoutValueToInput(payout: Product["payout"]): string {
-  if (!payout) return "";
-  // valor fixo já entra mascarado — o campo é MoneyInput e um "45,90" cru ficaria
-  // fora do formato que a máscara escreve.
-  return payout.kind === "percent_bps"
-    ? String(payout.value / 100).replace(".", ",")
-    : maskAmountInput(String(payout.value));
-}
-
 function ProductThumb({ product }: { product: Product }) {
   if (!product.imageUrls[0]) {
     return (
@@ -252,17 +233,6 @@ function ProductThumb({ product }: { product: Product }) {
       className="h-14 w-14 shrink-0 rounded-md border border-line bg-surface object-cover"
     />
   );
-}
-
-/**
- * ISO do servidor → valor de `<input type="datetime-local">`, no fuso de quem edita. O
- * input não aceita ISO com Z; sem esta conversão o campo abre vazio ao editar um evento.
- */
-function toLocalInput(iso: string | null | undefined): string {
-  if (!iso) return "";
-  const date = new Date(iso);
-  const pad = (value: number) => String(value).padStart(2, "0");
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
 
 function ProductForm({
@@ -310,9 +280,6 @@ function ProductForm({
           stock: String(product.stock),
           onDemand: product.availability === "on_demand",
           categoryId: product.category?.id ?? "",
-          eventAt: toLocalInput(product.event?.at),
-          eventEndsAt: toLocalInput(product.event?.endsAt),
-          eventLocation: product.event?.location ?? "",
           supplierId: product.payout?.supplierId ?? "",
           payoutMode: product.payout?.kind === "percent_bps" ? "percent" : "fixed",
           payoutValue: payoutValueToInput(product.payout),
@@ -321,17 +288,12 @@ function ProductForm({
           onDemand: false,
           stock: "0",
           categoryId: "",
-          eventAt: "",
-          eventEndsAt: "",
-          eventLocation: "",
           supplierId: "",
           payoutMode: "fixed",
           payoutValue: "",
         },
   });
   const onDemand = watch("onDemand");
-  // Editar evento já criado abre com a seção aberta; produto comum abre fechada.
-  const [isEvent, setIsEvent] = useState(product?.event != null);
   const supplierId = watch("supplierId");
   const payoutMode = watch("payoutMode");
   const payoutValue = watch("payoutValue");
@@ -392,34 +354,6 @@ function ProductForm({
         };
       }
     }
-    // "2026-10-12T20:00" no fuso de quem digita → instante absoluto. `new Date` de um
-    // datetime-local já interpreta como hora local, que é exatamente a intenção de quem
-    // escreveu "sábado às 20h".
-    let eventPatch: Record<string, string | null> = {};
-    if (isEvent) {
-      if (!values.eventAt) {
-        setFormError("Diga o dia e a hora do evento.");
-        return;
-      }
-      const at = new Date(values.eventAt);
-      const endsAt = values.eventEndsAt ? new Date(values.eventEndsAt) : null;
-      if (Number.isNaN(at.getTime()) || (endsAt && Number.isNaN(endsAt.getTime()))) {
-        setFormError("Data inválida. Confira o dia e a hora.");
-        return;
-      }
-      if (endsAt && endsAt.getTime() <= at.getTime()) {
-        setFormError("O fim do evento tem que ser depois do começo.");
-        return;
-      }
-      eventPatch = {
-        eventAt: at.toISOString(),
-        eventEndsAt: endsAt ? endsAt.toISOString() : null,
-        eventLocation: values.eventLocation.trim() || null,
-      };
-    } else {
-      // desmarcar devolve o ingresso para a vitrine: os três campos são limpos juntos
-      eventPatch = { eventAt: null, eventEndsAt: null, eventLocation: null };
-    }
     const payload = {
       name: values.name,
       description: values.description || undefined,
@@ -429,7 +363,6 @@ function ProductForm({
       availability: values.onDemand ? ("on_demand" as const) : ("in_stock" as const),
       // string vazia é "sem categoria": a API espera null, não ""
       categoryId: values.categoryId || null,
-      ...eventPatch,
       ...payoutPatch,
     };
     try {
@@ -535,73 +468,13 @@ function ProductForm({
           />
         </section>
 
-        {/* Evento é produto com data: a mesma tela cadastra os dois, e apagar a data devolve
-            o ingresso para a vitrine como produto comum. */}
         <section className="grid gap-5">
-          <h3 className="kicker">Evento</h3>
-
-          <label className="flex items-start gap-3 text-sm">
-            <input
-              type="checkbox"
-              className="mt-0.5 h-5 w-5 accent-(--brand)"
-              checked={isEvent}
-              onChange={(item) => {
-                setIsEvent(item.target.checked);
-                if (!item.target.checked) {
-                  setValue("eventAt", "", { shouldDirty: true });
-                  setValue("eventEndsAt", "", { shouldDirty: true });
-                  setValue("eventLocation", "", { shouldDirty: true });
-                }
-              }}
-            />
-            <span>
-              <span className="font-medium text-ink">Isto tem dia e hora</span>
-              <span className="block text-muted">
-                Sessão, festa, mutirão, curso. Entra na Agenda da loja em vez da vitrine, e o
-                estoque passa a ser o número de vagas.
-              </span>
-            </span>
-          </label>
-
-          {isEvent && (
-            <div className="grid gap-5 md:grid-cols-2">
-              <Field
-                label="Quando começa"
-                htmlFor="eventAt"
-                hint="Dia e hora."
-                error={errors.eventAt?.message}
-              >
-                <Input id="eventAt" type="datetime-local" {...register("eventAt")} />
-              </Field>
-              <Field
-                label="Quando termina (opcional)"
-                htmlFor="eventEndsAt"
-                hint="Enquanto não terminar, continua na Agenda."
-                error={errors.eventEndsAt?.message}
-              >
-                <Input id="eventEndsAt" type="datetime-local" {...register("eventEndsAt")} />
-              </Field>
-              <div className="md:col-span-2">
-                <Field label="Onde" htmlFor="eventLocation" error={errors.eventLocation?.message}>
-                  <Input
-                    id="eventLocation"
-                    placeholder="Salão do núcleo, Estrada do Sítio, km 4"
-                    {...register("eventLocation")}
-                  />
-                </Field>
-              </div>
-            </div>
-          )}
-        </section>
-
-        <section className="grid gap-5">
-          <h3 className="kicker">{isEvent ? "Vagas" : "Estoque"}</h3>
+          <h3 className="kicker">Estoque</h3>
 
           {/* Era um checkbox "feito sob encomenda" com três frases de explicação dentro do
               label — a decisão que mais confundia no cadastro. Duas opções, uma linha cada:
-              a pessoa escolhe entre dois mundos que ela reconhece. Evento não escolhe:
-              ingresso é sempre pronto, o que varia é quantas vagas sobraram. */}
-          <fieldset className={`grid gap-2 ${isEvent ? "hidden" : ""}`}>
+              a pessoa escolhe entre dois mundos que ela reconhece. */}
+          <fieldset className="grid gap-2">
             <legend className="mb-1.5 font-medium text-ink text-sm">
               Você já tem esse produto pronto?
             </legend>
@@ -625,13 +498,9 @@ function ProductForm({
 
           {!onDemand && (
             <Field
-              label={isEvent ? "Quantas vagas?" : "Quantos você tem agora?"}
+              label="Quantos você tem agora?"
               htmlFor="stock"
-              hint={
-                isEvent
-                  ? "Cada ingresso vendido tira uma vaga. Chegando a zero o evento aparece como lotado e quem quiser entra na fila de espera."
-                  : "Chegando a zero o produto aparece como esgotado e quem quiser entra na fila. Volta a vender sozinho quando você repõe."
-              }
+              hint="Chegando a zero o produto aparece como esgotado e quem quiser entra na fila. Volta a vender sozinho quando você repõe."
               error={errors.stock?.message}
             >
               <Input id="stock" type="number" min={0} inputMode="numeric" {...register("stock")} />

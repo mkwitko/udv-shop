@@ -19,12 +19,20 @@ export const cancelInterest200Schema = z.object({
     "slug": z.string(),
 "name": z.string()
     }),
-"product": z.object({
+"kind": z.enum(["produto", "evento"]),
+"product": z.nullable(z.object({
     "slug": z.string(),
 "name": z.string(),
 "priceCents": z.int().min(-9007199254740991).max(9007199254740991),
 "availability": z.string()
-    }),
+    })),
+"event": z.nullable(z.object({
+    "slug": z.string(),
+"name": z.string(),
+"priceCents": z.int().min(-9007199254740991).max(9007199254740991),
+"at": z.string(),
+"location": z.nullable(z.string())
+    })),
 "qty": z.int().min(-9007199254740991).max(9007199254740991),
 "status": z.string(),
 "note": z.nullable(z.string()),

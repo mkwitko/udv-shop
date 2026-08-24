@@ -31,6 +31,13 @@ export type ListMyInterestsQueryParams = {
     status?: ListMyInterestsQueryParamsStatusEnumKey;
 };
 
+export const itemsKindEnum = {
+    produto: "produto",
+    evento: "evento"
+} as const;
+
+export type ItemsKindEnumKey = (typeof itemsKindEnum)[keyof typeof itemsKindEnum];
+
 /**
  * @description Default Response
 */
@@ -57,6 +64,10 @@ export type ListMyInterests200 = {
             name: string;
         };
         /**
+         * @type string
+        */
+        kind: ItemsKindEnumKey;
+        /**
          * @type object
         */
         product: {
@@ -78,7 +89,34 @@ export type ListMyInterests200 = {
              * @type string
             */
             availability: string;
-        };
+        } | null;
+        /**
+         * @type object
+        */
+        event: {
+            /**
+             * @type string
+            */
+            slug: string;
+            /**
+             * @type string
+            */
+            name: string;
+            /**
+             * @minLength -9007199254740991
+             * @maxLength 9007199254740991
+             * @type integer
+            */
+            priceCents: number;
+            /**
+             * @type string
+            */
+            at: string;
+            /**
+             * @type string
+            */
+            location: string | null;
+        } | null;
         /**
          * @minLength -9007199254740991
          * @maxLength 9007199254740991

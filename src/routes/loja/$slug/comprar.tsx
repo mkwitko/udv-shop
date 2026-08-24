@@ -22,6 +22,7 @@ import { Button } from "#/components/ui/button";
 import { Field, FormError, Input, Textarea } from "#/components/ui/field";
 import { errorMessage } from "#/lib/api/error-message";
 import { checkout } from "#/lib/api/gen/clients/checkout";
+import { getEventQueryOptions, useGetEvent } from "#/lib/api/gen/hooks/useGetEvent";
 import { useGetMyOrder } from "#/lib/api/gen/hooks/useGetMyOrder";
 import { useGetOrderReceipt } from "#/lib/api/gen/hooks/useGetOrderReceipt";
 import { getProductQueryOptions, useGetProduct } from "#/lib/api/gen/hooks/useGetProduct";
@@ -29,13 +30,15 @@ import { useGetStore } from "#/lib/api/gen/hooks/useGetStore";
 import type { Checkout201 } from "#/lib/api/gen/types/Checkout";
 import { publicRequest } from "#/lib/api/public";
 import { useSession } from "#/lib/auth/session";
-import { formatPhone, money } from "#/lib/format";
+import { dateTime, formatPhone, money, weekday } from "#/lib/format";
 import { stripePublishableKey } from "#/lib/pay/stripe";
 import { seo } from "#/lib/seo";
 import { whatsappUrl } from "#/lib/whatsapp";
 
 const SearchSchema = z.object({
-  produto: z.string().min(1),
+  /** Um dos dois: produto da vitrine ou evento da agenda. Nunca os dois. */
+  produto: z.string().min(1).optional(),
+  evento: z.string().min(1).optional(),
   qtd: z.coerce.number().int().min(1).max(99).catch(1),
   /**
    * Pedido em andamento e a chave do recibo. Ficam na URL para a tela de pagamento sobreviver a
@@ -60,11 +63,15 @@ type Phase = "form" | "pay" | "done" | "expired";
 
 export const Route = createFileRoute("/loja/$slug/comprar")({
   validateSearch: SearchSchema,
-  loaderDeps: ({ search }) => ({ produto: search.produto }),
+  loaderDeps: ({ search }) => ({ produto: search.produto, evento: search.evento }),
   loader: ({ context, params, deps }) =>
-    context.queryClient.ensureQueryData(
-      getProductQueryOptions(params.slug, deps.produto, publicRequest),
-    ),
+    deps.evento
+      ? context.queryClient.ensureQueryData(
+          getEventQueryOptions(params.slug, deps.evento, publicRequest),
+        )
+      : context.queryClient.ensureQueryData(
+          getProductQueryOptions(params.slug, deps.produto as string, publicRequest),
+        ),
   head: () => seo({ title: "Finalizar compra", description: "", path: "", noIndex: true }),
   component: BuyRoute,
 });
@@ -77,7 +84,16 @@ function BuyRoute() {
 function BuyPage() {
   const { slug } = Route.useParams();
   const search = Route.useSearch();
-  const { data: product } = useGetProduct(slug, search.produto, { client: publicRequest });
+  // Uma tela para os dois: o que muda entre comprar mel e garantir vaga é o texto e de
+  // onde vem o limite de quantidade, não o fluxo de pagamento.
+  const { data: product } = useGetProduct(slug, search.produto ?? "", {
+    client: publicRequest,
+    query: { enabled: Boolean(search.produto) },
+  });
+  const { data: event } = useGetEvent(slug, search.evento ?? "", {
+    client: publicRequest,
+    query: { enabled: Boolean(search.evento) },
+  });
   const { data: store } = useGetStore(slug, { client: publicRequest });
 
   const { status } = useSession();
@@ -146,11 +162,30 @@ function BuyPage() {
     if (liveOrder.status === "cancelled") setPhase("expired");
   }, [phase, liveOrder]);
 
-  if (!product) return null;
+  // O que está sendo comprado, num formato só. `max` sai de estoque ou de vagas; sob
+  // encomenda não tem teto porque a loja produz depois.
+  const item = event
+    ? {
+        name: event.name,
+        priceCents: event.priceCents,
+        imageUrl: event.imageUrls[0],
+        maxQty: Math.min(99, event.seats),
+        unitLabel: "por vaga",
+      }
+    : product
+      ? {
+          name: product.name,
+          priceCents: product.priceCents,
+          imageUrl: product.imageUrls[0],
+          maxQty: product.availability === "in_stock" ? Math.min(99, product.stock) : 99,
+          unitLabel: "cada",
+        }
+      : null;
+  if (!item) return null;
 
   const cardAvailable = Boolean(stripePublishableKey());
-  const maxQty = product.availability === "in_stock" ? Math.min(99, product.stock) : 99;
-  const totalCents = product.priceCents * qty;
+  const maxQty = item.maxQty;
+  const totalCents = item.priceCents * qty;
 
   async function submit(values: BuyForm) {
     setFormError(null);
@@ -172,7 +207,11 @@ function BuyPage() {
       const response = await checkout({
         storeSlug: slug,
         provider,
-        items: [{ productSlug: search.produto, qty }],
+        items: [
+          search.evento
+            ? { eventSlug: search.evento, qty }
+            : { productSlug: search.produto as string, qty },
+        ],
         ...(visitor
           ? { contact: toContactPayload(contact), captchaToken }
           : { contactPhone: values.contactPhone }),
@@ -193,6 +232,11 @@ function BuyPage() {
     }
   }
 
+  // Vaga de evento não tem entrega: quem compra leva o nome na lista da porta. O texto de
+  // entrega da loja fala de mel e camiseta, e repeti-lo aqui prometia uma entrega que não
+  // existe.
+  const isEvent = Boolean(search.evento);
+
   if (phase === "done") {
     const storeName = result?.order.store.name ?? receipt?.store.name ?? "A loja";
     // O número que a loja vai chamar, devolvido para conferência: dígito errado aqui é
@@ -200,7 +244,7 @@ function BuyPage() {
     const phone = result?.order.contactPhone
       ? formatPhone(result.order.contactPhone)
       : receipt?.contactPhoneMasked;
-    const delivery = receipt?.deliveryNote ?? store?.deliveryNote;
+    const delivery = isEvent ? null : (receipt?.deliveryNote ?? store?.deliveryNote);
     const orderTotal = result?.order.totalCents ?? receipt?.totalCents ?? totalCents;
     return (
       <section className="halo-top relative">
@@ -226,7 +270,7 @@ function BuyPage() {
                   ) : (
                     " pelo telefone que deixou"
                   )}{" "}
-                  para combinar a entrega.
+                  {isEvent ? "se precisar." : "para combinar a entrega."}
                   {phone && (
                     <span className="mt-1 block text-muted text-sm">
                       Confira o número: é por aí que a loja vai chamar.
@@ -243,9 +287,18 @@ function BuyPage() {
                   </span>
                 </li>
               )}
+              {isEvent && event && (
+                <li className="flex gap-2.5">
+                  <span>
+                    <StepNum n={3} /> É {weekday(event.at)}, {dateTime(event.at)}
+                    {event.location ? ` — ${event.location}` : ""}. Leve o nome de quem comprou: a
+                    loja confere a lista na entrada.
+                  </span>
+                </li>
+              )}
               {status === "authenticated" && (
                 <li className="flex gap-2.5">
-                  <StepNum n={delivery ? 4 : 3} /> Acompanhe tudo em Minha conta.
+                  <StepNum n={delivery || isEvent ? 4 : 3} /> Acompanhe tudo em Minha conta.
                 </li>
               )}
             </ol>
@@ -364,7 +417,7 @@ function BuyPage() {
       <section className="shell mx-auto max-w-md py-10 md:py-16">
         <StepHeading step={2} total={2} title={pix ? "Pague com Pix" : "Pague com cartão"} />
 
-        <OrderSummary name={product.name} qty={qty} totalCents={orderTotalCents} className="mt-6" />
+        <OrderSummary name={item.name} qty={qty} totalCents={orderTotalCents} className="mt-6" />
 
         <div className="mt-6">
           {pix ? (
@@ -404,9 +457,9 @@ function BuyPage() {
       <StepHeading step={1} total={2} title="Confira e escolha como pagar" />
 
       <div className="card mt-6 flex items-center gap-4 p-4">
-        {product.imageUrls[0] ? (
+        {item.imageUrl ? (
           <img
-            src={product.imageUrls[0]}
+            src={item.imageUrl}
             alt=""
             className="h-16 w-16 rounded-md border border-line bg-surface object-cover"
           />
@@ -414,8 +467,10 @@ function BuyPage() {
           <div className="h-16 w-16 rounded-md bg-[radial-gradient(circle_at_30%_25%,var(--glow),transparent_65%)]" />
         )}
         <div className="min-w-0 flex-1">
-          <p className="truncate font-display font-semibold">{product.name}</p>
-          <p className="text-sm text-muted tabular-nums">{money(product.priceCents)} cada</p>
+          <p className="truncate font-display font-semibold">{item.name}</p>
+          <p className="text-sm text-muted tabular-nums">
+            {money(item.priceCents)} {item.unitLabel}
+          </p>
         </div>
       </div>
 
@@ -461,7 +516,11 @@ function BuyPage() {
           <Field
             label="Telefone com DDD"
             htmlFor="contactPhone"
-            hint="A loja usa este número para combinar a entrega com você."
+            hint={
+              isEvent
+                ? "A loja usa este número para falar com você sobre o evento."
+                : "A loja usa este número para combinar a entrega com você."
+            }
             error={errors.contactPhone?.message}
           >
             <Input
@@ -482,7 +541,7 @@ function BuyPage() {
 
         {/* Antes de pagar, o que acontece depois: quem compra pela primeira vez não sabe se
             recebe em casa, se retira, nem quando. */}
-        {store?.deliveryNote && (
+        {!isEvent && store?.deliveryNote && (
           <p className="rounded-[1rem] border border-line bg-surface px-4 py-3 text-[0.95rem]">
             <span className="font-semibold">Como a loja entrega:</span>{" "}
             <span className="text-muted">{store.deliveryNote}</span>

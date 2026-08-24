@@ -15,12 +15,20 @@ export const getInterestDemandPathParamsSchema = z.object({
  */
 export const getInterestDemand200Schema = z.object({
     "items": z.array(z.object({
-    "product": z.object({
+    "kind": z.enum(["produto", "evento"]),
+"product": z.nullable(z.object({
     "slug": z.string(),
 "name": z.string(),
 "priceCents": z.int().min(-9007199254740991).max(9007199254740991),
 "availability": z.string()
-    }),
+    })),
+"event": z.nullable(z.object({
+    "slug": z.string(),
+"name": z.string(),
+"priceCents": z.int().min(-9007199254740991).max(9007199254740991),
+"at": z.string(),
+"location": z.nullable(z.string())
+    })),
 "openCount": z.int().min(-9007199254740991).max(9007199254740991),
 "notifiedCount": z.int().min(-9007199254740991).max(9007199254740991),
 "totalQty": z.int().min(-9007199254740991).max(9007199254740991)

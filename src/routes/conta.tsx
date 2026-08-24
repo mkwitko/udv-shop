@@ -254,7 +254,7 @@ function MyTickets() {
     <SectionShell title="Meus ingressos" count={tickets.length}>
       <ul className="mt-6 grid gap-2.5">
         {tickets.map(({ order, item, at }) => (
-          <li key={`${order.id}-${item.productId}`} className="card flex items-center gap-4 p-4">
+          <li key={`${order.id}-${item.slug}`} className="card flex items-center gap-4 p-4">
             <span className="inline-grid w-14 shrink-0 place-items-center rounded-[0.9rem] bg-brand-soft px-2 py-2 text-brand-deep">
               <span className="font-bold font-display text-xl leading-none tabular-nums">
                 {dateParts(at).day}
@@ -447,15 +447,23 @@ function MyInterests() {
             >
               <div className="min-w-0">
                 <p className="flex flex-wrap items-center gap-2 text-sm">
-                  <span className="font-medium">{interest.product.name}</span>
+                  <span className="font-medium">
+                    {interest.event?.name ?? interest.product?.name}
+                  </span>
                   {interest.status === "notified" ? (
-                    <Tag tone="brand">chegou! visite a loja</Tag>
+                    // "chegou" é de produto; vaga em evento não chega, abre
+                    <Tag tone="brand">
+                      {interest.kind === "evento"
+                        ? "abriu vaga! garanta a sua"
+                        : "chegou! visite a loja"}
+                    </Tag>
                   ) : (
                     <Tag tone="accent">na lista de espera</Tag>
                   )}
                 </p>
                 <p className="mt-1 text-sm text-muted">
-                  {interest.store.name} · {money(interest.product.priceCents)}
+                  {interest.store.name} ·{" "}
+                  {money(interest.event?.priceCents ?? interest.product?.priceCents ?? 0)}
                 </p>
               </div>
               <Button

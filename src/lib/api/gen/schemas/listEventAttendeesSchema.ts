@@ -8,7 +8,7 @@ import { z } from "zod/v4";
 
 export const listEventAttendeesPathParamsSchema = z.object({
     "slug": z.string(),
-"productSlug": z.string()
+"eventSlug": z.string()
     }) as unknown as z.ZodType<ListEventAttendeesPathParams>
 
 /**

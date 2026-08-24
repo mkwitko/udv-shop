@@ -21,13 +21,6 @@ export type ListEventsQueryParams = {
     limit?: number;
 };
 
-export const itemsAvailabilityEnum2 = {
-    in_stock: "in_stock",
-    on_demand: "on_demand"
-} as const;
-
-export type ItemsAvailabilityEnum2Key = (typeof itemsAvailabilityEnum2)[keyof typeof itemsAvailabilityEnum2];
-
 export const payoutKindEnum6 = {
     fixed_cents: "fixed_cents",
     percent_bps: "percent_bps"
@@ -82,23 +75,17 @@ export type ListEvents200 = {
          * @maxLength 9007199254740991
          * @type integer
         */
-        stock: number;
+        seats: number;
         /**
-         * @type string
+         * @minLength 0
+         * @maxLength 9007199254740991
+         * @type integer
         */
-        availability: ItemsAvailabilityEnum2Key;
-        /**
-         * @type boolean
-        */
-        active: boolean;
-        /**
-         * @type string
-        */
-        createdAt: string;
+        seatsTotalLeft: number;
         /**
          * @type object
         */
-        category: {
+        batch: {
             /**
              * @type string
             */
@@ -106,29 +93,99 @@ export type ListEvents200 = {
             /**
              * @type string
             */
-            slug: string;
+            name: string;
+            /**
+             * @minLength -9007199254740991
+             * @maxLength 9007199254740991
+             * @type integer
+            */
+            priceCents: number;
+            /**
+             * @minLength 0
+             * @maxLength 9007199254740991
+             * @type integer
+            */
+            seats: number;
+            /**
+             * @type string
+            */
+            opensAt: string | null;
+            /**
+             * @type string
+            */
+            closesAt: string | null;
+            /**
+             * @type boolean
+            */
+            current: boolean;
+        } | null;
+        /**
+         * @minLength -9007199254740991
+         * @maxLength 9007199254740991
+         * @type integer
+        */
+        nextPriceCents: number | null;
+        /**
+         * @type array
+        */
+        batches: {
+            /**
+             * @type string
+            */
+            id: string;
             /**
              * @type string
             */
             name: string;
-        } | null;
+            /**
+             * @minLength -9007199254740991
+             * @maxLength 9007199254740991
+             * @type integer
+            */
+            priceCents: number;
+            /**
+             * @minLength 0
+             * @maxLength 9007199254740991
+             * @type integer
+            */
+            seats: number;
+            /**
+             * @type string
+            */
+            opensAt: string | null;
+            /**
+             * @type string
+            */
+            closesAt: string | null;
+            /**
+             * @type boolean
+            */
+            current: boolean;
+        }[];
         /**
-         * @type object
+         * @type string
         */
-        event: {
-            /**
-             * @type string
-            */
-            at: string;
-            /**
-             * @type string
-            */
-            endsAt: string | null;
-            /**
-             * @type string
-            */
-            location: string | null;
-        } | null;
+        at: string;
+        /**
+         * @type string
+        */
+        endsAt: string | null;
+        /**
+         * @type string
+        */
+        location: string | null;
+        /**
+         * @type boolean
+        */
+        active: boolean;
+        /**
+         * @type boolean
+        */
+        finished: boolean;
+        /**
+         * @type string
+        */
+        createdAt: string;
         /**
          * @type object
         */

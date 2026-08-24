@@ -29,7 +29,7 @@ export const getPayout200Schema = z.object({
     }),
 "sales": z.array(z.object({
     "orderId": z.string(),
-"productName": z.string(),
+"itemName": z.string(),
 "qty": z.int().min(-9007199254740991).max(9007199254740991),
 "payoutCents": z.int().min(-9007199254740991).max(9007199254740991),
 "soldAt": z.string(),

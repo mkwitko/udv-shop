@@ -15,6 +15,13 @@ export type CancelOrderPathParams = {
     id: string;
 };
 
+export const itemsKindEnum9 = {
+    produto: "produto",
+    evento: "evento"
+} as const;
+
+export type ItemsKindEnum9Key = (typeof itemsKindEnum9)[keyof typeof itemsKindEnum9];
+
 /**
  * @description Default Response
 */
@@ -73,11 +80,11 @@ export type CancelOrder200 = {
         /**
          * @type string
         */
-        productId: string;
+        kind: ItemsKindEnum9Key;
         /**
          * @type string
         */
-        productSlug: string;
+        slug: string;
         /**
          * @type string
         */

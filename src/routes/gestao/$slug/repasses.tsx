@@ -290,10 +290,10 @@ function SupplierAccount({ slug, supplierId }: { slug: string; supplierId: strin
           <ul className="mt-2 grid gap-1.5 text-sm">
             {data.sales.map((sale) => (
               <li
-                key={`${sale.orderId}-${sale.productName}`}
+                key={`${sale.orderId}-${sale.itemName}`}
                 className="flex flex-wrap items-baseline gap-x-3 gap-y-1"
               >
-                <span className="font-medium">{sale.productName}</span>
+                <span className="font-medium">{sale.itemName}</span>
                 {sale.qty > 1 && <span className="text-muted">{sale.qty} un</span>}
                 <span className="text-muted">{longDate(sale.soldAt)}</span>
                 <span className="ml-auto tabular-nums">{money(sale.payoutCents)}</span>

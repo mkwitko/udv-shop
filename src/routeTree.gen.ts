@@ -32,11 +32,13 @@ import { Route as GestaoSlugPedidosRouteImport } from './routes/gestao/$slug/ped
 import { Route as GestaoSlugProdutosRouteImport } from './routes/gestao/$slug/produtos'
 import { Route as GestaoSlugRecebimentoRouteImport } from './routes/gestao/$slug/recebimento'
 import { Route as GestaoSlugRepassesRouteImport } from './routes/gestao/$slug/repasses'
+import { Route as GestaoSlugResultadoRouteImport } from './routes/gestao/$slug/resultado'
 import { Route as LojaSlugIndexRouteImport } from './routes/loja/$slug/index'
 import { Route as LojaSlugComprarRouteImport } from './routes/loja/$slug/comprar'
 import { Route as LojaSlugDoarRouteImport } from './routes/loja/$slug/doar'
 import { Route as LojaSlugCampanhasIndexRouteImport } from './routes/loja/$slug/campanhas/index'
 import { Route as LojaSlugCampanhasCampanhaRouteImport } from './routes/loja/$slug/campanhas/$campanha'
+import { Route as LojaSlugEEventoRouteImport } from './routes/loja/$slug/e/$evento'
 import { Route as LojaSlugPProdutoRouteImport } from './routes/loja/$slug/p/$produto'
 
 const IndexRoute = IndexRouteImport.update({
@@ -154,6 +156,11 @@ const GestaoSlugRepassesRoute = GestaoSlugRepassesRouteImport.update({
   path: '/repasses',
   getParentRoute: () => GestaoSlugRoute,
 } as any)
+const GestaoSlugResultadoRoute = GestaoSlugResultadoRouteImport.update({
+  id: '/resultado',
+  path: '/resultado',
+  getParentRoute: () => GestaoSlugRoute,
+} as any)
 const LojaSlugIndexRoute = LojaSlugIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -180,6 +187,11 @@ const LojaSlugCampanhasCampanhaRoute =
     path: '/campanhas/$campanha',
     getParentRoute: () => LojaSlugRoute,
   } as any)
+const LojaSlugEEventoRoute = LojaSlugEEventoRouteImport.update({
+  id: '/e/$evento',
+  path: '/e/$evento',
+  getParentRoute: () => LojaSlugRoute,
+} as any)
 const LojaSlugPProdutoRoute = LojaSlugPProdutoRouteImport.update({
   id: '/p/$produto',
   path: '/p/$produto',
@@ -209,11 +221,13 @@ export interface FileRoutesByFullPath {
   '/gestao/$slug/produtos': typeof GestaoSlugProdutosRoute
   '/gestao/$slug/recebimento': typeof GestaoSlugRecebimentoRoute
   '/gestao/$slug/repasses': typeof GestaoSlugRepassesRoute
+  '/gestao/$slug/resultado': typeof GestaoSlugResultadoRoute
   '/loja/$slug/comprar': typeof LojaSlugComprarRoute
   '/loja/$slug/doar': typeof LojaSlugDoarRoute
   '/gestao/$slug/': typeof GestaoSlugIndexRoute
   '/loja/$slug/': typeof LojaSlugIndexRoute
   '/loja/$slug/campanhas/$campanha': typeof LojaSlugCampanhasCampanhaRoute
+  '/loja/$slug/e/$evento': typeof LojaSlugEEventoRoute
   '/loja/$slug/p/$produto': typeof LojaSlugPProdutoRoute
   '/loja/$slug/campanhas/': typeof LojaSlugCampanhasIndexRoute
 }
@@ -238,11 +252,13 @@ export interface FileRoutesByTo {
   '/gestao/$slug/produtos': typeof GestaoSlugProdutosRoute
   '/gestao/$slug/recebimento': typeof GestaoSlugRecebimentoRoute
   '/gestao/$slug/repasses': typeof GestaoSlugRepassesRoute
+  '/gestao/$slug/resultado': typeof GestaoSlugResultadoRoute
   '/loja/$slug/comprar': typeof LojaSlugComprarRoute
   '/loja/$slug/doar': typeof LojaSlugDoarRoute
   '/gestao/$slug': typeof GestaoSlugIndexRoute
   '/loja/$slug': typeof LojaSlugIndexRoute
   '/loja/$slug/campanhas/$campanha': typeof LojaSlugCampanhasCampanhaRoute
+  '/loja/$slug/e/$evento': typeof LojaSlugEEventoRoute
   '/loja/$slug/p/$produto': typeof LojaSlugPProdutoRoute
   '/loja/$slug/campanhas': typeof LojaSlugCampanhasIndexRoute
 }
@@ -270,11 +286,13 @@ export interface FileRoutesById {
   '/gestao/$slug/produtos': typeof GestaoSlugProdutosRoute
   '/gestao/$slug/recebimento': typeof GestaoSlugRecebimentoRoute
   '/gestao/$slug/repasses': typeof GestaoSlugRepassesRoute
+  '/gestao/$slug/resultado': typeof GestaoSlugResultadoRoute
   '/loja/$slug/comprar': typeof LojaSlugComprarRoute
   '/loja/$slug/doar': typeof LojaSlugDoarRoute
   '/gestao/$slug/': typeof GestaoSlugIndexRoute
   '/loja/$slug/': typeof LojaSlugIndexRoute
   '/loja/$slug/campanhas/$campanha': typeof LojaSlugCampanhasCampanhaRoute
+  '/loja/$slug/e/$evento': typeof LojaSlugEEventoRoute
   '/loja/$slug/p/$produto': typeof LojaSlugPProdutoRoute
   '/loja/$slug/campanhas/': typeof LojaSlugCampanhasIndexRoute
 }
@@ -303,11 +321,13 @@ export interface FileRouteTypes {
     | '/gestao/$slug/produtos'
     | '/gestao/$slug/recebimento'
     | '/gestao/$slug/repasses'
+    | '/gestao/$slug/resultado'
     | '/loja/$slug/comprar'
     | '/loja/$slug/doar'
     | '/gestao/$slug/'
     | '/loja/$slug/'
     | '/loja/$slug/campanhas/$campanha'
+    | '/loja/$slug/e/$evento'
     | '/loja/$slug/p/$produto'
     | '/loja/$slug/campanhas/'
   fileRoutesByTo: FileRoutesByTo
@@ -332,11 +352,13 @@ export interface FileRouteTypes {
     | '/gestao/$slug/produtos'
     | '/gestao/$slug/recebimento'
     | '/gestao/$slug/repasses'
+    | '/gestao/$slug/resultado'
     | '/loja/$slug/comprar'
     | '/loja/$slug/doar'
     | '/gestao/$slug'
     | '/loja/$slug'
     | '/loja/$slug/campanhas/$campanha'
+    | '/loja/$slug/e/$evento'
     | '/loja/$slug/p/$produto'
     | '/loja/$slug/campanhas'
   id:
@@ -363,11 +385,13 @@ export interface FileRouteTypes {
     | '/gestao/$slug/produtos'
     | '/gestao/$slug/recebimento'
     | '/gestao/$slug/repasses'
+    | '/gestao/$slug/resultado'
     | '/loja/$slug/comprar'
     | '/loja/$slug/doar'
     | '/gestao/$slug/'
     | '/loja/$slug/'
     | '/loja/$slug/campanhas/$campanha'
+    | '/loja/$slug/e/$evento'
     | '/loja/$slug/p/$produto'
     | '/loja/$slug/campanhas/'
   fileRoutesById: FileRoutesById
@@ -550,6 +574,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GestaoSlugRepassesRouteImport
       parentRoute: typeof GestaoSlugRoute
     }
+    '/gestao/$slug/resultado': {
+      id: '/gestao/$slug/resultado'
+      path: '/resultado'
+      fullPath: '/gestao/$slug/resultado'
+      preLoaderRoute: typeof GestaoSlugResultadoRouteImport
+      parentRoute: typeof GestaoSlugRoute
+    }
     '/loja/$slug/': {
       id: '/loja/$slug/'
       path: '/'
@@ -585,6 +616,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LojaSlugCampanhasCampanhaRouteImport
       parentRoute: typeof LojaSlugRoute
     }
+    '/loja/$slug/e/$evento': {
+      id: '/loja/$slug/e/$evento'
+      path: '/e/$evento'
+      fullPath: '/loja/$slug/e/$evento'
+      preLoaderRoute: typeof LojaSlugEEventoRouteImport
+      parentRoute: typeof LojaSlugRoute
+    }
     '/loja/$slug/p/$produto': {
       id: '/loja/$slug/p/$produto'
       path: '/p/$produto'
@@ -606,6 +644,7 @@ interface GestaoSlugRouteChildren {
   GestaoSlugProdutosRoute: typeof GestaoSlugProdutosRoute
   GestaoSlugRecebimentoRoute: typeof GestaoSlugRecebimentoRoute
   GestaoSlugRepassesRoute: typeof GestaoSlugRepassesRoute
+  GestaoSlugResultadoRoute: typeof GestaoSlugResultadoRoute
   GestaoSlugIndexRoute: typeof GestaoSlugIndexRoute
 }
 
@@ -620,6 +659,7 @@ const GestaoSlugRouteChildren: GestaoSlugRouteChildren = {
   GestaoSlugProdutosRoute: GestaoSlugProdutosRoute,
   GestaoSlugRecebimentoRoute: GestaoSlugRecebimentoRoute,
   GestaoSlugRepassesRoute: GestaoSlugRepassesRoute,
+  GestaoSlugResultadoRoute: GestaoSlugResultadoRoute,
   GestaoSlugIndexRoute: GestaoSlugIndexRoute,
 }
 
@@ -632,6 +672,7 @@ interface LojaSlugRouteChildren {
   LojaSlugDoarRoute: typeof LojaSlugDoarRoute
   LojaSlugIndexRoute: typeof LojaSlugIndexRoute
   LojaSlugCampanhasCampanhaRoute: typeof LojaSlugCampanhasCampanhaRoute
+  LojaSlugEEventoRoute: typeof LojaSlugEEventoRoute
   LojaSlugPProdutoRoute: typeof LojaSlugPProdutoRoute
   LojaSlugCampanhasIndexRoute: typeof LojaSlugCampanhasIndexRoute
 }
@@ -641,6 +682,7 @@ const LojaSlugRouteChildren: LojaSlugRouteChildren = {
   LojaSlugDoarRoute: LojaSlugDoarRoute,
   LojaSlugIndexRoute: LojaSlugIndexRoute,
   LojaSlugCampanhasCampanhaRoute: LojaSlugCampanhasCampanhaRoute,
+  LojaSlugEEventoRoute: LojaSlugEEventoRoute,
   LojaSlugPProdutoRoute: LojaSlugPProdutoRoute,
   LojaSlugCampanhasIndexRoute: LojaSlugCampanhasIndexRoute,
 }

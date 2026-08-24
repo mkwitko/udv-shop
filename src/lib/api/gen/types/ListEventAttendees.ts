@@ -12,7 +12,7 @@ export type ListEventAttendeesPathParams = {
     /**
      * @type string
     */
-    productSlug: string;
+    eventSlug: string;
 };
 
 /**

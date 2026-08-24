@@ -1,4 +1,4 @@
-import { parseAmount } from "#/lib/pay/amount";
+import { maskAmountInput, parseAmount } from "#/lib/pay/amount";
 
 export type PayoutMode = "fixed" | "percent";
 
@@ -59,4 +59,18 @@ export function payoutBreakdown(
 export function formatPercentFromBps(bps: number): string {
   const percent = bps / 100;
   return `${percent.toString().replace(".", ",")}%`;
+}
+
+/**
+ * Volta do formato da API para o que a pessoa digitou: centavos mascarados no modo fixo,
+ * porcentagem no percentual. Valor fixo já entra mascarado porque o campo é MoneyInput e um
+ * "45,90" cru ficaria fora do formato que a máscara escreve.
+ */
+export function payoutValueToInput(
+  payout: { kind: string; value: number } | null | undefined,
+): string {
+  if (!payout) return "";
+  return payout.kind === "percent_bps"
+    ? String(payout.value / 100).replace(".", ",")
+    : maskAmountInput(String(payout.value));
 }

@@ -27,20 +27,33 @@ export const listEvents200Schema = z.object({
 "currency": z.string(),
 "images": z.array(z.string()),
 "imageUrls": z.array(z.string()),
-"stock": z.int().min(-9007199254740991).max(9007199254740991),
-"availability": z.enum(["in_stock", "on_demand"]),
-"active": z.boolean(),
-"createdAt": z.string(),
-"category": z.nullable(z.object({
+"seats": z.int().min(-9007199254740991).max(9007199254740991),
+"seatsTotalLeft": z.int().min(0).max(9007199254740991),
+"batch": z.nullable(z.object({
     "id": z.string(),
-"slug": z.string(),
-"name": z.string()
+"name": z.string(),
+"priceCents": z.int().min(-9007199254740991).max(9007199254740991),
+"seats": z.int().min(0).max(9007199254740991),
+"opensAt": z.nullable(z.string()),
+"closesAt": z.nullable(z.string()),
+"current": z.boolean()
     })),
-"event": z.nullable(z.object({
-    "at": z.string(),
+"nextPriceCents": z.nullable(z.int().min(-9007199254740991).max(9007199254740991)),
+"batches": z.array(z.object({
+    "id": z.string(),
+"name": z.string(),
+"priceCents": z.int().min(-9007199254740991).max(9007199254740991),
+"seats": z.int().min(0).max(9007199254740991),
+"opensAt": z.nullable(z.string()),
+"closesAt": z.nullable(z.string()),
+"current": z.boolean()
+    })),
+"at": z.string(),
 "endsAt": z.nullable(z.string()),
-"location": z.nullable(z.string())
-    })),
+"location": z.nullable(z.string()),
+"active": z.boolean(),
+"finished": z.boolean(),
+"createdAt": z.string(),
 "payout": z.nullable(z.object({
     "supplierId": z.string(),
 "supplierName": z.string(),

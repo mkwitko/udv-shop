@@ -81,7 +81,7 @@ export type GetPayout200 = {
         /**
          * @type string
         */
-        productName: string;
+        itemName: string;
         /**
          * @minLength -9007199254740991
          * @maxLength 9007199254740991

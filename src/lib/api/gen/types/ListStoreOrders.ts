@@ -40,6 +40,13 @@ export type ListStoreOrdersQueryParams = {
     status?: ListStoreOrdersQueryParamsStatusEnumKey;
 };
 
+export const itemsKindEnum7 = {
+    produto: "produto",
+    evento: "evento"
+} as const;
+
+export type ItemsKindEnum7Key = (typeof itemsKindEnum7)[keyof typeof itemsKindEnum7];
+
 /**
  * @description Default Response
 */
@@ -102,11 +109,11 @@ export type ListStoreOrders200 = {
             /**
              * @type string
             */
-            productId: string;
+            kind: ItemsKindEnum7Key;
             /**
              * @type string
             */
-            productSlug: string;
+            slug: string;
             /**
              * @type string
             */

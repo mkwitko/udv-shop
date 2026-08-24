@@ -14,7 +14,8 @@ export const listStoreInterestsQueryParamsSchema = z.object({
     "limit": z.coerce.number().int().min(1).max(50).default(20),
 "cursor": z.optional(z.string()),
 "status": z.optional(z.enum(["open", "notified", "converted", "cancelled"])),
-"productSlug": z.optional(z.string().min(1))
+"productSlug": z.optional(z.string().min(1)),
+"eventSlug": z.optional(z.string().min(1))
     }) as unknown as z.ZodType<ListStoreInterestsQueryParams>
 
 /**
@@ -27,12 +28,20 @@ export const listStoreInterests200Schema = z.object({
     "slug": z.string(),
 "name": z.string()
     }),
-"product": z.object({
+"kind": z.enum(["produto", "evento"]),
+"product": z.nullable(z.object({
     "slug": z.string(),
 "name": z.string(),
 "priceCents": z.int().min(-9007199254740991).max(9007199254740991),
 "availability": z.string()
-    }),
+    })),
+"event": z.nullable(z.object({
+    "slug": z.string(),
+"name": z.string(),
+"priceCents": z.int().min(-9007199254740991).max(9007199254740991),
+"at": z.string(),
+"location": z.nullable(z.string())
+    })),
 "qty": z.int().min(-9007199254740991).max(9007199254740991),
 "status": z.string(),
 "note": z.nullable(z.string()),

@@ -15,6 +15,13 @@ export type UpdateOrderStatusPathParams = {
     id: string;
 };
 
+export const itemsKindEnum8 = {
+    produto: "produto",
+    evento: "evento"
+} as const;
+
+export type ItemsKindEnum8Key = (typeof itemsKindEnum8)[keyof typeof itemsKindEnum8];
+
 /**
  * @description Default Response
 */
@@ -73,11 +80,11 @@ export type UpdateOrderStatus200 = {
         /**
          * @type string
         */
-        productId: string;
+        kind: ItemsKindEnum8Key;
         /**
          * @type string
         */
-        productSlug: string;
+        slug: string;
         /**
          * @type string
         */

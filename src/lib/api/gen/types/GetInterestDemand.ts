@@ -11,6 +11,13 @@ export type GetInterestDemandPathParams = {
     slug: string;
 };
 
+export const itemsKindEnum3 = {
+    produto: "produto",
+    evento: "evento"
+} as const;
+
+export type ItemsKindEnum3Key = (typeof itemsKindEnum3)[keyof typeof itemsKindEnum3];
+
 /**
  * @description Default Response
 */
@@ -19,6 +26,10 @@ export type GetInterestDemand200 = {
      * @type array
     */
     items: {
+        /**
+         * @type string
+        */
+        kind: ItemsKindEnum3Key;
         /**
          * @type object
         */
@@ -41,7 +52,34 @@ export type GetInterestDemand200 = {
              * @type string
             */
             availability: string;
-        };
+        } | null;
+        /**
+         * @type object
+        */
+        event: {
+            /**
+             * @type string
+            */
+            slug: string;
+            /**
+             * @type string
+            */
+            name: string;
+            /**
+             * @minLength -9007199254740991
+             * @maxLength 9007199254740991
+             * @type integer
+            */
+            priceCents: number;
+            /**
+             * @type string
+            */
+            at: string;
+            /**
+             * @type string
+            */
+            location: string | null;
+        } | null;
         /**
          * @minLength -9007199254740991
          * @maxLength 9007199254740991

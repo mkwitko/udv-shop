@@ -41,7 +41,19 @@ export type ListStoreInterestsQueryParams = {
      * @type string | undefined
     */
     productSlug?: string;
+    /**
+     * @minLength 1
+     * @type string | undefined
+    */
+    eventSlug?: string;
 };
+
+export const itemsKindEnum2 = {
+    produto: "produto",
+    evento: "evento"
+} as const;
+
+export type ItemsKindEnum2Key = (typeof itemsKindEnum2)[keyof typeof itemsKindEnum2];
 
 /**
  * @description Default Response
@@ -69,6 +81,10 @@ export type ListStoreInterests200 = {
             name: string;
         };
         /**
+         * @type string
+        */
+        kind: ItemsKindEnum2Key;
+        /**
          * @type object
         */
         product: {
@@ -90,7 +106,34 @@ export type ListStoreInterests200 = {
              * @type string
             */
             availability: string;
-        };
+        } | null;
+        /**
+         * @type object
+        */
+        event: {
+            /**
+             * @type string
+            */
+            slug: string;
+            /**
+             * @type string
+            */
+            name: string;
+            /**
+             * @minLength -9007199254740991
+             * @maxLength 9007199254740991
+             * @type integer
+            */
+            priceCents: number;
+            /**
+             * @type string
+            */
+            at: string;
+            /**
+             * @type string
+            */
+            location: string | null;
+        } | null;
         /**
          * @minLength -9007199254740991
          * @maxLength 9007199254740991

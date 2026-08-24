@@ -1,11 +1,9 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import {
-  CalendarDays,
   Check,
   ChevronRight,
   CreditCard,
   HandCoins,
-  MapPin,
   MessageCircle,
   Store,
   Truck,
@@ -28,12 +26,14 @@ import { ShareButton } from "#/components/ui/share-button";
 import { Tag } from "#/components/ui/tag";
 import { errorMessage } from "#/lib/api/error-message";
 import { createInterest } from "#/lib/api/gen/clients/createInterest";
+import { getEvent } from "#/lib/api/gen/clients/getEvent";
+import type { getProduct } from "#/lib/api/gen/clients/getProduct";
 import { getProductQueryOptions, useGetProduct } from "#/lib/api/gen/hooks/useGetProduct";
 import { getStoreQueryOptions, useGetStore } from "#/lib/api/gen/hooks/useGetStore";
 import { listProductsQueryOptions, useListProducts } from "#/lib/api/gen/hooks/useListProducts";
 import { publicRequest } from "#/lib/api/public";
 import { useSession } from "#/lib/auth/session";
-import { dateParts, dateTime, money, weekday } from "#/lib/format";
+import { money } from "#/lib/format";
 import { breadcrumbLd, productLd, seo, siteUrl } from "#/lib/seo";
 import { whatsappUrl } from "#/lib/whatsapp";
 
@@ -42,9 +42,24 @@ const RELATED_LIMIT = 4;
 
 export const Route = createFileRoute("/loja/$slug/p/$produto")({
   loader: async ({ context, params }) => {
-    const product = await context.queryClient.ensureQueryData(
-      getProductQueryOptions(params.slug, params.produto, publicRequest),
-    );
+    // Evento já morou neste endereço (era produto com data), e link de evento circula em
+    // grupo de WhatsApp por semanas. Antes de dar 404, tenta a agenda e manda para lá.
+    let product: Awaited<ReturnType<typeof getProduct>>;
+    try {
+      product = await context.queryClient.ensureQueryData(
+        getProductQueryOptions(params.slug, params.produto, publicRequest),
+      );
+    } catch (cause) {
+      const event = await getEvent(params.slug, params.produto, publicRequest).catch(() => null);
+      if (event) {
+        throw redirect({
+          to: "/loja/$slug/e/$evento",
+          params: { slug: params.slug, evento: params.produto },
+          replace: true,
+        });
+      }
+      throw cause;
+    }
     // a loja e os relacionados entram no SSR: a página tem de nascer inteira, inclusive
     // para quem chega por link compartilhado e nunca viu a vitrine
     await Promise.all([
@@ -181,39 +196,15 @@ function ProductPage() {
             {product.name}
           </h1>
 
-          {/* Evento se decide pela data: ela vem antes do preço, com dia da semana escrito
-              porque "sábado" pesa mais na cabeça de quem vai do que "12/10". */}
-          {product.event && (
-            <div className="mt-4 grid gap-1.5 rounded-[1rem] border border-line bg-surface px-4 py-3">
-              <p className="flex items-center gap-2 font-medium">
-                <CalendarDays className="h-4 w-4 shrink-0 text-brand-deep" aria-hidden />
-                <span>{weekday(product.event.at)}</span>, {dateTime(product.event.at)}
-                {product.event.endsAt ? ` até ${dateParts(product.event.endsAt).time}` : ""}
-              </p>
-              {product.event.location && (
-                <p className="flex items-center gap-2 text-muted text-sm">
-                  <MapPin className="h-4 w-4 shrink-0" aria-hidden />
-                  {product.event.location}
-                </p>
-              )}
-            </div>
-          )}
-
           <div className="mt-4 flex flex-wrap items-baseline gap-x-3 gap-y-2">
             <p className="font-bold font-display text-3xl text-brand-deep tabular-nums">
               {money(product.priceCents)}
             </p>
             {onDemand && <Tag tone="brand">Feito sob encomenda</Tag>}
-            {soldOut && <Tag>{product.event ? "Lotado" : "Esgotado"}</Tag>}
+            {soldOut && <Tag>Esgotado</Tag>}
             {buyable && product.stock <= 3 && (
               <Tag tone="accent">
-                {product.event
-                  ? product.stock === 1
-                    ? "última vaga"
-                    : `últimas ${product.stock} vagas`
-                  : product.stock === 1
-                    ? "última unidade"
-                    : `últimas ${product.stock} unidades`}
+                {product.stock === 1 ? "última unidade" : `últimas ${product.stock} unidades`}
               </Tag>
             )}
           </div>
@@ -231,7 +222,7 @@ function ProductPage() {
                 {maxQty > 1 && <QuantityPicker value={qty} max={maxQty} onChange={setQty} />}
                 <Button asChild size="lg" className="w-full">
                   <Link to="/loja/$slug/comprar" params={{ slug }} search={{ produto, qtd: qty }}>
-                    {product.event ? "Garantir minha vaga" : "Comprar"} — {money(total)}
+                    Comprar — {money(total)}
                   </Link>
                 </Button>
               </>
@@ -256,15 +247,9 @@ function ProductPage() {
             </TrustLine>
             {/* A loja que declarou como entrega fala por si; sem declaração fica a promessa
                 genérica, que é o mínimo honesto. */}
-            {product.event ? (
-              <TrustLine icon={<CalendarDays className="h-4 w-4" aria-hidden />}>
-                Leve o nome de quem comprou: a loja confere a lista na entrada.
-              </TrustLine>
-            ) : (
-              <TrustLine icon={<Truck className="h-4 w-4" aria-hidden />}>
-                {store?.deliveryNote ?? "A entrega ou retirada é combinada direto com a loja."}
-              </TrustLine>
-            )}
+            <TrustLine icon={<Truck className="h-4 w-4" aria-hidden />}>
+              {store?.deliveryNote ?? "A entrega ou retirada é combinada direto com a loja."}
+            </TrustLine>
           </ul>
 
           <div className="rule mt-7 grid gap-4 pt-6">

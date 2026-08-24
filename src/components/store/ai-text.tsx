@@ -94,7 +94,9 @@ function AiText({
     setInstruction((current) => (current.trim() ? `${current.trim()}. ${text}` : text));
   }
 
-  const verb = mode === "improve" ? "Melhorar" : "Escrever";
+  // o rótulo muda com qualquer coisa escrita, não só com rascunho longo: a anotação curta
+  // também vai para a IA (como contexto), então "Escrever" mentiria sobre o que acontece
+  const verb = clean ? "Melhorar" : "Escrever";
   const label = busy
     ? "Escrevendo…"
     : wish

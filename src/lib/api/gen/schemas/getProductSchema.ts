@@ -32,11 +32,6 @@ export const getProduct200Schema = z.object({
 "slug": z.string(),
 "name": z.string()
     })),
-"event": z.nullable(z.object({
-    "at": z.string(),
-"endsAt": z.nullable(z.string()),
-"location": z.nullable(z.string())
-    })),
 "payout": z.nullable(z.object({
     "supplierId": z.string(),
 "supplierName": z.string(),

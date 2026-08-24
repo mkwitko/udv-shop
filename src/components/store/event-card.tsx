@@ -12,15 +12,13 @@ type Event = ListEvents200["items"][number];
  * Horizontal porque agenda se lê como lista, não como grade de vitrine.
  */
 export function EventCard({ event, storeSlug }: { event: Event; storeSlug: string }) {
-  // A rota só devolve evento, mas o tipo é o de produto: sem data não há card.
-  if (!event.event) return null;
-  const { day, month, time } = dateParts(event.event.at);
-  const soldOut = event.availability === "in_stock" && event.stock <= 0;
+  const { day, month, time } = dateParts(event.at);
+  const soldOut = event.seats <= 0;
 
   return (
     <Link
-      to="/loja/$slug/p/$produto"
-      params={{ slug: storeSlug, produto: event.slug }}
+      to="/loja/$slug/e/$evento"
+      params={{ slug: storeSlug, evento: event.slug }}
       className="card card-hover group flex items-center gap-4 p-4"
     >
       <span className="inline-grid w-14 shrink-0 place-items-center rounded-[0.9rem] bg-brand-soft px-2 py-2 text-brand-deep">
@@ -31,15 +29,15 @@ export function EventCard({ event, storeSlug }: { event: Event; storeSlug: strin
       <span className="min-w-0 flex-1">
         <span className="flex flex-wrap items-center gap-2">
           <span className="font-display font-semibold">{event.name}</span>
-          {soldOut && <Tag tone="accent">esgotado</Tag>}
+          {soldOut && <Tag tone="accent">lotado</Tag>}
         </span>
         <span className="mt-0.5 block text-muted text-sm">
-          {weekday(event.event.at)}, {time}
-          {event.event.location ? (
+          {weekday(event.at)}, {time}
+          {event.location ? (
             <span className="inline-flex items-baseline gap-1">
               {" · "}
               <MapPin className="h-3.5 w-3.5 self-center" aria-hidden />
-              {event.event.location}
+              {event.location}
             </span>
           ) : null}
         </span>
@@ -49,9 +47,9 @@ export function EventCard({ event, storeSlug }: { event: Event; storeSlug: strin
         <span className="block font-display font-semibold tabular-nums">
           {money(event.priceCents)}
         </span>
-        {!soldOut && event.availability === "in_stock" && event.stock <= 5 && (
+        {!soldOut && event.seats <= 5 && (
           <span className="block text-muted text-xs tabular-nums">
-            {event.stock === 1 ? "1 vaga" : `${event.stock} vagas`}
+            {event.seats === 1 ? "1 vaga" : `${event.seats} vagas`}
           </span>
         )}
       </span>

@@ -9,28 +9,28 @@ import type { UseMutationOptions, UseMutationResult, QueryClient } from "@tansta
 import { checkInAttendee } from "../clients/checkInAttendee.ts";
 import { mutationOptions, useMutation } from "@tanstack/react-query";
 
-export const checkInAttendeeMutationKey = () => [{ url: '/stores/:slug/events/:productSlug/attendees/:orderItemId' }] as const
+export const checkInAttendeeMutationKey = () => [{ url: '/stores/:slug/events/:eventSlug/attendees/:orderItemId' }] as const
 
 export type CheckInAttendeeMutationKey = ReturnType<typeof checkInAttendeeMutationKey>
 
 export function checkInAttendeeMutationOptions<TContext = unknown>(config: Partial<RequestConfig<CheckInAttendeeMutationRequest>> & { client?: Client } = {}) {
 
         const mutationKey = checkInAttendeeMutationKey()
-        return mutationOptions<CheckInAttendeeMutationResponse, ResponseErrorConfig<Error>, {slug: CheckInAttendeePathParams["slug"], productSlug: CheckInAttendeePathParams["productSlug"], orderItemId: CheckInAttendeePathParams["orderItemId"], data: CheckInAttendeeMutationRequest}, TContext>({
+        return mutationOptions<CheckInAttendeeMutationResponse, ResponseErrorConfig<Error>, {slug: CheckInAttendeePathParams["slug"], eventSlug: CheckInAttendeePathParams["eventSlug"], orderItemId: CheckInAttendeePathParams["orderItemId"], data: CheckInAttendeeMutationRequest}, TContext>({
           mutationKey,
-          mutationFn: async({ slug, productSlug, orderItemId, data }) => {
-            return checkInAttendee(slug, productSlug, orderItemId, data, config)
+          mutationFn: async({ slug, eventSlug, orderItemId, data }) => {
+            return checkInAttendee(slug, eventSlug, orderItemId, data, config)
           },
         })
 
 }
 
 /**
- * {@link /stores/:slug/events/:productSlug/attendees/:orderItemId}
+ * {@link /stores/:slug/events/:eventSlug/attendees/:orderItemId}
  */
 export function useCheckInAttendee<TContext>(options: 
 {
-  mutation?: UseMutationOptions<CheckInAttendeeMutationResponse, ResponseErrorConfig<Error>, {slug: CheckInAttendeePathParams["slug"], productSlug: CheckInAttendeePathParams["productSlug"], orderItemId: CheckInAttendeePathParams["orderItemId"], data: CheckInAttendeeMutationRequest}, TContext> & { client?: QueryClient },
+  mutation?: UseMutationOptions<CheckInAttendeeMutationResponse, ResponseErrorConfig<Error>, {slug: CheckInAttendeePathParams["slug"], eventSlug: CheckInAttendeePathParams["eventSlug"], orderItemId: CheckInAttendeePathParams["orderItemId"], data: CheckInAttendeeMutationRequest}, TContext> & { client?: QueryClient },
   client?: Partial<RequestConfig<CheckInAttendeeMutationRequest>> & { client?: Client },
 }
  = {}) {
@@ -39,13 +39,13 @@ export function useCheckInAttendee<TContext>(options:
           const { client: queryClient, ...mutationOptions } = mutation;
           const mutationKey = mutationOptions.mutationKey ?? checkInAttendeeMutationKey()
 
-          const baseOptions = checkInAttendeeMutationOptions(config) as UseMutationOptions<CheckInAttendeeMutationResponse, ResponseErrorConfig<Error>, {slug: CheckInAttendeePathParams["slug"], productSlug: CheckInAttendeePathParams["productSlug"], orderItemId: CheckInAttendeePathParams["orderItemId"], data: CheckInAttendeeMutationRequest}, TContext>
+          const baseOptions = checkInAttendeeMutationOptions(config) as UseMutationOptions<CheckInAttendeeMutationResponse, ResponseErrorConfig<Error>, {slug: CheckInAttendeePathParams["slug"], eventSlug: CheckInAttendeePathParams["eventSlug"], orderItemId: CheckInAttendeePathParams["orderItemId"], data: CheckInAttendeeMutationRequest}, TContext>
           
 
-          return useMutation<CheckInAttendeeMutationResponse, ResponseErrorConfig<Error>, {slug: CheckInAttendeePathParams["slug"], productSlug: CheckInAttendeePathParams["productSlug"], orderItemId: CheckInAttendeePathParams["orderItemId"], data: CheckInAttendeeMutationRequest}, TContext>({
+          return useMutation<CheckInAttendeeMutationResponse, ResponseErrorConfig<Error>, {slug: CheckInAttendeePathParams["slug"], eventSlug: CheckInAttendeePathParams["eventSlug"], orderItemId: CheckInAttendeePathParams["orderItemId"], data: CheckInAttendeeMutationRequest}, TContext>({
             ...baseOptions,
             mutationKey,
             ...mutationOptions,
-          }, queryClient) as UseMutationResult<CheckInAttendeeMutationResponse, ResponseErrorConfig<Error>, {slug: CheckInAttendeePathParams["slug"], productSlug: CheckInAttendeePathParams["productSlug"], orderItemId: CheckInAttendeePathParams["orderItemId"], data: CheckInAttendeeMutationRequest}, TContext>
+          }, queryClient) as UseMutationResult<CheckInAttendeeMutationResponse, ResponseErrorConfig<Error>, {slug: CheckInAttendeePathParams["slug"], eventSlug: CheckInAttendeePathParams["eventSlug"], orderItemId: CheckInAttendeePathParams["orderItemId"], data: CheckInAttendeeMutationRequest}, TContext>
       
 }

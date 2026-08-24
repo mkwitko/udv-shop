@@ -23,7 +23,9 @@ export const getConnectStatus200Schema = z.object({
     }),
 "woovi": z.object({
     "connected": z.boolean(),
-"pixKeyMasked": z.nullable(z.string())
+"pixKeyMasked": z.nullable(z.string()),
+"keyStatus": z.nullable(z.enum(["legacy", "pending", "verified"])),
+"ownerName": z.nullable(z.string())
     }),
 "applicationFeeBps": z.int().min(-9007199254740991).max(9007199254740991),
 "providerFees": z.object({

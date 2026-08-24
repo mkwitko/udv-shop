@@ -24,8 +24,8 @@ export const checkout201Schema = z.object({
 "expiresAt": z.string(),
 "createdAt": z.string(),
 "items": z.array(z.object({
-    "productId": z.string(),
-"productSlug": z.string(),
+    "kind": z.enum(["produto", "evento"]),
+"slug": z.string(),
 "name": z.string(),
 "priceCents": z.int().min(-9007199254740991).max(9007199254740991),
 "qty": z.int().min(-9007199254740991).max(9007199254740991),
@@ -56,7 +56,8 @@ export const checkoutMutationRequestSchema = z.object({
     "storeSlug": z.string().min(1),
 "provider": z.enum(["stripe", "woovi"]),
 "items": z.array(z.object({
-    "productSlug": z.string().min(1),
+    "productSlug": z.optional(z.string().min(1)),
+"eventSlug": z.optional(z.string().min(1)),
 "qty": z.int().min(1).max(99)
     })).min(1).max(20),
 "contactPhone": z.optional(z.string().min(8).max(20)),

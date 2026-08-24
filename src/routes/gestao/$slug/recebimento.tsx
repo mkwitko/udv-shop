@@ -1,6 +1,7 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { Check, CreditCard, ExternalLink, QrCode, ReceiptText } from "lucide-react";
 import { type ReactNode, useState } from "react";
+import { PixPanel } from "#/components/pay/pix-panel";
 import { StripeConnectEmbedded } from "#/components/stripe-connect-embedded";
 import { Button } from "#/components/ui/button";
 import { Field, FormError, Input } from "#/components/ui/field";
@@ -12,6 +13,7 @@ import { createBillingPortal } from "#/lib/api/gen/clients/createBillingPortal";
 import { createStripeAccountLink } from "#/lib/api/gen/clients/createStripeAccountLink";
 import { createStripeDashboardLink } from "#/lib/api/gen/clients/createStripeDashboardLink";
 import { putWooviConnect } from "#/lib/api/gen/clients/putWooviConnect";
+import { verifyWooviPixKey } from "#/lib/api/gen/clients/verifyWooviPixKey";
 import { withdrawWoovi } from "#/lib/api/gen/clients/withdrawWoovi";
 import { useGetBillingStatus } from "#/lib/api/gen/hooks/useGetBillingStatus";
 import {
@@ -23,6 +25,7 @@ import {
   useGetWooviBalance,
 } from "#/lib/api/gen/hooks/useGetWooviBalance";
 import { useListMyStores } from "#/lib/api/gen/hooks/useListMyStores";
+import type { VerifyWooviPixKeyMutationResponse } from "#/lib/api/gen/types/VerifyWooviPixKey";
 import { longDate, money } from "#/lib/format";
 import { stripePublishableKey } from "#/lib/pay/stripe";
 import { cn } from "#/lib/utils";
@@ -129,12 +132,21 @@ function PaymentCard({
 
 function PixBlock({ slug }: { slug: string }) {
   const { queryClient } = useRouter().options.context;
-  const { data: connect } = useGetConnectStatus(slug);
+  // Enquanto a chave espera a prova de posse, a tela se pergunta de novo a cada 5s: quem
+  // paga o centavo está no app do banco, não aqui, e mandar dar F5 seria pedir demais.
+  const { data: connect } = useGetConnectStatus(slug, {
+    query: {
+      refetchInterval: (query) => (query.state.data?.woovi.keyStatus === "pending" ? 5000 : false),
+    },
+  });
   const [pixKey, setPixKey] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const connected = Boolean(connect?.woovi.connected);
+  const keyStatus = connect?.woovi.keyStatus ?? null;
+  /** `pending` é chave declarada e não provada: não recebe nada até a prova fechar. */
+  const receiving = keyStatus === "verified" || keyStatus === "legacy";
 
   async function save() {
     if (!pixKey.trim()) {
@@ -161,7 +173,15 @@ function PixBlock({ slug }: { slug: string }) {
       iconClass="bg-brand-soft text-brand-deep"
       title="Receber por Pix"
       subtitle="Cai na hora, na chave que você cadastrar. Sem nada descontado da venda."
-      badge={connected ? <Tag tone="brand">ligado</Tag> : undefined}
+      badge={
+        connected ? (
+          receiving ? (
+            <Tag tone="brand">ligado</Tag>
+          ) : (
+            <Tag tone="accent">falta confirmar</Tag>
+          )
+        ) : undefined
+      }
       actions={
         <Button onClick={save} disabled={saving}>
           {saving ? "Salvando…" : connected ? "Salvar nova chave" : "Salvar chave Pix"}
@@ -174,12 +194,24 @@ function PixBlock({ slug }: { slug: string }) {
             era lido como um input desabilitado. */}
       {connected && connect?.woovi.pixKeyMasked && (
         <p className="flex flex-wrap items-baseline gap-x-2 text-sm">
-          <span className="text-muted">Recebendo na chave</span>
+          {/* "Recebendo" seria mentira com a chave ainda sem prova de posse: ela não
+              recebe nada até a confirmação. */}
+          <span className="text-muted">
+            {receiving ? "Recebendo na chave" : "Chave cadastrada"}
+          </span>
           <span className="font-medium tabular-nums">{connect.woovi.pixKeyMasked}</span>
         </p>
       )}
 
-      {connected && <PixSaldo slug={slug} />}
+      {connected && keyStatus && keyStatus !== "verified" && (
+        <PixKeyProof
+          slug={slug}
+          keyStatus={keyStatus}
+          ownerName={connect?.woovi.ownerName ?? null}
+        />
+      )}
+
+      {receiving && <PixSaldo slug={slug} />}
 
       <Field
         label={connected ? "Trocar a chave Pix" : "Chave Pix da loja"}
@@ -200,10 +232,112 @@ function PixBlock({ slug }: { slug: string }) {
       <FormError>{error}</FormError>
       {saved && (
         <p className="flex items-center gap-2 text-brand-deep text-sm">
-          <Check className="h-4 w-4" aria-hidden /> Chave salva. O Pix já está valendo.
+          <Check className="h-4 w-4" aria-hidden /> Chave salva. Falta confirmar que ela é sua —
+          logo acima.
         </p>
       )}
     </PaymentCard>
+  );
+}
+
+/**
+ * Prova de posse da chave: a loja paga R$ 0,01 para a plataforma DO APP DA CONTA da chave
+ * que cadastrou, e quem pagou é comparado com o dono da chave no Banco Central.
+ *
+ * Existe porque cadastrar a chave de outra pessoa era possível: as vendas iam cair na conta
+ * dela, e a loja que vendeu ficava sem o dinheiro. O Pix sempre cai na chave — o que faltava
+ * era garantir que a chave é de quem está vendendo.
+ */
+function PixKeyProof({
+  slug,
+  keyStatus,
+  ownerName,
+}: {
+  slug: string;
+  keyStatus: "legacy" | "pending";
+  ownerName: string | null;
+}) {
+  const { queryClient } = useRouter().options.context;
+  const [charge, setCharge] = useState<VerifyWooviPixKeyMutationResponse | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  // Mesma query do card (o React Query compartilha pela chave): com uma cobrança aberta, a
+  // tela se pergunta de novo sozinha. Sem isto, quem já recebia (chave legada) pagava o
+  // centavo e ficava olhando uma tela que não mudava.
+  useGetConnectStatus(slug, { query: { refetchInterval: charge ? 4000 : false } });
+
+  async function start() {
+    setBusy(true);
+    setError(null);
+    try {
+      setCharge(await verifyWooviPixKey(slug));
+    } catch (cause) {
+      setError(errorMessage(cause));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div
+      className={cn(
+        "grid gap-3 rounded-[1rem] border p-4",
+        // chave nova não recebe nada: o aviso é forte. Chave antiga recebe, então é lembrete.
+        keyStatus === "pending" ? "border-brand/30 bg-brand-pale" : "border-line bg-surface",
+      )}
+    >
+      <div className="grid gap-1">
+        <p className="font-medium text-sm">
+          {keyStatus === "pending"
+            ? "Falta confirmar que essa chave é sua"
+            : "Confirme sua chave quando puder"}
+        </p>
+        {ownerName && (
+          <p className="text-muted text-sm">
+            No Banco Central, essa chave está no nome de <strong>{ownerName}</strong>.
+          </p>
+        )}
+        <p className="text-muted text-sm">
+          {keyStatus === "pending"
+            ? "Até a confirmação, as vendas por Pix ficam bloqueadas. É o que impede alguém de cadastrar a chave de outra pessoa e o dinheiro cair na conta errada."
+            : "Sua chave já recebe, porque foi cadastrada antes desta conferência existir. Confirmar leva um minuto e um centavo."}
+        </p>
+      </div>
+
+      {charge ? (
+        <div className="grid gap-3">
+          <p className="text-sm">
+            Pague <strong>{money(charge.amountCents)}</strong> pelo app do banco{" "}
+            <strong>da conta dessa chave</strong>. Pagar de outra conta não vale — é justamente isso
+            que estamos conferindo.
+          </p>
+          <PixPanel
+            brCode={charge.brCode}
+            qrCodeImageUrl={charge.qrCodeImageUrl}
+            expiresAt={charge.expiresAt}
+            onExpired={() => setCharge(null)}
+          />
+          <p className="text-muted text-sm">
+            A confirmação chega sozinha nesta tela, poucos segundos depois do pagamento.
+          </p>
+        </div>
+      ) : (
+        <div>
+          <Button
+            onClick={async () => {
+              await start();
+              await queryClient.invalidateQueries({ queryKey: getConnectStatusQueryKey(slug) });
+            }}
+            disabled={busy}
+            variant={keyStatus === "pending" ? "primary" : "secondary"}
+            size="sm"
+          >
+            {busy ? "Gerando…" : "Confirmar que a chave é minha"}
+          </Button>
+        </div>
+      )}
+      <FormError>{error}</FormError>
+    </div>
   );
 }
 

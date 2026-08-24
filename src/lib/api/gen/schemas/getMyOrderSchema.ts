@@ -27,8 +27,8 @@ export const getMyOrder200Schema = z.object({
 "expiresAt": z.string(),
 "createdAt": z.string(),
 "items": z.array(z.object({
-    "productId": z.string(),
-"productSlug": z.string(),
+    "kind": z.enum(["produto", "evento"]),
+"slug": z.string(),
 "name": z.string(),
 "priceCents": z.int().min(-9007199254740991).max(9007199254740991),
 "qty": z.int().min(-9007199254740991).max(9007199254740991),

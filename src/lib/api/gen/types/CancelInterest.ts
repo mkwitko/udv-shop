@@ -11,6 +11,13 @@ export type CancelInterestPathParams = {
     id: string;
 };
 
+export const cancelInterest200KindEnum = {
+    produto: "produto",
+    evento: "evento"
+} as const;
+
+export type CancelInterest200KindEnumKey = (typeof cancelInterest200KindEnum)[keyof typeof cancelInterest200KindEnum];
+
 /**
  * @description Default Response
 */
@@ -33,6 +40,10 @@ export type CancelInterest200 = {
         name: string;
     };
     /**
+     * @type string
+    */
+    kind: CancelInterest200KindEnumKey;
+    /**
      * @type object
     */
     product: {
@@ -54,7 +65,34 @@ export type CancelInterest200 = {
          * @type string
         */
         availability: string;
-    };
+    } | null;
+    /**
+     * @type object
+    */
+    event: {
+        /**
+         * @type string
+        */
+        slug: string;
+        /**
+         * @type string
+        */
+        name: string;
+        /**
+         * @minLength -9007199254740991
+         * @maxLength 9007199254740991
+         * @type integer
+        */
+        priceCents: number;
+        /**
+         * @type string
+        */
+        at: string;
+        /**
+         * @type string
+        */
+        location: string | null;
+    } | null;
     /**
      * @minLength -9007199254740991
      * @maxLength 9007199254740991

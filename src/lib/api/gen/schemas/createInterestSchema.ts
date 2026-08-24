@@ -15,12 +15,20 @@ export const createInterest201Schema = z.object({
     "slug": z.string(),
 "name": z.string()
     }),
-"product": z.object({
+"kind": z.enum(["produto", "evento"]),
+"product": z.nullable(z.object({
     "slug": z.string(),
 "name": z.string(),
 "priceCents": z.int().min(-9007199254740991).max(9007199254740991),
 "availability": z.string()
-    }),
+    })),
+"event": z.nullable(z.object({
+    "slug": z.string(),
+"name": z.string(),
+"priceCents": z.int().min(-9007199254740991).max(9007199254740991),
+"at": z.string(),
+"location": z.nullable(z.string())
+    })),
 "qty": z.int().min(-9007199254740991).max(9007199254740991),
 "status": z.string(),
 "note": z.nullable(z.string()),
@@ -30,7 +38,8 @@ export const createInterest201Schema = z.object({
 
 export const createInterestMutationRequestSchema = z.object({
     "storeSlug": z.string().min(1),
-"productSlug": z.string().min(1),
+"productSlug": z.optional(z.string().min(1)),
+"eventSlug": z.optional(z.string().min(1)),
 "qty": z.optional(z.int().min(1).max(99).default(1)),
 "note": z.optional(z.string().max(500)),
 "contact": z.optional(z.object({

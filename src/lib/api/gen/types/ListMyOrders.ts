@@ -18,6 +18,13 @@ export type ListMyOrdersQueryParams = {
     cursor?: string;
 };
 
+export const itemsKindEnum5 = {
+    produto: "produto",
+    evento: "evento"
+} as const;
+
+export type ItemsKindEnum5Key = (typeof itemsKindEnum5)[keyof typeof itemsKindEnum5];
+
 /**
  * @description Default Response
 */
@@ -80,11 +87,11 @@ export type ListMyOrders200 = {
             /**
              * @type string
             */
-            productId: string;
+            kind: ItemsKindEnum5Key;
             /**
              * @type string
             */
-            productSlug: string;
+            slug: string;
             /**
              * @type string
             */
