@@ -80,10 +80,13 @@ function StatementAdmin() {
                 : `${data.totals.donationsCount} doações`}
             </Figure>
             <Figure
-              label="Taxa e repasses"
-              value={money(data.totals.feeCents + data.totals.payoutCents)}
+              label="Taxas e repasses"
+              value={money(
+                data.totals.feeCents + data.totals.providerFeeCents + data.totals.payoutCents,
+              )}
             >
-              {money(data.totals.feeCents)} de taxa · {money(data.totals.payoutCents)} de repasse
+              {money(data.totals.providerFeeCents)} de taxa de pagamento ·{" "}
+              {money(data.totals.payoutCents)} de repasse
             </Figure>
             <Figure label="Ficou com a loja" value={money(data.totals.netCents)}>
               somando os meses abaixo
@@ -110,7 +113,7 @@ function StatementAdmin() {
                   <th className="py-2 pr-4 font-medium">Mês</th>
                   <th className="py-2 pr-4 text-right font-medium">Vendas</th>
                   <th className="py-2 pr-4 text-right font-medium">Doações</th>
-                  <th className="py-2 pr-4 text-right font-medium">Taxa</th>
+                  <th className="py-2 pr-4 text-right font-medium">Taxa de pagamento</th>
                   <th className="py-2 pr-4 text-right font-medium">Repasse</th>
                   <th className="py-2 text-right font-medium">Ficou com a loja</th>
                 </tr>
@@ -121,7 +124,9 @@ function StatementAdmin() {
                     <td className="py-2.5 pr-4 font-medium">{monthLabel(month.month)}</td>
                     <td className="py-2.5 pr-4 text-right">{money(month.salesGrossCents)}</td>
                     <td className="py-2.5 pr-4 text-right">{money(month.donationsGrossCents)}</td>
-                    <td className="py-2.5 pr-4 text-right text-muted">−{money(month.feeCents)}</td>
+                    <td className="py-2.5 pr-4 text-right text-muted">
+                      −{money(month.feeCents + month.providerFeeCents)}
+                    </td>
                     <td className="py-2.5 pr-4 text-right text-muted">
                       −{money(month.payoutCents)}
                     </td>
@@ -131,6 +136,11 @@ function StatementAdmin() {
               </tbody>
             </table>
           </div>
+
+          <p className="mt-4 text-muted text-sm">
+            A taxa de pagamento é o que Stripe e Woovi cobram por transação e sai do valor recebido.
+            A plataforma não cobra comissão por venda.
+          </p>
         </>
       )}
 
