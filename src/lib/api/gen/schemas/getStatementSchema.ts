@@ -25,6 +25,7 @@ export const getStatement200Schema = z.object({
 "donationsCount": z.int().min(-9007199254740991).max(9007199254740991),
 "donationsGrossCents": z.int().min(-9007199254740991).max(9007199254740991),
 "feeCents": z.int().min(-9007199254740991).max(9007199254740991),
+"providerFeeCents": z.int().min(-9007199254740991).max(9007199254740991),
 "payoutCents": z.int().min(-9007199254740991).max(9007199254740991),
 "netCents": z.int().min(-9007199254740991).max(9007199254740991)
     })),
@@ -34,6 +35,7 @@ export const getStatement200Schema = z.object({
 "donationsCount": z.int().min(-9007199254740991).max(9007199254740991),
 "donationsGrossCents": z.int().min(-9007199254740991).max(9007199254740991),
 "feeCents": z.int().min(-9007199254740991).max(9007199254740991),
+"providerFeeCents": z.int().min(-9007199254740991).max(9007199254740991),
 "payoutCents": z.int().min(-9007199254740991).max(9007199254740991),
 "netCents": z.int().min(-9007199254740991).max(9007199254740991)
     }),

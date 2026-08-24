@@ -68,6 +68,12 @@ export type GetStatement200 = {
          * @maxLength 9007199254740991
          * @type integer
         */
+        providerFeeCents: number;
+        /**
+         * @minLength -9007199254740991
+         * @maxLength 9007199254740991
+         * @type integer
+        */
         payoutCents: number;
         /**
          * @minLength -9007199254740991
@@ -110,6 +116,12 @@ export type GetStatement200 = {
          * @type integer
         */
         feeCents: number;
+        /**
+         * @minLength -9007199254740991
+         * @maxLength 9007199254740991
+         * @type integer
+        */
+        providerFeeCents: number;
         /**
          * @minLength -9007199254740991
          * @maxLength 9007199254740991
