@@ -624,26 +624,27 @@ function FeeNote({ slug }: { slug: string }) {
           O dinheiro não fica parado na plataforma.
           {fee
             ? ` Taxa da plataforma: ${fee}% por venda, descontada na hora.`
-            : // Quem paga o Stripe/Woovi é a plataforma (fees.payer: application, ADR-024 +
-              // comissão zero, ADR-027): a loja recebe o valor integral. Dizer que existe a
-              // taxa e que ela não sai da venda é mais honesto — e mais forte — que omitir.
-              " Da sua parte, só a mensalidade da plataforma."}
+            : // A plataforma não cobra comissão (ADR-027), mas a taxa de quem processa o
+              // pagamento é descontada do que a loja recebe (ADR-029). Dizer isso aqui, e não
+              // deixar a loja descobrir pelo extrato, é a diferença entre transparência e
+              // pegadinha.
+              " A plataforma não cobra comissão por venda — só a taxa de quem processa o pagamento sai do valor recebido."}
         </span>
       </p>
 
-      {/* "Zero taxa" seria propaganda. Receber pagamento custa dinheiro para alguém: aqui
-          está quanto, quem cobra e quem paga. Números só aparecem quando a plataforma os
-          declarou (PROVIDER_FEE_*_TEXT) — inventar percentual seria pior que não dizer. */}
+      {/* "Zero taxa" seria propaganda. Receber pagamento custa dinheiro: aqui está quanto,
+          quem cobra e de onde sai. Números só aparecem quando a plataforma os declarou
+          (PROVIDER_FEE_*_TEXT) — inventar percentual seria pior que não dizer. */}
       <details className="mt-2 [&_summary]:cursor-pointer">
         <summary className="text-brand-deep text-sm underline underline-offset-4">
           E as taxas do Pix e do cartão?
         </summary>
         <div className="mt-2 grid gap-2 text-muted text-sm">
           <p>
-            Receber pagamento tem custo: quem processa o Pix e o cartão cobra por transação. Nenhuma
-            dessas taxas é descontada da sua venda —{" "}
-            <span className="font-medium text-ink">quem paga é a Colheita</span>, com a sua
-            mensalidade. Você recebe o valor cheio que o cliente pagou.
+            Receber pagamento tem custo: quem processa o Pix e o cartão cobra por transação, e essa
+            taxa <span className="font-medium text-ink">sai do valor que chega até você</span>. Ela
+            não é da Colheita — é o custo de receber, e vai inteira para quem processou. O seu
+            extrato mostra, em cada mês, quanto foi.
           </p>
           {declared.length > 0 && (
             <ul className="grid gap-1">
@@ -651,14 +652,14 @@ function FeeNote({ slug }: { slug: string }) {
                 <li key={row.label} className="flex flex-wrap items-baseline gap-x-2">
                   <span className="font-medium text-ink">{row.label}:</span>
                   <span className="tabular-nums">{row.value}</span>
-                  <span className="text-xs">cobrado pela {row.who}, pago pela Colheita</span>
+                  <span className="text-xs">cobrado pela {row.who}, descontado do recebido</span>
                 </li>
               ))}
             </ul>
           )}
           <p>
-            É por isso que a plataforma cobra mensalidade em vez de comissão: o custo é o mesmo todo
-            mês, e não cresce quando a sua loja vende mais.
+            A Colheita cobra mensalidade e não comissão: o que você paga para a plataforma é o mesmo
+            todo mês, e não cresce quando a sua loja vende mais.
           </p>
         </div>
       </details>
