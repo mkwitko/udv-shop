@@ -4,6 +4,11 @@ import { ApiError } from "./fetch-client";
 const MESSAGES: Record<string, string> = {
   invalid_credentials: "E-mail ou senha não conferem.",
   email_in_use: "Já existe uma conta com esse e-mail.",
+  already_member: "Essa pessoa já faz parte da equipe.",
+  invite_email_mismatch: "O convite é para outro e-mail. Entre com a conta certa.",
+  invite_expired: "Esse convite venceu. Peça um novo.",
+  invite_not_found: "Convite não encontrado — já foi usado ou cancelado.",
+  owner_is_immutable: "O dono da loja não pode ser alterado por aqui.",
   slug_in_use: "Esse endereço de loja já está em uso. Escolha outro.",
   invalid_token: "Esse link expirou. Peça outro.",
   rate_limited: "Muitas tentativas seguidas. Espere um minuto e tente de novo.",

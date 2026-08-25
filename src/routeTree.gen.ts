@@ -19,6 +19,7 @@ import { Route as PlataformaRouteImport } from './routes/plataforma'
 import { Route as RecuperarSenhaRouteImport } from './routes/recuperar-senha'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as ConviteTokenRouteImport } from './routes/convite/$token'
 import { Route as GestaoSlugRouteImport } from './routes/gestao/$slug'
 import { Route as LojaSlugRouteImport } from './routes/loja/$slug'
 import { Route as GestaoSlugIndexRouteImport } from './routes/gestao/$slug/index'
@@ -27,6 +28,7 @@ import { Route as GestaoSlugCampanhasRouteImport } from './routes/gestao/$slug/c
 import { Route as GestaoSlugConfiguracoesRouteImport } from './routes/gestao/$slug/configuracoes'
 import { Route as GestaoSlugDoacoesRouteImport } from './routes/gestao/$slug/doacoes'
 import { Route as GestaoSlugEncomendasRouteImport } from './routes/gestao/$slug/encomendas'
+import { Route as GestaoSlugEquipeRouteImport } from './routes/gestao/$slug/equipe'
 import { Route as GestaoSlugExtratoRouteImport } from './routes/gestao/$slug/extrato'
 import { Route as GestaoSlugPedidosRouteImport } from './routes/gestao/$slug/pedidos'
 import { Route as GestaoSlugProdutosRouteImport } from './routes/gestao/$slug/produtos'
@@ -91,6 +93,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ConviteTokenRoute = ConviteTokenRouteImport.update({
+  id: '/convite/$token',
+  path: '/convite/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const GestaoSlugRoute = GestaoSlugRouteImport.update({
   id: '/gestao/$slug',
   path: '/gestao/$slug',
@@ -129,6 +136,11 @@ const GestaoSlugDoacoesRoute = GestaoSlugDoacoesRouteImport.update({
 const GestaoSlugEncomendasRoute = GestaoSlugEncomendasRouteImport.update({
   id: '/encomendas',
   path: '/encomendas',
+  getParentRoute: () => GestaoSlugRoute,
+} as any)
+const GestaoSlugEquipeRoute = GestaoSlugEquipeRouteImport.update({
+  id: '/equipe',
+  path: '/equipe',
   getParentRoute: () => GestaoSlugRoute,
 } as any)
 const GestaoSlugExtratoRoute = GestaoSlugExtratoRouteImport.update({
@@ -209,6 +221,7 @@ export interface FileRoutesByFullPath {
   '/recuperar-senha': typeof RecuperarSenhaRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/convite/$token': typeof ConviteTokenRoute
   '/gestao/$slug': typeof GestaoSlugRouteWithChildren
   '/loja/$slug': typeof LojaSlugRouteWithChildren
   '/gestao/$slug/agenda': typeof GestaoSlugAgendaRoute
@@ -216,6 +229,7 @@ export interface FileRoutesByFullPath {
   '/gestao/$slug/configuracoes': typeof GestaoSlugConfiguracoesRoute
   '/gestao/$slug/doacoes': typeof GestaoSlugDoacoesRoute
   '/gestao/$slug/encomendas': typeof GestaoSlugEncomendasRoute
+  '/gestao/$slug/equipe': typeof GestaoSlugEquipeRoute
   '/gestao/$slug/extrato': typeof GestaoSlugExtratoRoute
   '/gestao/$slug/pedidos': typeof GestaoSlugPedidosRoute
   '/gestao/$slug/produtos': typeof GestaoSlugProdutosRoute
@@ -242,11 +256,13 @@ export interface FileRoutesByTo {
   '/recuperar-senha': typeof RecuperarSenhaRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/convite/$token': typeof ConviteTokenRoute
   '/gestao/$slug/agenda': typeof GestaoSlugAgendaRoute
   '/gestao/$slug/campanhas': typeof GestaoSlugCampanhasRoute
   '/gestao/$slug/configuracoes': typeof GestaoSlugConfiguracoesRoute
   '/gestao/$slug/doacoes': typeof GestaoSlugDoacoesRoute
   '/gestao/$slug/encomendas': typeof GestaoSlugEncomendasRoute
+  '/gestao/$slug/equipe': typeof GestaoSlugEquipeRoute
   '/gestao/$slug/extrato': typeof GestaoSlugExtratoRoute
   '/gestao/$slug/pedidos': typeof GestaoSlugPedidosRoute
   '/gestao/$slug/produtos': typeof GestaoSlugProdutosRoute
@@ -274,6 +290,7 @@ export interface FileRoutesById {
   '/recuperar-senha': typeof RecuperarSenhaRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/convite/$token': typeof ConviteTokenRoute
   '/gestao/$slug': typeof GestaoSlugRouteWithChildren
   '/loja/$slug': typeof LojaSlugRouteWithChildren
   '/gestao/$slug/agenda': typeof GestaoSlugAgendaRoute
@@ -281,6 +298,7 @@ export interface FileRoutesById {
   '/gestao/$slug/configuracoes': typeof GestaoSlugConfiguracoesRoute
   '/gestao/$slug/doacoes': typeof GestaoSlugDoacoesRoute
   '/gestao/$slug/encomendas': typeof GestaoSlugEncomendasRoute
+  '/gestao/$slug/equipe': typeof GestaoSlugEquipeRoute
   '/gestao/$slug/extrato': typeof GestaoSlugExtratoRoute
   '/gestao/$slug/pedidos': typeof GestaoSlugPedidosRoute
   '/gestao/$slug/produtos': typeof GestaoSlugProdutosRoute
@@ -309,6 +327,7 @@ export interface FileRouteTypes {
     | '/recuperar-senha'
     | '/robots.txt'
     | '/sitemap.xml'
+    | '/convite/$token'
     | '/gestao/$slug'
     | '/loja/$slug'
     | '/gestao/$slug/agenda'
@@ -316,6 +335,7 @@ export interface FileRouteTypes {
     | '/gestao/$slug/configuracoes'
     | '/gestao/$slug/doacoes'
     | '/gestao/$slug/encomendas'
+    | '/gestao/$slug/equipe'
     | '/gestao/$slug/extrato'
     | '/gestao/$slug/pedidos'
     | '/gestao/$slug/produtos'
@@ -342,11 +362,13 @@ export interface FileRouteTypes {
     | '/recuperar-senha'
     | '/robots.txt'
     | '/sitemap.xml'
+    | '/convite/$token'
     | '/gestao/$slug/agenda'
     | '/gestao/$slug/campanhas'
     | '/gestao/$slug/configuracoes'
     | '/gestao/$slug/doacoes'
     | '/gestao/$slug/encomendas'
+    | '/gestao/$slug/equipe'
     | '/gestao/$slug/extrato'
     | '/gestao/$slug/pedidos'
     | '/gestao/$slug/produtos'
@@ -373,6 +395,7 @@ export interface FileRouteTypes {
     | '/recuperar-senha'
     | '/robots.txt'
     | '/sitemap.xml'
+    | '/convite/$token'
     | '/gestao/$slug'
     | '/loja/$slug'
     | '/gestao/$slug/agenda'
@@ -380,6 +403,7 @@ export interface FileRouteTypes {
     | '/gestao/$slug/configuracoes'
     | '/gestao/$slug/doacoes'
     | '/gestao/$slug/encomendas'
+    | '/gestao/$slug/equipe'
     | '/gestao/$slug/extrato'
     | '/gestao/$slug/pedidos'
     | '/gestao/$slug/produtos'
@@ -407,6 +431,7 @@ export interface RootRouteChildren {
   RecuperarSenhaRoute: typeof RecuperarSenhaRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  ConviteTokenRoute: typeof ConviteTokenRoute
   GestaoSlugRoute: typeof GestaoSlugRouteWithChildren
   LojaSlugRoute: typeof LojaSlugRouteWithChildren
 }
@@ -483,6 +508,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/convite/$token': {
+      id: '/convite/$token'
+      path: '/convite/$token'
+      fullPath: '/convite/$token'
+      preLoaderRoute: typeof ConviteTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/gestao/$slug': {
       id: '/gestao/$slug'
       path: '/gestao/$slug'
@@ -537,6 +569,13 @@ declare module '@tanstack/react-router' {
       path: '/encomendas'
       fullPath: '/gestao/$slug/encomendas'
       preLoaderRoute: typeof GestaoSlugEncomendasRouteImport
+      parentRoute: typeof GestaoSlugRoute
+    }
+    '/gestao/$slug/equipe': {
+      id: '/gestao/$slug/equipe'
+      path: '/equipe'
+      fullPath: '/gestao/$slug/equipe'
+      preLoaderRoute: typeof GestaoSlugEquipeRouteImport
       parentRoute: typeof GestaoSlugRoute
     }
     '/gestao/$slug/extrato': {
@@ -639,6 +678,7 @@ interface GestaoSlugRouteChildren {
   GestaoSlugConfiguracoesRoute: typeof GestaoSlugConfiguracoesRoute
   GestaoSlugDoacoesRoute: typeof GestaoSlugDoacoesRoute
   GestaoSlugEncomendasRoute: typeof GestaoSlugEncomendasRoute
+  GestaoSlugEquipeRoute: typeof GestaoSlugEquipeRoute
   GestaoSlugExtratoRoute: typeof GestaoSlugExtratoRoute
   GestaoSlugPedidosRoute: typeof GestaoSlugPedidosRoute
   GestaoSlugProdutosRoute: typeof GestaoSlugProdutosRoute
@@ -654,6 +694,7 @@ const GestaoSlugRouteChildren: GestaoSlugRouteChildren = {
   GestaoSlugConfiguracoesRoute: GestaoSlugConfiguracoesRoute,
   GestaoSlugDoacoesRoute: GestaoSlugDoacoesRoute,
   GestaoSlugEncomendasRoute: GestaoSlugEncomendasRoute,
+  GestaoSlugEquipeRoute: GestaoSlugEquipeRoute,
   GestaoSlugExtratoRoute: GestaoSlugExtratoRoute,
   GestaoSlugPedidosRoute: GestaoSlugPedidosRoute,
   GestaoSlugProdutosRoute: GestaoSlugProdutosRoute,
@@ -702,6 +743,7 @@ const rootRouteChildren: RootRouteChildren = {
   RecuperarSenhaRoute: RecuperarSenhaRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  ConviteTokenRoute: ConviteTokenRoute,
   GestaoSlugRoute: GestaoSlugRouteWithChildren,
   LojaSlugRoute: LojaSlugRouteWithChildren,
 }
