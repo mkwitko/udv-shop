@@ -59,6 +59,7 @@ const TABS = [
   { to: "/gestao/$slug/repasses", label: "A repassar", group: "dinheiro", adminOnly: true },
   { to: "/gestao/$slug/extrato", label: "Extrato", group: "dinheiro", adminOnly: true },
   { to: "/gestao/$slug/configuracoes", label: "Configurações", group: "ajustes", ownerOnly: true },
+  { to: "/gestao/$slug/equipe", label: "Equipe", group: "ajustes", ownerOnly: true },
 ] as const;
 
 type Tab = (typeof TABS)[number];
